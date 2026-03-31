@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import './index.css';
 
 // Import Pages
@@ -9,8 +9,8 @@ import Oracle from './pages/Oracle';
 import DualCRM from './pages/DualCRM';
 import AppStudio from './pages/AppStudio';
 import UILibrary from './pages/UILibrary';
-
 import SettingsPage from './pages/Settings';
+import Login from './pages/Login';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -28,7 +28,7 @@ const GlassCursorBlob = () => {
   return <div className="cursor-blob" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} />;
 };
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout }) => {
   const location = useLocation();
   const menuItems = [
     { name: 'Mission Control', path: '/', icon: <Home size={20} /> },
@@ -58,7 +58,7 @@ const Sidebar = () => {
             <SettingsIcon size={20} style={{ color: '#555' }} />
             <span style={{ color: '#555' }}>Settings (Lance)</span>
           </Link>
-          <div className="nav-item" style={{ cursor: 'pointer' }}>
+          <div className="nav-item" style={{ cursor: 'pointer' }} onClick={onLogout}>
             <LogOut size={20} style={{ color: '#d32f2f' }} />
             <span style={{ color: '#d32f2f' }}>Sign Out Lance</span>
           </div>
@@ -69,6 +69,17 @@ const Sidebar = () => {
 };
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Serve the secure login page if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="app-container" style={{ padding: 0 }}>
+        <Login onLogin={() => setIsAuthenticated(true)} />
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div className="app-container">
@@ -77,7 +88,7 @@ function App() {
         <GlassCursorBlob />
         
         {/* Core Dashboard UI */}
-        <Sidebar />
+        <Sidebar onLogout={() => setIsAuthenticated(false)} />
         
         {/* Page Routing */}
         <Routes>
