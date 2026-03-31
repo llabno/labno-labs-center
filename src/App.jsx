@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Compass, Layers, PhoneCall, Code, Database, Calendar as CalendarIcon, FilePen, LogOut } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut } from 'lucide-react';
 import './index.css';
+
+// Import Pages
+import Dashboard from './pages/Dashboard';
+import Oracle from './pages/Oracle';
+import DualCRM from './pages/DualCRM';
+import AppStudio from './pages/AppStudio';
+import UILibrary from './pages/UILibrary';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -10,7 +17,7 @@ const GlassCursorBlob = () => {
   useEffect(() => {
     const updatePosition = (e) => {
       // Small delay on blob for smooth following
-      setPos({ x: e.clientX - 150, y: e.clientY - 150 });
+      setPos({ x: e.clientX - 200, y: e.clientY - 200 });
     };
     window.addEventListener('mousemove', updatePosition);
     return () => window.removeEventListener('mousemove', updatePosition);
@@ -25,13 +32,13 @@ const Sidebar = () => {
     { name: 'Mission Control', path: '/', icon: <Home size={20} /> },
     { name: 'The Oracle (API)', path: '/oracle', icon: <Database size={20} /> },
     { name: 'Dual CRM Engine', path: '/crm', icon: <PhoneCall size={20} /> },
-    { name: 'Labno Labs App Studio', path: '/studio', icon: <Code size={20} /> },
-    { name: 'UI Library / Uploads', path: '/library', icon: <Layers size={20} /> },
+    { name: 'App Studio', path: '/studio', icon: <Code size={20} /> },
+    { name: 'UI Library Assets', path: '/library', icon: <Layers size={20} /> },
   ];
 
   return (
     <div className="sidebar glass-panel">
-      <h2>Labno Labs Center</h2>
+      <h2>Labno Labs</h2>
       <nav>
         {menuItems.map((item) => (
           <Link 
@@ -45,76 +52,13 @@ const Sidebar = () => {
         ))}
         {/* Placeholder for Auth/Logout */}
         <div style={{ marginTop: 'auto' }} className="nav-item">
-          <LogOut size={20} style={{ color: '#ff4d4f' }} />
-          <span style={{ color: '#ff4d4f' }}>Sign Out</span>
+          <LogOut size={20} style={{ color: '#d32f2f' }} />
+          <span style={{ color: '#d32f2f' }}>Sign Out Lance</span>
         </div>
       </nav>
     </div>
   );
 };
-
-const DashboardHome = () => {
-  // Mock Data representing Mission Control Start Screen requirements
-  const stats = [
-    { title: 'Unread Ventures & Ideas', value: '14' },
-    { title: 'Daily Active Users (DAU)', value: '1,280' },
-    { title: 'Total Daily Revenue', value: '$450.00' },
-  ];
-
-  return (
-    <div className="main-content">
-      {/* Top Value Stats Grid */}
-      <div className="stats-grid">
-        {stats.map((s) => (
-          <div key={s.title} className="stat-card glass-panel">
-            <span className="stat-title">{s.title}</span>
-            <span className="stat-value">{s.value}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Kanban Board Layout */}
-      <div className="kanban-board glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ marginBottom: '1.5rem', color: '#fff', fontSize: '1.2rem', fontWeight: 500 }}>Global Workflow & Edge Cases</h3>
-        
-        <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
-          {/* Column 1 */}
-          <div className="kanban-column">
-            <div className="kanban-header">Backlog / Ideas</div>
-            <div className="task-card glass-panel">
-              <h4>Setup Vercel Custom Subdomains</h4>
-              <p>Task: Configure *.labnolabs.com explicitly to reduce client DNS failure rates.</p>
-            </div>
-          </div>
-          
-          {/* Column 2 */}
-          <div className="kanban-column">
-            <div className="kanban-header">Overnight Agent Sync</div>
-            <div className="task-card glass-panel" style={{ borderLeft: '4px solid #ffaa00' }}>
-              <h4>Awaiting Lance's Review</h4>
-              <p>The Oracle has finished parsing `Audio_Internship.md`. Click to approve sync to Second Brain API.</p>
-            </div>
-          </div>
-
-          {/* Column 3 */}
-          <div className="kanban-column">
-            <div className="kanban-header">Completed Tasks</div>
-            <div className="task-card glass-panel" style={{ opacity: 0.6 }}>
-              <h4>Install Labno Labs Starter Kit</h4>
-              <p>Initialized Apple Glass aesthetic UI globally.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PlaceholderPage = ({ title }) => (
-  <div className="main-content glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <h1 style={{ color: '#aaa', fontWeight: 300 }}>{title}</h1>
-  </div>
-);
 
 function App() {
   return (
@@ -127,12 +71,13 @@ function App() {
         {/* Core Dashboard UI */}
         <Sidebar />
         
+        {/* Page Routing */}
         <Routes>
-          <Route path="/" element={<DashboardHome />} />
-          <Route path="/oracle" element={<PlaceholderPage title="Second Brain API (The Oracle)" />} />
-          <Route path="/crm" element={<PlaceholderPage title="Dual CRM Pipelines (MOSO / Labno)" />} />
-          <Route path="/studio" element={<PlaceholderPage title="App Development Studio" />} />
-          <Route path="/library" element={<PlaceholderPage title="Global UI Components & File Upload" />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/oracle" element={<Oracle />} />
+          <Route path="/crm" element={<DualCRM />} />
+          <Route path="/studio" element={<AppStudio />} />
+          <Route path="/library" element={<UILibrary />} />
         </Routes>
       </div>
     </Router>

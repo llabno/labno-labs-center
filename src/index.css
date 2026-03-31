@@ -3,20 +3,20 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
+  color-scheme: light;
+  color: #3f3b39; /* Deep grayish brown */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-blur: blur(12px);
-  --primary-glow: rgba(0, 255, 170, 0.5); /* Modern Mint/Teal Glow */
-  --secondary-glow: rgba(0, 140, 255, 0.5); /* Blue glow */
+  --glass-bg: rgba(255, 255, 255, 0.4); /* Much lighter, frostier glass */
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 12px 32px 0 rgba(140, 120, 110, 0.15); /* Soft brownish-gray shadow */
+  --glass-blur: blur(20px);
+  --primary-glow: rgba(255, 120, 100, 0.3); /* Salmon Pink / Orange */
+  --secondary-glow: rgba(220, 190, 160, 0.5); /* Light brownish/warm cream */
 }
 
 * {
@@ -28,8 +28,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #050505;
-  overflow: hidden; /* Prevent scroll on the body to keep the app shell locked */
+  background-color: #faf8f5; /* Warm off-white/cream base */
+  overflow: hidden; 
 }
 
 /* Base Moving 3D Background - Emulating Apple Glass / macOS Sonoma High-Res Shifts */
@@ -41,30 +41,30 @@ body {
   height: 200%;
   z-index: -1;
   background: 
-    radial-gradient(circle at 50% 50%, var(--primary-glow) 0%, transparent 40%),
-    radial-gradient(circle at 80% 20%, var(--secondary-glow) 0%, transparent 50%);
-  filter: blur(80px); /* Deep blur for the cinematic Apple depth feel */
-  animation: bg-shift 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+    radial-gradient(circle at 40% 40%, var(--primary-glow) 0%, transparent 50%),
+    radial-gradient(circle at 70% 30%, var(--secondary-glow) 0%, transparent 60%);
+  filter: blur(100px); /* Deep blur for the cinematic Apple depth feel */
+  animation: bg-shift 24s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes bg-shift {
-  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.6; }
-  50% { transform: scale(1.1) translate(-2%, 5%) rotate(10deg); opacity: 0.8; }
-  100% { transform: scale(1) translate(5%, -2%) rotate(-5deg); opacity: 0.5; }
+  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.1) translate(-2%, 5%) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) translate(5%, -2%) rotate(-5deg); opacity: 0.7; }
 }
 
 /* Interactive 3D cursor follower element */
 .cursor-blob {
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 50, 255, 0.4) 0%, transparent 70%);
-  filter: blur(40px);
+  background: radial-gradient(circle, rgba(255, 150, 120, 0.25) 0%, transparent 70%);
+  filter: blur(50px);
   z-index: -1;
-  pointer-events: none; /* Ignore clicks */
+  pointer-events: none; 
   transition: transform 0.1s ease-out;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply; /* Better for light backgrounds */
 }
 
 /* The Apple Glass Panel */
@@ -95,12 +95,10 @@ body {
 
 .sidebar h2 {
   font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, #fff 0%, #aaa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #333;
 }
 
 .sidebar nav {
@@ -115,22 +113,23 @@ body {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  color: #ccc;
+  color: #666;
   text-decoration: none;
   font-size: 0.95rem;
   transition: all 0.2s ease;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.03);
+  color: #333;
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  font-weight: 500;
+  background: rgba(255, 120, 100, 0.1);
+  color: #d15a45; /* Deeper salmon for active contrast */
+  font-weight: 600;
 }
 
 /* Main Dashboard Area */
@@ -139,7 +138,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-radius: 20px; /* To match glass panel behind it if we used one */
+  border-radius: 20px;
 }
 
 /* Top Stats Row */
@@ -155,26 +154,26 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 40px 0 rgba(140, 120, 110, 0.2);
 }
 
 .stat-title {
   font-size: 0.85rem;
-  color: #999;
+  color: #777;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .stat-value {
   font-size: 2.5rem;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 800;
+  color: #222;
 }
 
 /* Kanban / List View Region */
@@ -194,25 +193,54 @@ body {
 .kanban-header {
   font-size: 1rem;
   font-weight: 600;
-  color: #ddd;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #444;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding-bottom: 0.5rem;
 }
 
 .task-card {
-  padding: 1rem;
+  padding: 1.25rem;
   cursor: grab;
+  background: rgba(255, 255, 255, 0.8); /* Opaque enough to read clearly over the bg */
+}
+
+.task-card:active {
+  cursor: grabbing;
 }
 
 .task-card h4 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
+  color: #222;
 }
 
 .task-card p {
-  font-size: 0.8rem;
-  color: #aaa;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Utilities */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ff7e67 0%, #ff9a85 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
 }
 
 /* Custom Scrollbar for Glass UI */
@@ -224,9 +252,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
