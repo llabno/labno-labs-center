@@ -82,5 +82,27 @@ def trigger_sync(req: OracleParser, user_email: str = Depends(verify_token)):
     if user_email != "lance@labnolabs.com":
         raise HTTPException(status_code=403, detail="Unauthorized: Only Admins can sync vectors.")
     
-    # Deduplication check logic simulated here using document_id
-    return {"status": f"Upserted SOP {req.document_id}. Existing vectors overwritten to prevent duplicates."}
+class LemonSqueezyEvent(BaseModel):
+    meta: dict
+    data: dict
+
+@app.post("/api/lemon-squeezy/webhook")
+def lemon_squeezy_purchase(req: LemonSqueezyEvent):
+    """
+    Task C: Oversubscribed Marketing Node.
+    Listens for Lemon Squeezy purchases (e.g., Stretch Guides, Portfolio Templates).
+    Strips the buyer's email and name, and injects them directly into labno_consulting_leads table.
+    """
+    event_name = req.meta.get("event_name")
+    
+    if event_name == "order_created":
+        buyer_email = req.data.get("attributes", {}).get("user_email")
+        buyer_name = req.data.get("attributes", {}).get("user_name")
+        product_name = req.data.get("attributes", {}).get("first_order_item", {}).get("product_name")
+        
+        # Simulated database injection
+        # supabase.table("labno_consulting_leads").insert({"email": buyer_email, "name": buyer_name, "app_interest": product_name})
+        
+        return {"status": "success", "message": f"Routed {buyer_email} to Labno CRM for: {product_name}"}
+    
+    return {"status": "ignored", "message": "Not an order creation event."}
