@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const Dashboard = () => {
-  const [activeBoards, setActiveBoards] = useState([]); // Array of selected projects (up to 2)
+  const [activeBoards, setActiveBoards] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [tasksByProject, setTasksByProject] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const stats = [
     { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
@@ -10,15 +14,36 @@ const Dashboard = () => {
     { title: 'Total Daily Revenue', value: '$450.00', link: 'https://app.lemonsqueezy.com/orders' },
   ];
 
-  const internalProjects = [
-    { id: 1, name: 'MOSO Data Sanitization & CRM Inject', status: 'Active', tasks: 12, completed: 4, dueDate: 'April 20', complexity: 'High', cost: '$$$' },
-    { id: 2, name: 'GTM Digital Assets (Lemon Squeezy)', status: 'Planning', tasks: 8, completed: 0, dueDate: 'May 01', complexity: 'Med', cost: '$' },
-    { id: 3, name: 'Clinical Blog + Sniper Agent (Vercel)', status: 'Blocked', tasks: 15, completed: 7, dueDate: 'April 28', complexity: 'High', cost: '$$' },
-    { id: 4, name: 'Global Telemetry (PostHog Zipcodes)', status: 'Active', tasks: 5, completed: 1, dueDate: 'April 15', complexity: 'Low', cost: '$' },
-    { id: 5, name: 'G-Cal Database Sync Node', status: 'Planning', tasks: 10, completed: 0, dueDate: 'May 10', complexity: 'Med', cost: '$$' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: projData, error: projErr } = await supabase
+        .from('internal_projects').select('*').order('due_date', { ascending: true });
+      if (projErr) { console.error('Error fetching projects:', projErr); setLoading(false); return; }
+      setProjects(projData || []);
 
-  const hotList = internalProjects.filter(p => p.complexity === 'High' || p.status === 'Active');
+      const { data: taskData, error: taskErr } = await supabase.from('global_tasks').select('*');
+      if (!taskErr && taskData) {
+        const grouped = {};
+        taskData.forEach(t => {
+          if (!grouped[t.project_id]) grouped[t.project_id] = {};
+          const col = t.column_id || 'backlog';
+          if (!grouped[t.project_id][col]) grouped[t.project_id][col] = [];
+          grouped[t.project_id][col].push(t);
+        });
+        setTasksByProject(grouped);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const costLabel = (c) => c >= 3 ? '$$$' : c >= 2 ? '$$' : '$';
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '\u2014';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const hotList = projects.filter(p => p.complexity >= 3 || p.status === 'Active');
 
   const toggleProjectBoard = (proj) => {
     if (activeBoards.find(b => b.id === proj.id)) {
@@ -33,56 +58,23 @@ const Dashboard = () => {
     }
   };
 
-  // Dynamic Kanban Data generator based on specific projects
-  const getKanbanData = (projectName) => {
-    if (projectName.includes('MOSO Data Sanitization')) {
-      return {
-        backlog: ['Identify MOSO Sheets via IDE API', 'Map HIPAA scrub fields'],
-        triage: ['Draft CSV template for B2B Partners'],
-        review: ['Review Python Script (Awaiting Lance)'],
-        completed: ['Auth established']
-      };
-    } else if (projectName.includes('GTM Digital Assets')) {
-      return {
-        backlog: ['Draft "Stretch Guide" with Romy', 'Connect Lemon Squeezy API'],
-        triage: ['Define "Oversubscribed" Email Sequence'],
-        review: ['Review Pricing Margins'],
-        completed: []
-      };
-    } else if (projectName.includes('Clinical Blog')) {
-      return {
-        backlog: ['Prompt Engineering for Sniper Agent', 'Disable public comments'],
-        triage: ['RSS Feed logic in Vercel'],
-        review: ['Review Output Format with Lance'],
-        completed: ['Initialize Next.js blog']
-      };
-    } else if (projectName.includes('Telemetry')) {
-      return {
-        backlog: ['Build City/Zip Demographic Dash'],
-        triage: ['Test PostHog Cookie Logic'],
-        review: [],
-        completed: ['Register PostHog']
-      };
-    } else if (projectName.includes('G-Cal')) {
-      return {
-        backlog: ['Map existing Lance G-Cal CRM', 'Draft Edge Function for two-way sync'],
-        triage: ['OAuth with Google API'],
-        review: [],
-        completed: []
-      };
-    }
-
+  const getKanbanData = (projectId) => {
+    const tasks = tasksByProject[projectId] || {};
     return {
-      backlog: [`Phase 1: ${projectName}`, `Review docs for ${projectName}`],
-      triage: ['Define Technical Scope'],
-      review: ['Awaiting Approval'],
-      completed: ['Initialize Repo']
+      backlog: (tasks['backlog'] || []).map(t => t.title),
+      triage: (tasks['triage'] || []).map(t => t.title),
+      review: (tasks['review'] || []).map(t => t.title),
+      completed: (tasks['completed'] || []).map(t => t.title),
     };
   };
 
+  if (loading) return (
+    <div className="main-content" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading dashboard...</div>
+  );
+
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      
+
       {/* 1. Executive Summary */}
       <div>
         <h1 className="page-title">Executive Mission Control</h1>
@@ -120,7 +112,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {internalProjects.map((proj) => {
+                {projects.map((proj) => {
                   const isActive = activeBoards.find(b => b.id === proj.id);
                   return (
                     <tr 
@@ -134,12 +126,12 @@ const Dashboard = () => {
                         </div>
                       </td>
                       <td style={{ padding: '1rem', color: '#666', fontSize: '0.9rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {proj.dueDate}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {formatDate(proj.due_date)}</div>
                       </td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{ flex: 1, height: '6px', background: '#eee', borderRadius: '4px', overflow: 'hidden', width: '60px' }}>
-                            <div style={{ width: `${(proj.completed / proj.tasks) * 100}%`, height: '100%', background: '#d15a45' }}></div>
+                            <div style={{ width: `${proj.total_tasks > 0 ? (proj.completed_tasks / proj.total_tasks) * 100 : 0}%`, height: '100%', background: '#d15a45' }}></div>
                           </div>
                         </div>
                       </td>
@@ -165,8 +157,8 @@ const Dashboard = () => {
                 <div key={item.id} onClick={() => toggleProjectBoard(item)} style={{ padding: '1rem', background: isActive ? '#fff3e0' : '#fff', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', cursor: 'pointer', borderLeft: '3px solid #d32f2f' }}>
                   <div style={{ fontWeight: 600, color: '#222' }}>{item.name}</div>
                   <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem' }}>
-                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Cost: {item.cost}</span>
-                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Due: {item.dueDate}</span>
+                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Cost: {costLabel(item.complexity)}</span>
+                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Due: {formatDate(item.due_date)}</span>
                   </div>
                 </div>
               )
@@ -179,7 +171,7 @@ const Dashboard = () => {
       {activeBoards.length > 0 ? (
         <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
           {activeBoards.map(board => {
-            const data = getKanbanData(board.name);
+            const data = getKanbanData(board.id);
             return (
               <div key={board.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
