@@ -10,6 +10,8 @@ import DualCRM from './pages/DualCRM';
 import AppStudio from './pages/AppStudio';
 import UILibrary from './pages/UILibrary';
 
+import SettingsPage from './pages/Settings';
+
 // The interactive background blob follower
 const GlassCursorBlob = () => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -50,10 +52,16 @@ const Sidebar = () => {
             {item.name}
           </Link>
         ))}
-        {/* Placeholder for Auth/Logout */}
-        <div style={{ marginTop: 'auto' }} className="nav-item">
-          <LogOut size={20} style={{ color: '#d32f2f' }} />
-          <span style={{ color: '#d32f2f' }}>Sign Out Lance</span>
+        {/* Settings and Auth */}
+        <div style={{ marginTop: 'auto' }}>
+          <Link to="/settings" className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`} style={{ marginBottom: '10px' }}>
+            <SettingsIcon size={20} style={{ color: '#555' }} />
+            <span style={{ color: '#555' }}>Settings (Lance)</span>
+          </Link>
+          <div className="nav-item" style={{ cursor: 'pointer' }}>
+            <LogOut size={20} style={{ color: '#d32f2f' }} />
+            <span style={{ color: '#d32f2f' }}>Sign Out Lance</span>
+          </div>
         </div>
       </nav>
     </div>
@@ -78,6 +86,7 @@ function App() {
           <Route path="/crm" element={<DualCRM />} />
           <Route path="/studio" element={<AppStudio />} />
           <Route path="/library" element={<UILibrary />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
     </Router>

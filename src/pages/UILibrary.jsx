@@ -1,7 +1,14 @@
 import React from 'react';
-import { Layers, Image as ImageIcon, Download, Upload, Paintbrush } from 'lucide-react';
+import { Layers, Image as ImageIcon, Download, Upload, Eye } from 'lucide-react';
 
 const UILibrary = () => {
+
+  const assets = [
+    { title: 'Placeholder_Hero_Image_01.png', project: 'Labno Labs Website V1', intent: 'Clean minimal vibe for tech consulting.', tags: ['Hero', 'Aesthetic'] },
+    { title: 'Glassmorphism_Tile_Template.fig', project: 'Global Architecture', intent: 'Base node for all dashboard cards.', tags: ['Figma', 'UI Core'] },
+    { title: 'Dark_Mode_Backgrounds.zip', project: 'Career OS', intent: 'Provide cinematic depth to the Interview Hub.', tags: ['Backgrounds', 'Assets'] },
+  ];
+
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
       
@@ -11,74 +18,67 @@ const UILibrary = () => {
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
             <Layers color="#d15a45" /> Global UI Library & Assets
           </h1>
-          <p style={{ color: '#555' }}>Centralized Apple Glass tokens, core SVG assets, and design downloads for Romy & Avery.</p>
+          <p style={{ color: '#555' }}>Expert-level Digital Asset Management. Tag UX intent, ideation, and project mapping for all uploads.</p>
         </div>
         
-        <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Upload size={16} /> Upload New Asset
+        <button 
+          className="btn-primary" 
+          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          onClick={() => alert("Simulated: Open 'Upload Asset' Modal with Metadata tagging fields.")}
+        >
+          <Upload size={16} /> Upload & Tag New Asset
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '2rem', flex: 1 }}>
-        {/* Left Column: UI Tokens */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#333', fontWeight: 600 }}>Design Tokens & CSS Vars</h3>
-          
-          <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Paintbrush size={18} color="#f06292" />
-                <span style={{ fontWeight: 500, color: '#333' }}>Primary Glass Gradient (Salmon)</span>
-              </div>
-              <button style={{ padding: '4px 12px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}>Copy Var</button>
-            </div>
-            <div style={{ width: '100%', height: '40px', borderRadius: '8px', background: 'rgba(255, 120, 100, 0.4)' }}></div>
-            
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(0,0,0,0.05)', margin: '1.5rem 0' }} />
-            
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Paintbrush size={18} color="#8d6e63" />
-                <span style={{ fontWeight: 500, color: '#333' }}>Secondary Glass Gradient (Earth)</span>
-              </div>
-              <button style={{ padding: '4px 12px', fontSize: '0.8rem', borderRadius: '4px', border: '1px solid #ccc', background: '#fff', cursor: 'pointer' }}>Copy Var</button>
-            </div>
-            <div style={{ width: '100%', height: '40px', borderRadius: '8px', background: 'rgba(220, 190, 160, 0.6)' }}></div>
-          </div>
+      <div className="glass-panel" style={{ overflow: 'hidden', flex: 1, background: 'rgba(255,255,255,0.7)' }}>
+        
+        {/* Toolbar */}
+        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: '10px' }}>
+          <select style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc' }}>
+            <option>Sort by: Newest</option>
+            <option>Sort by: A-Z</option>
+            <option>Sort by: Project</option>
+          </select>
+          <input type="text" placeholder="Search intent or tags..." style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', flex: 1, maxWidth: '300px' }} />
         </div>
 
-        {/* Right Column: Asset Downloads */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#333', fontWeight: 600 }}>Asset Repository</h3>
-          
-          <div className="glass-panel" style={{ overflow: 'hidden' }}>
-            {['Labno_Labs_Vector_Logo.svg', 'Glassmorphism_Tile_Template.fig', 'Dark_Mode_Backgrounds.zip', 'Placeholder_Hero_Image_01.png'].map((file, idx) => (
-              <div key={idx} style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                padding: '1.25rem 1.5rem', 
-                borderBottom: '1px solid rgba(0,0,0,0.05)',
-                transition: 'background 0.2s ease',
-                cursor: 'pointer'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.4)'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <ImageIcon size={20} color="#777" />
-                  <span style={{ fontWeight: 500, color: '#333', fontSize: '0.95rem' }}>{file}</span>
-                </div>
-                <button style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#1976d2', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <Download size={16} /> Download
-                </button>
-              </div>
+        {/* Data Table */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ background: 'rgba(0,0,0,0.02)' }}>
+              <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>File Name</th>
+              <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Associated Project</th>
+              <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>UX Ideation / Suggestion</th>
+              <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {assets.map((file, idx) => (
+              <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
+                <td style={{ padding: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#222', fontWeight: 500 }}>
+                    <ImageIcon size={18} color="#888" /> {file.title}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                    {file.tags.map(t => <span key={t} style={{ background: '#eee', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '4px' }}>{t}</span>)}
+                  </div>
+                </td>
+                <td style={{ padding: '1rem', color: '#555', fontSize: '0.9rem' }}>{file.project}</td>
+                <td style={{ padding: '1rem', color: '#666', fontSize: '0.85rem', maxWidth: '300px' }}>{file.intent}</td>
+                <td style={{ padding: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => alert("Previewing asset")} style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Eye size={14} /> View
+                    </button>
+                    <button onClick={() => alert("Downloading asset")} style={{ background: 'transparent', border: 'none', color: '#1976d2', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
+                      <Download size={16} /> Download
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ))}
-          </div>
-          <p style={{ fontSize: '0.85rem', color: '#777', marginTop: '-0.5rem', textAlign: 'right' }}>
-            * Assets sync directly to cloud storage overnight.
-          </p>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );

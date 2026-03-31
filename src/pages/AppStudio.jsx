@@ -1,11 +1,22 @@
 import React from 'react';
-import { Code, GitPullRequest, TerminalSquare, AlertTriangle, MonitorPlay } from 'lucide-react';
+import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle } from 'lucide-react';
 
 const AppStudio = () => {
   const apps = [
     { title: 'College Career OS', status: 'Live', mrr: '$1,200', active: '842', color: '#4caf50' },
     { title: 'Stretching App (Romy)', status: 'In Development', mrr: '$0', active: '0', color: '#ff9800' },
     { title: 'Art Portfolio (Avery)', status: 'Planning', mrr: '$0', active: '0', color: '#2196f3' },
+  ];
+
+  const stages = [
+    { name: '1. Spin Up Starter Kit', icon: <Rocket size={20} color="#1976d2" />, desc: 'Next.js + Core UI + API Bridge' },
+    { name: '2. Idea Creation', icon: <Code size={20} color="#9c27b0" />, desc: 'Feature spec mapping' },
+    { name: '3. UI Design', icon: <Edit3 size={20} color="#f06292" />, desc: 'Figma mockups & CSS' },
+    { name: '4. Testing', icon: <Bug size={20} color="#f44336" />, desc: 'QA & Error log checking' },
+    { name: '5. Sandbox Deployment', icon: <Server size={20} color="#ff9800" />, desc: 'Test branch to Vercel' },
+    { name: '6. Real Deployment', icon: <Play size={20} color="#4caf50" />, desc: 'Push to Main branch' },
+    { name: '7. Hand off to Client', icon: <Send size={20} color="#00bcd4" />, desc: 'DNS map & Permissions setup' },
+    { name: '8. Finalize App', icon: <CheckCircle size={20} color="#388e3c" />, desc: 'Archive & Telemetry lock' },
   ];
 
   return (
@@ -15,34 +26,28 @@ const AppStudio = () => {
       </h1>
 
       <p style={{ marginBottom: '2rem', color: '#555', maxWidth: '800px' }}>
-        This is your internal factory. Launch new applications with the `labno-labs-starter-kit`, monitor Vercel deployments, and review Code-Agent pull requests overnight.
+        This is your internal factory. Launch new applications, manage the exact lifecycle of an app from idea to client hand-off, and track global statistics.
       </p>
 
-      {/* Quick Launch Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '2.5rem' }}>
-        <div className="glass-panel" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '15px', borderLeft: '4px solid #1976d2', cursor: 'pointer' }}>
-          <TerminalSquare size={24} color="#1976d2" />
-          <div>
-            <div style={{ fontWeight: 600, color: '#333' }}>Spin Up Starter Kit</div>
-            <div style={{ fontSize: '0.8rem', color: '#666' }}>Next.js + Core UI + API Bridge</div>
+      {/* The 8 Stages of App Development (Clickable Logic) */}
+      <h3 style={{ marginBottom: '1.5rem', color: '#333', fontSize: '1.1rem', fontWeight: 600 }}>Action Pipeline</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
+        {stages.map((stage, idx) => (
+          <div 
+            key={idx} 
+            className="glass-panel" 
+            style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', transition: 'all 0.2s', background: '#fff' }}
+            onClick={() => alert(`Simulated Action: Opening phase ${stage.name}`)}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <div>{stage.icon}</div>
+            <div>
+              <div style={{ fontWeight: 600, color: '#333', fontSize: '0.9rem' }}>{stage.name}</div>
+              <div style={{ fontSize: '0.75rem', color: '#888' }}>{stage.desc}</div>
+            </div>
           </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '15px', borderLeft: '4px solid #9c27b0', cursor: 'pointer' }}>
-          <GitPullRequest size={24} color="#9c27b0" />
-          <div>
-            <div style={{ fontWeight: 600, color: '#333' }}>Review Agent Code (3)</div>
-            <div style={{ fontSize: '0.8rem', color: '#666' }}>Approve AI overnight branches</div>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '15px', borderLeft: '4px solid #d32f2f', cursor: 'pointer' }}>
-          <AlertTriangle size={24} color="#d32f2f" />
-          <div>
-            <div style={{ fontWeight: 600, color: '#333' }}>Global Error Log Map</div>
-            <div style={{ fontSize: '0.8rem', color: '#666' }}>Frontend crashes across all apps</div>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Production Ventues Grid */}
@@ -50,10 +55,9 @@ const AppStudio = () => {
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
         {apps.map(app => (
-          <div key={app.title} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div key={app.title} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#fff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <h4 style={{ fontSize: '1.1rem', color: '#222', fontWeight: 600 }}>{app.title}</h4>
-              <MonitorPlay size={18} color="#888" style={{ cursor: 'pointer' }}/>
             </div>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
