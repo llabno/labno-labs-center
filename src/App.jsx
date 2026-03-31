@@ -85,10 +85,29 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const ALLOWED_DOMAINS = ['labnolabs.com', 'movement-solutions.com'];
+
+  const isAllowedEmail = (email) => {
+    if (!email) return false;
+    const domain = email.split('@')[1];
+    return ALLOWED_DOMAINS.includes(domain);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
   };
+
+  // If user signed in but email not in allowed domains, sign them out
+  if (session && !isAllowedEmail(session.user?.email)) {
+    supabase.auth.signOut();
+    return (
+      <div className="app-container" style={{ padding: 0 }}>
+        <Login onLogin={() => supabase.auth.getSession().then(({ data: { session } }) => setSession(session))}
+               error="Access denied. Only @labnolabs.com and @movement-solutions.com accounts are allowed." />
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, error: externalError }) => {
   const [view, setView] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(externalError || '');
   const [loading, setLoading] = useState(false);
 
   const handleEmailLogin = async () => {
@@ -21,7 +21,10 @@ const Login = ({ onLogin }) => {
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { queryParams: { prompt: 'select_account' } }
+    });
     if (error) setError(error.message);
   };
 
