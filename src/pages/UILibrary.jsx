@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Layers, Image as ImageIcon, Download, Upload, Eye, Grid, List, Tag, X } from 'lucide-react';
+import { Layers, Image as ImageIcon, Download, Upload, Eye, Grid, List, Tag, X, Plus } from 'lucide-react';
 
-const TAG_OPTIONS = ['brand', 'icon', 'layout', 'motion', 'typography'];
+const DEFAULT_TAG_OPTIONS = ['brand', 'icon', 'layout', 'motion', 'typography'];
 const TAG_COLORS = {
   brand: { bg: 'rgba(209, 90, 69, 0.12)', color: '#d15a45' },
   icon: { bg: 'rgba(25, 118, 210, 0.12)', color: '#1976d2' },
@@ -9,6 +9,15 @@ const TAG_COLORS = {
   motion: { bg: 'rgba(255, 152, 0, 0.12)', color: '#ff9800' },
   typography: { bg: 'rgba(0, 150, 136, 0.12)', color: '#009688' },
 };
+
+// Generate a color for dynamically added categories
+const DYNAMIC_COLORS = [
+  { bg: 'rgba(233, 30, 99, 0.12)', color: '#e91e63' },
+  { bg: 'rgba(63, 81, 181, 0.12)', color: '#3f51b5' },
+  { bg: 'rgba(0, 150, 136, 0.12)', color: '#009688' },
+  { bg: 'rgba(121, 85, 72, 0.12)', color: '#795548' },
+  { bg: 'rgba(96, 125, 139, 0.12)', color: '#607d8b' },
+];
 
 // Gradient generators based on file type
 const getTypeGradient = (filename) => {
@@ -47,6 +56,32 @@ const UILibrary = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [assets, setAssets] = useState(initialAssets);
   const [editingTag, setEditingTag] = useState(null); // { assetIdx, field }
+  const [categories, setCategories] = useState(DEFAULT_TAG_OPTIONS);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+
+  const getTagColors = (tag) => {
+    if (TAG_COLORS[tag]) return TAG_COLORS[tag];
+    // For dynamic categories, assign a color based on position
+    const dynamicIdx = categories.indexOf(tag) - DEFAULT_TAG_OPTIONS.length;
+    if (dynamicIdx >= 0) {
+      return DYNAMIC_COLORS[dynamicIdx % DYNAMIC_COLORS.length];
+    }
+    return { bg: 'rgba(0,0,0,0.06)', color: '#666' };
+  };
+
+  const addCategory = () => {
+    const name = newCategoryName.trim().toLowerCase();
+    if (!name || categories.includes(name)) {
+      setNewCategoryName('');
+      setShowAddCategory(false);
+      return;
+    }
+    setCategories(prev => [...prev, name]);
+    setNewCategoryName('');
+    setShowAddCategory(false);
+  };
 
   const updateTag = (assetIdx, field, value) => {
     setAssets(prev => {
@@ -59,7 +94,7 @@ const UILibrary = () => {
 
   const renderTagBadge = (tag, assetIdx, field) => {
     const isEditing = editingTag && editingTag.assetIdx === assetIdx && editingTag.field === field;
-    const tagStyle = TAG_COLORS[tag] || { bg: 'rgba(0,0,0,0.06)', color: '#666' };
+    const tagStyle = getTagColors(tag);
 
     if (isEditing) {
       return (
@@ -79,7 +114,7 @@ const UILibrary = () => {
             }}
           >
             <option value="">None</option>
-            {TAG_OPTIONS.map(opt => (
+            {categories.map(opt => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
@@ -109,10 +144,17 @@ const UILibrary = () => {
     );
   };
 
+  // Filter assets by category
+  const filteredAssets = filterCategory === 'all'
+    ? assets
+    : assets.filter(a => a.tag1 === filterCategory || a.tag2 === filterCategory);
+
   // Grid View - Tile Cards
   const renderGridView = () => (
     <div style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.2rem' }}>
-      {assets.map((file, idx) => (
+      {filteredAssets.map((file, idx) => {
+        const realIdx = assets.indexOf(file);
+        return (
         <div
           key={idx}
           className="glass-panel"
@@ -169,8 +211,8 @@ const UILibrary = () => {
 
             {/* Meta tags */}
             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {renderTagBadge(file.tag1, idx, 'tag1')}
-              {renderTagBadge(file.tag2, idx, 'tag2')}
+              {renderTagBadge(file.tag1, realIdx, 'tag1')}
+              {renderTagBadge(file.tag2, realIdx, 'tag2')}
             </div>
           </div>
 
@@ -184,7 +226,8 @@ const UILibrary = () => {
             </button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -201,7 +244,9 @@ const UILibrary = () => {
         </tr>
       </thead>
       <tbody>
-        {assets.map((file, idx) => (
+        {filteredAssets.map((file, idx) => {
+          const realIdx = assets.indexOf(file);
+          return (
           <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)' }}>
             <td style={{ padding: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#222', fontWeight: 500 }}>
@@ -227,8 +272,8 @@ const UILibrary = () => {
             <td style={{ padding: '1rem', color: '#666', fontSize: '0.85rem', maxWidth: '300px' }}>{file.intent}</td>
             <td style={{ padding: '1rem' }}>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                {renderTagBadge(file.tag1, idx, 'tag1')}
-                {renderTagBadge(file.tag2, idx, 'tag2')}
+                {renderTagBadge(file.tag1, realIdx, 'tag1')}
+                {renderTagBadge(file.tag2, realIdx, 'tag2')}
               </div>
             </td>
             <td style={{ padding: '1rem' }}>
@@ -242,7 +287,8 @@ const UILibrary = () => {
               </div>
             </td>
           </tr>
-        ))}
+          );
+        })}
       </tbody>
     </table>
   );
@@ -271,7 +317,7 @@ const UILibrary = () => {
       <div className="glass-panel" style={{ overflow: 'hidden', flex: 1, background: 'rgba(255,255,255,0.7)' }}>
 
         {/* Toolbar with View Toggle */}
-        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* View Toggle - Segmented Pill */}
           <div style={{
             display: 'flex',
@@ -322,12 +368,122 @@ const UILibrary = () => {
             </button>
           </div>
 
-          <select style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc' }}>
-            <option>Sort by: Newest</option>
-            <option>Sort by: A-Z</option>
-            <option>Sort by: Project</option>
-          </select>
-          <input type="text" placeholder="Search intent or tags..." style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', flex: 1, maxWidth: '300px' }} />
+          {/* Category filter tabs */}
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setFilterCategory('all')}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '14px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                background: filterCategory === 'all' ? '#d15a45' : 'rgba(0,0,0,0.05)',
+                color: filterCategory === 'all' ? '#fff' : '#666',
+                transition: 'all 0.2s',
+              }}
+            >
+              All
+            </button>
+            {categories.map(cat => {
+              const catColor = getTagColors(cat);
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    background: filterCategory === cat ? catColor.color : catColor.bg,
+                    color: filterCategory === cat ? '#fff' : catColor.color,
+                    transition: 'all 0.2s',
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+
+            {/* Add Category button */}
+            {showAddCategory ? (
+              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="Category name..."
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') addCategory(); if (e.key === 'Escape') { setShowAddCategory(false); setNewCategoryName(''); } }}
+                  autoFocus
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(0,0,0,0.15)',
+                    fontSize: '0.75rem',
+                    width: '130px',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  onClick={addCategory}
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    background: '#d15a45',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => { setShowAddCategory(false); setNewCategoryName(''); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', display: 'flex', alignItems: 'center', padding: '2px' }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddCategory(true)}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: '14px',
+                  border: '1px dashed rgba(0,0,0,0.2)',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  background: 'transparent',
+                  color: '#888',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Plus size={12} /> Add Category
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <select style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc' }}>
+              <option>Sort by: Newest</option>
+              <option>Sort by: A-Z</option>
+              <option>Sort by: Project</option>
+            </select>
+            <input type="text" placeholder="Search intent or tags..." style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', flex: 1, maxWidth: '300px' }} />
+          </div>
         </div>
 
         {/* Conditional View Rendering */}

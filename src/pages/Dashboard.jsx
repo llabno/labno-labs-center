@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const COLUMNS = ['backlog', 'triage', 'review', 'completed'];
@@ -34,6 +34,7 @@ const Dashboard = () => {
   const [ventureFilter, setVentureFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('All');
   const [showBacklog, setShowBacklog] = useState(false);
+  const [collapsedBoards, setCollapsedBoards] = useState({});
 
   const stats = [
     { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
@@ -124,12 +125,44 @@ const Dashboard = () => {
       setActiveBoards(activeBoards.filter(b => b.id !== proj.id));
     } else {
       if (activeBoards.length >= 4) {
-        // Replace the last board if 4 are already open
         setActiveBoards([...activeBoards.slice(0, 3), proj]);
       } else {
         setActiveBoards([...activeBoards, proj]);
       }
     }
+  };
+
+  const toggleCollapseBoard = (boardId) => {
+    setCollapsedBoards(prev => ({ ...prev, [boardId]: !prev[boardId] }));
+  };
+
+  const popOutBoard = (board) => {
+    const data = getKanbanData(board.id);
+    const html = `<!DOCTYPE html>
+<html><head><title>Workflow: ${board.name}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f3f1; padding: 24px; color: #2e2c2a; }
+  h1 { font-size: 1.3rem; margin-bottom: 20px; color: #2e2c2a; }
+  .board { display: flex; gap: 16px; }
+  .column { flex: 1; background: rgba(255,255,255,0.7); border-radius: 12px; padding: 16px; border: 1px solid rgba(0,0,0,0.06); }
+  .col-header { font-weight: 600; font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .task { background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.85rem; }
+  .task .assignee { font-size: 0.72rem; color: #9e9a97; margin-top: 4px; }
+</style></head><body>
+<h1>Workflow: ${board.name}</h1>
+<div class="board">
+${COLUMNS.map(col => `
+  <div class="column">
+    <div class="col-header"><span class="dot" style="background:${COLUMN_DOTS[col]}"></span>${COLUMN_LABELS[col]}</div>
+    ${(data[col] || []).map(t => `<div class="task">${t.title}${t.assigned_to ? `<div class="assignee">${t.assigned_to}</div>` : ''}</div>`).join('')}
+  </div>
+`).join('')}
+</div></body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'width=900,height=600,menubar=no,toolbar=no');
   };
 
   const getKanbanData = (projectId) => {
@@ -279,67 +312,86 @@ const Dashboard = () => {
         <div className="kanban-grid" data-boards={activeBoards.length}>
           {activeBoards.map(board => {
             const data = getKanbanData(board.id);
+            const isCollapsed = collapsedBoards[board.id];
             return (
               <div key={board.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isCollapsed ? 0 : '1rem' }}>
                   <div style={{ minWidth: 0 }}>
                     <h3 style={{ color: '#2e2c2a', fontSize: '1rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Workflow: {board.name}</h3>
                   </div>
-                  <button onClick={() => toggleProjectBoard(board)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#6b6764', transition: 'color 0.2s ease' }}>
-                    <X size={16} /> Close
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      onClick={() => toggleCollapseBoard(board.id)}
+                      title={isCollapsed ? 'Expand board' : 'Collapse board'}
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#6b6764', transition: 'color 0.2s ease', padding: '2px' }}
+                    >
+                      {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                    </button>
+                    <button
+                      onClick={() => popOutBoard(board)}
+                      title="Pop out to new window"
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#6b6764', transition: 'color 0.2s ease', padding: '2px' }}
+                    >
+                      <ExternalLink size={15} />
+                    </button>
+                    <button onClick={() => toggleProjectBoard(board)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#6b6764', transition: 'color 0.2s ease' }}>
+                      <X size={16} /> Close
+                    </button>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem', flex: 1, overflowX: 'auto', overflowY: 'auto' }}>
-                  {COLUMNS.map(col => {
-                    const colStyles = {
-                      triage: { borderLeft: '3px solid #5a8abf' },
-                      review: { borderLeft: '3px solid #c49a40' },
-                      completed: { borderLeft: '3px solid #6aab6e' },
-                    };
-                    return (
-                      <div key={col} className="kanban-column" style={{ minWidth: '160px' }}>
-                        <div className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem' }}>
-                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: COLUMN_DOTS[col] }}></span>
-                          {COLUMN_LABELS[col]}
+                {!isCollapsed && (
+                  <div style={{ display: 'flex', gap: '0.75rem', flex: 1, overflowX: 'auto', overflowY: 'hidden' }}>
+                    {COLUMNS.map(col => {
+                      const colStyles = {
+                        triage: { borderLeft: '3px solid #5a8abf' },
+                        review: { borderLeft: '3px solid #c49a40' },
+                        completed: { borderLeft: '3px solid #6aab6e' },
+                      };
+                      return (
+                        <div key={col} className="kanban-column" style={{ minWidth: '160px', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                          <div className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', position: 'sticky', top: 0, background: 'inherit', zIndex: 1 }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: COLUMN_DOTS[col] }}></span>
+                            {COLUMN_LABELS[col]}
+                          </div>
+                          {data[col].map(t => (
+                            <div key={t.id} className="task-card glass-panel" style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
+                              <h4 style={{ fontSize: '0.9rem' }}>{t.title}</h4>
+                              {t.assigned_to && (
+                                <p style={{ fontSize: '0.7rem', color: '#9e9a97', marginBottom: '4px' }}>{t.assigned_to}</p>
+                              )}
+                              <select
+                                className="kanban-select"
+                                value={col}
+                                onChange={e => moveTask(t.id, e.target.value)}
+                                onClick={e => e.stopPropagation()}
+                              >
+                                {COLUMNS.map(c => (
+                                  <option key={c} value={c}>{COLUMN_LABELS[c]}</option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                          {col === 'backlog' && (
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                              <input
+                                type="text"
+                                placeholder="New task..."
+                                value={newTaskInputs[board.id] || ''}
+                                onChange={e => setNewTaskInputs(prev => ({ ...prev, [board.id]: e.target.value }))}
+                                onKeyDown={e => { if (e.key === 'Enter') addTask(board.id); }}
+                                style={{ flex: 1, padding: '6px 8px', fontSize: '0.8rem', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.6)', transition: 'border-color 0.2s ease' }}
+                              />
+                              <button onClick={() => addTask(board.id)} style={{ padding: '6px 10px', fontSize: '0.8rem', borderRadius: '6px', border: 'none', background: '#b06050', color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s ease' }}>
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        {data[col].map(t => (
-                          <div key={t.id} className="task-card glass-panel" style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
-                            <h4 style={{ fontSize: '0.9rem' }}>{t.title}</h4>
-                            {t.assigned_to && (
-                              <p style={{ fontSize: '0.7rem', color: '#9e9a97', marginBottom: '4px' }}>{t.assigned_to}</p>
-                            )}
-                            <select
-                              className="kanban-select"
-                              value={col}
-                              onChange={e => moveTask(t.id, e.target.value)}
-                              onClick={e => e.stopPropagation()}
-                            >
-                              {COLUMNS.map(c => (
-                                <option key={c} value={c}>{COLUMN_LABELS[c]}</option>
-                              ))}
-                            </select>
-                          </div>
-                        ))}
-                        {col === 'backlog' && (
-                          <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                            <input
-                              type="text"
-                              placeholder="New task..."
-                              value={newTaskInputs[board.id] || ''}
-                              onChange={e => setNewTaskInputs(prev => ({ ...prev, [board.id]: e.target.value }))}
-                              onKeyDown={e => { if (e.key === 'Enter') addTask(board.id); }}
-                              style={{ flex: 1, padding: '6px 8px', fontSize: '0.8rem', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.6)', transition: 'border-color 0.2s ease' }}
-                            />
-                            <button onClick={() => addTask(board.id)} style={{ padding: '6px 10px', fontSize: '0.8rem', borderRadius: '6px', border: 'none', background: '#b06050', color: '#fff', cursor: 'pointer', transition: 'opacity 0.2s ease' }}>
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )
           })}

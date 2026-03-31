@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
 import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check } from 'lucide-react';
 
+const PROJECT_OPTIONS = [
+  'Unassigned',
+  'MOSO Data Sanitization',
+  'GTM Digital Assets',
+  'Clinical Blog',
+  'Global Telemetry',
+  'G-Cal Sync',
+  'UI/UX Polish',
+];
+
+const PROJECT_COLORS = {
+  'Unassigned': { bg: 'rgba(0,0,0,0.05)', color: '#888' },
+  'MOSO Data Sanitization': { bg: 'rgba(209, 90, 69, 0.12)', color: '#d15a45' },
+  'GTM Digital Assets': { bg: 'rgba(25, 118, 210, 0.12)', color: '#1976d2' },
+  'Clinical Blog': { bg: 'rgba(76, 175, 80, 0.12)', color: '#4caf50' },
+  'Global Telemetry': { bg: 'rgba(156, 39, 176, 0.12)', color: '#9c27b0' },
+  'G-Cal Sync': { bg: 'rgba(255, 152, 0, 0.12)', color: '#ff9800' },
+  'UI/UX Polish': { bg: 'rgba(0, 188, 212, 0.12)', color: '#00bcd4' },
+};
+
 const AppStudio = () => {
   const apps = [
     { title: 'College Career OS', status: 'Live', mrr: '$1,200', active: '842', color: '#4caf50', description: 'End-to-end career management platform for university students. Features interview prep, resume builder, and job tracking.', progress: 95 },
@@ -21,19 +41,20 @@ const AppStudio = () => {
 
   // Task 8: Action Pipeline checklists
   const defaultChecklists = {
-    0: [{ text: 'Initialize Next.js project', done: false }, { text: 'Install core dependencies', done: false }, { text: 'Set up API bridge', done: false }],
-    1: [{ text: 'Draft feature list', done: false }, { text: 'Map user stories', done: false }, { text: 'Prioritize MVP scope', done: false }],
-    2: [{ text: 'Create wireframes in Figma', done: false }, { text: 'Define color palette', done: false }, { text: 'Build component library', done: false }],
-    3: [{ text: 'Write unit tests', done: false }, { text: 'Run integration tests', done: false }, { text: 'Check error logs', done: false }],
-    4: [{ text: 'Deploy to Vercel preview', done: false }, { text: 'Test on mobile devices', done: false }, { text: 'Share preview link', done: false }],
-    5: [{ text: 'Merge to main branch', done: false }, { text: 'Verify production build', done: false }, { text: 'Monitor error rates', done: false }],
-    6: [{ text: 'Map custom domain DNS', done: false }, { text: 'Set up client permissions', done: false }, { text: 'Send onboarding email', done: false }],
-    7: [{ text: 'Archive project repo', done: false }, { text: 'Lock telemetry config', done: false }, { text: 'Final QA sign-off', done: false }],
+    0: [{ text: 'Initialize Next.js project', done: false, project: 'Unassigned' }, { text: 'Install core dependencies', done: false, project: 'Unassigned' }, { text: 'Set up API bridge', done: false, project: 'Unassigned' }],
+    1: [{ text: 'Draft feature list', done: false, project: 'Unassigned' }, { text: 'Map user stories', done: false, project: 'Unassigned' }, { text: 'Prioritize MVP scope', done: false, project: 'Unassigned' }],
+    2: [{ text: 'Create wireframes in Figma', done: false, project: 'Unassigned' }, { text: 'Define color palette', done: false, project: 'Unassigned' }, { text: 'Build component library', done: false, project: 'Unassigned' }],
+    3: [{ text: 'Write unit tests', done: false, project: 'Unassigned' }, { text: 'Run integration tests', done: false, project: 'Unassigned' }, { text: 'Check error logs', done: false, project: 'Unassigned' }],
+    4: [{ text: 'Deploy to Vercel preview', done: false, project: 'Unassigned' }, { text: 'Test on mobile devices', done: false, project: 'Unassigned' }, { text: 'Share preview link', done: false, project: 'Unassigned' }],
+    5: [{ text: 'Merge to main branch', done: false, project: 'Unassigned' }, { text: 'Verify production build', done: false, project: 'Unassigned' }, { text: 'Monitor error rates', done: false, project: 'Unassigned' }],
+    6: [{ text: 'Map custom domain DNS', done: false, project: 'Unassigned' }, { text: 'Set up client permissions', done: false, project: 'Unassigned' }, { text: 'Send onboarding email', done: false, project: 'Unassigned' }],
+    7: [{ text: 'Archive project repo', done: false, project: 'Unassigned' }, { text: 'Lock telemetry config', done: false, project: 'Unassigned' }, { text: 'Final QA sign-off', done: false, project: 'Unassigned' }],
   };
 
   const [openStage, setOpenStage] = useState(null);
   const [checklists, setChecklists] = useState(defaultChecklists);
   const [newItemText, setNewItemText] = useState('');
+  const [newItemProject, setNewItemProject] = useState('Unassigned');
   // Track "Added!" flash per item: key = "stageIdx-itemIdx"
   const [addedFlash, setAddedFlash] = useState({});
 
@@ -43,6 +64,7 @@ const AppStudio = () => {
   const toggleStage = (idx) => {
     setOpenStage(openStage === idx ? null : idx);
     setNewItemText('');
+    setNewItemProject('Unassigned');
   };
 
   const toggleCheckItem = (stageIdx, itemIdx) => {
@@ -58,10 +80,11 @@ const AppStudio = () => {
     if (!newItemText.trim()) return;
     setChecklists(prev => {
       const updated = { ...prev };
-      updated[stageIdx] = [...(updated[stageIdx] || []), { text: newItemText.trim(), done: false }];
+      updated[stageIdx] = [...(updated[stageIdx] || []), { text: newItemText.trim(), done: false, project: newItemProject }];
       return updated;
     });
     setNewItemText('');
+    setNewItemProject('Unassigned');
   };
 
   const removeCheckItem = (stageIdx, itemIdx) => {
@@ -160,6 +183,7 @@ const AppStudio = () => {
                 {(checklists[idx] || []).map((item, itemIdx) => {
                   const flashKey = `${idx}-${itemIdx}`;
                   const isFlashing = addedFlash[flashKey];
+                  const projColor = PROJECT_COLORS[item.project] || PROJECT_COLORS['Unassigned'];
                   return (
                     <div
                       key={itemIdx}
@@ -182,6 +206,22 @@ const AppStudio = () => {
                       }}>
                         {item.text}
                       </span>
+
+                      {/* Project badge */}
+                      {item.project && item.project !== 'Unassigned' && (
+                        <span style={{
+                          fontSize: '0.62rem',
+                          padding: '2px 7px',
+                          borderRadius: '8px',
+                          background: projColor.bg,
+                          color: projColor.color,
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          letterSpacing: '0.2px',
+                        }}>
+                          {item.project}
+                        </span>
+                      )}
 
                       {/* "Added!" flash text */}
                       {isFlashing && (
@@ -237,8 +277,8 @@ const AppStudio = () => {
                   );
                 })}
 
-                {/* Add-item input — glass themed */}
-                <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                {/* Add-item input — glass themed with project selector */}
+                <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
                   <input
                     type="text"
                     placeholder="Add a task..."
@@ -246,7 +286,26 @@ const AppStudio = () => {
                     onChange={(e) => setNewItemText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') addCheckItem(idx); }}
                     className="checklist-add-input"
+                    style={{ flex: 1, minWidth: '120px' }}
                   />
+                  <select
+                    value={newItemProject}
+                    onChange={(e) => setNewItemProject(e.target.value)}
+                    style={{
+                      padding: '6px 8px',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(0,0,0,0.1)',
+                      fontSize: '0.75rem',
+                      background: 'rgba(255,255,255,0.7)',
+                      color: '#555',
+                      cursor: 'pointer',
+                      maxWidth: '160px',
+                    }}
+                  >
+                    {PROJECT_OPTIONS.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
                   <button
                     onClick={() => addCheckItem(idx)}
                     style={{

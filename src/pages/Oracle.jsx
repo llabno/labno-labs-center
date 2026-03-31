@@ -8,19 +8,31 @@ const InfoTooltip = ({ text }) => (
     <span className="info-tooltip-text" style={{
       visibility: 'hidden',
       position: 'absolute',
-      bottom: '120%',
+      top: 'calc(100% + 8px)',
       left: '50%',
       transform: 'translateX(-50%)',
       background: '#333',
       color: '#fff',
-      padding: '6px 10px',
+      padding: '8px 12px',
       borderRadius: '6px',
       fontSize: '0.72rem',
       whiteSpace: 'nowrap',
-      zIndex: 100,
+      zIndex: 1000,
       pointerEvents: 'none',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
     }}>
+      {/* Upward-pointing caret */}
+      <span style={{
+        position: 'absolute',
+        bottom: '100%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 0,
+        height: 0,
+        borderLeft: '6px solid transparent',
+        borderRight: '6px solid transparent',
+        borderBottom: '6px solid #333',
+      }} />
       {text}
     </span>
     <style>{`
@@ -77,6 +89,12 @@ const Oracle = () => {
     }
     setSubmitting(false);
   };
+
+  // Token efficiency calculations
+  const totalTokens = sops.reduce((sum, s) => sum + (s.token_count || 0), 0);
+  const avgTokens = sops.length > 0 ? totalTokens / sops.length : 0;
+  const efficiencyColor = avgTokens < 40 ? '#388e3c' : avgTokens <= 60 ? '#f9a825' : '#d32f2f';
+  const efficiencyLabel = avgTokens < 40 ? 'Excellent' : avgTokens <= 60 ? 'Moderate' : 'High';
 
   return (
     <div className="main-content" style={{ padding: '1.5rem' }}>
@@ -156,7 +174,7 @@ const Oracle = () => {
       )}
 
       {/* SOP Table */}
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ overflow: 'visible' }}>
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#777' }}>Loading SOPs...</div>
         ) : sops.length === 0 ? (
@@ -165,11 +183,11 @@ const Oracle = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(0,0,0,0.03)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Title <InfoTooltip text="The name of this Standard Operating Procedure" /></th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Content <InfoTooltip text="The full text/instructions of the SOP" /></th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Visibility <InfoTooltip text="Public Brain = shared with team. Private Brain = internal only" /></th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Status <InfoTooltip text="Synced = up to date. Draft = work in progress" /></th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Token Count <InfoTooltip text="Approximate number of AI tokens. Lower = more efficient. Helps track context window usage." /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600, position: 'relative', overflow: 'visible' }}>Title <InfoTooltip text="The name of this Standard Operating Procedure" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600, position: 'relative', overflow: 'visible' }}>Content <InfoTooltip text="The full text/instructions of the SOP" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600, position: 'relative', overflow: 'visible' }}>Visibility <InfoTooltip text="Public Brain = shared with team. Private Brain = internal only" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600, position: 'relative', overflow: 'visible' }}>Status <InfoTooltip text="Synced = up to date. Draft = work in progress" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600, position: 'relative', overflow: 'visible' }}>Token Count <InfoTooltip text="Approximate number of AI tokens. Lower = more efficient. Helps track context window usage." /></th>
               </tr>
             </thead>
             <tbody>
@@ -215,6 +233,72 @@ const Oracle = () => {
             </tbody>
           </table>
         )}
+      </div>
+
+      {/* Token Efficiency Tips */}
+      <div className="glass-panel" style={{ padding: '1.5rem', marginTop: '2rem' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#333', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Info size={18} color="#d15a45" /> Token Efficiency Tips
+        </h3>
+
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          {/* Tips content */}
+          <div style={{ flex: 1, minWidth: '300px', fontSize: '0.9rem', color: '#555', lineHeight: 1.7 }}>
+            Lower token counts = faster AI processing and lower costs. Tips:
+            <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+              <li>Keep SOPs concise and structured.</li>
+              <li>Use bullet points instead of paragraphs.</li>
+              <li>Remove redundant instructions.</li>
+              <li>Target under 50 tokens per SOP for optimal efficiency.</li>
+            </ul>
+          </div>
+
+          {/* Token summary cards */}
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{
+              padding: '1rem 1.5rem',
+              background: 'rgba(0,0,0,0.02)',
+              borderRadius: '12px',
+              border: '1px solid rgba(0,0,0,0.06)',
+              textAlign: 'center',
+              minWidth: '130px',
+            }}>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#888', marginBottom: '4px', fontWeight: 600 }}>Total Tokens</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#333' }}>{totalTokens.toLocaleString()}</div>
+              <div style={{ fontSize: '0.72rem', color: '#999' }}>{sops.length} SOPs</div>
+            </div>
+
+            <div style={{
+              padding: '1rem 1.5rem',
+              background: 'rgba(0,0,0,0.02)',
+              borderRadius: '12px',
+              border: `2px solid ${efficiencyColor}22`,
+              textAlign: 'center',
+              minWidth: '130px',
+            }}>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#888', marginBottom: '4px', fontWeight: 600 }}>Avg Tokens</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: efficiencyColor }}>{Math.round(avgTokens)}</div>
+              <div style={{
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                color: efficiencyColor,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+              }}>
+                <span style={{
+                  display: 'inline-block',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: efficiencyColor,
+                }} />
+                {efficiencyLabel}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
