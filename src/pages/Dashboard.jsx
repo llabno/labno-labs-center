@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const COLUMNS = ['backlog', 'triage', 'review', 'completed'];
@@ -35,6 +35,27 @@ const Dashboard = () => {
   const [assigneeFilter, setAssigneeFilter] = useState('All');
   const [showBacklog, setShowBacklog] = useState(false);
   const [collapsedBoards, setCollapsedBoards] = useState({});
+  const [executingTasks, setExecutingTasks] = useState({});
+
+  const executeTask = async (task, projectName) => {
+    setExecutingTasks(prev => ({ ...prev, [task.id]: 'queued' }));
+    try {
+      const res = await fetch('/api/agent/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId: task.id, taskTitle: task.title, projectName, context: `Assigned to: ${task.assigned_to}` })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setExecutingTasks(prev => ({ ...prev, [task.id]: 'sent' }));
+        setTimeout(() => setExecutingTasks(prev => { const n = { ...prev }; delete n[task.id]; return n; }), 2000);
+        await fetchData();
+      }
+    } catch (err) {
+      console.error('Agent execution failed:', err);
+      setExecutingTasks(prev => { const n = { ...prev }; delete n[task.id]; return n; });
+    }
+  };
 
   const stats = [
     { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
@@ -355,8 +376,18 @@ ${COLUMNS.map(col => `
                             {COLUMN_LABELS[col]}
                           </div>
                           {data[col].map(t => (
-                            <div key={t.id} className="task-card glass-panel" style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
-                              <h4 style={{ fontSize: '0.9rem' }}>{t.title}</h4>
+                            <div key={t.id} className={`task-card glass-panel${executingTasks[t.id] ? ' task-executing' : ''}`} style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <h4 style={{ fontSize: '0.9rem', flex: 1 }}>{t.title}</h4>
+                                <button
+                                  onClick={e => { e.stopPropagation(); executeTask(t, board.name); }}
+                                  title="Execute with Agent"
+                                  style={{ background: executingTasks[t.id] ? '#6aab6e' : 'rgba(176,96,80,0.15)', border: 'none', borderRadius: '6px', padding: '4px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease', marginLeft: '6px', flexShrink: 0 }}
+                                >
+                                  <Rocket size={12} color={executingTasks[t.id] ? '#fff' : '#b06050'} />
+                                </button>
+                              </div>
+                              {executingTasks[t.id] === 'sent' && <p style={{ fontSize: '0.7rem', color: '#6aab6e', marginBottom: '2px' }}>Queued!</p>}
                               {t.assigned_to && (
                                 <p style={{ fontSize: '0.7rem', color: '#9e9a97', marginBottom: '4px' }}>{t.assigned_to}</p>
                               )}

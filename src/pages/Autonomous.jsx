@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Terminal, Activity, Cpu, Circle, ChevronRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const MOCK_FEED = [
   { time: '14:32', msg: 'Claude indexed 3 SOPs from Notion workspace', status: 'success' },
@@ -43,6 +44,17 @@ const AGENTS = [
 
 const Autonomous = () => {
   const [visibleLines, setVisibleLines] = useState(5);
+  const [agentRuns, setAgentRuns] = useState([]);
+
+  useEffect(() => {
+    const fetchRuns = async () => {
+      const { data } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(20);
+      if (data) setAgentRuns(data);
+    };
+    fetchRuns();
+    const interval = setInterval(fetchRuns, 10000); // poll every 10s
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (visibleLines < TERMINAL_LINES.length) {
@@ -52,10 +64,19 @@ const Autonomous = () => {
   }, [visibleLines]);
 
   const statusDotColor = (status) => {
-    if (status === 'success') return '#50fa7b';
-    if (status === 'warning') return '#f1fa8c';
+    if (status === 'success' || status === 'completed') return '#50fa7b';
+    if (status === 'warning' || status === 'queued') return '#f1fa8c';
+    if (status === 'running') return '#8be9fd';
     return '#ff5555';
   };
+
+  // Merge real runs with mock feed
+  const realFeedEntries = agentRuns.map(r => ({
+    time: new Date(r.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    msg: `${r.status === 'queued' ? 'Queued' : r.status === 'completed' ? 'Completed' : 'Processing'}: ${r.task_title}${r.project_name ? ` (${r.project_name})` : ''}`,
+    status: r.status === 'completed' ? 'success' : r.status === 'queued' ? 'warning' : r.status === 'failed' ? 'error' : 'success'
+  }));
+  const combinedFeed = [...realFeedEntries, ...MOCK_FEED].slice(0, 15);
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', background: 'linear-gradient(180deg, #12121e 0%, #1a1a2e 100%)', borderRadius: '20px', color: '#e0dfe6' }}>
@@ -82,7 +103,7 @@ const Autonomous = () => {
               <Activity size={16} color="#8be9fd" /> Agent Activity Feed
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {MOCK_FEED.map((entry, i) => (
+              {combinedFeed.map((entry, i) => (
                 <div key={i} style={{
                   display: 'flex',
                   alignItems: 'center',

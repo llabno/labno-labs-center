@@ -523,3 +523,12 @@ body {
   background: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 0 3px rgba(176, 96, 80, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
+
+@keyframes agent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(176, 96, 80, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(176, 96, 80, 0); }
+}
+.task-executing {
+  animation: agent-pulse 2s infinite;
+  border: 1px solid rgba(176, 96, 80, 0.5) !important;
+}
