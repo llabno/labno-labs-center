@@ -1,0 +1,6 @@
+fastapi
+pydantic
+anthropic
+supabase
+vecs
+uvicorn
