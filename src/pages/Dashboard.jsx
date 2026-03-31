@@ -11,9 +11,11 @@ const Dashboard = () => {
   ];
 
   const internalProjects = [
-    { id: 1, name: 'Workspace Redesign Phase 2', status: 'Active', tasks: 12, completed: 4, dueDate: 'April 15', complexity: 'High', cost: '$$$' },
-    { id: 2, name: 'Employee Handbook Auto-Generation', status: 'Planning', tasks: 5, completed: 0, dueDate: 'April 22', complexity: 'Low', cost: '$' },
-    { id: 3, name: 'Labno Labs Website V1', status: 'Blocked', tasks: 8, completed: 7, dueDate: 'March 31', complexity: 'High', cost: '$$' },
+    { id: 1, name: 'MOSO Data Sanitization & CRM Inject', status: 'Active', tasks: 12, completed: 4, dueDate: 'April 20', complexity: 'High', cost: '$$$' },
+    { id: 2, name: 'GTM Digital Assets (Lemon Squeezy)', status: 'Planning', tasks: 8, completed: 0, dueDate: 'May 01', complexity: 'Med', cost: '$' },
+    { id: 3, name: 'Clinical Blog + Sniper Agent (Vercel)', status: 'Blocked', tasks: 15, completed: 7, dueDate: 'April 28', complexity: 'High', cost: '$$' },
+    { id: 4, name: 'Global Telemetry (PostHog Zipcodes)', status: 'Active', tasks: 5, completed: 1, dueDate: 'April 15', complexity: 'Low', cost: '$' },
+    { id: 5, name: 'G-Cal Database Sync Node', status: 'Planning', tasks: 10, completed: 0, dueDate: 'May 10', complexity: 'Med', cost: '$$' },
   ];
 
   const hotList = internalProjects.filter(p => p.complexity === 'High' || p.status === 'Active');
@@ -31,13 +33,52 @@ const Dashboard = () => {
     }
   };
 
-  // Simulated unique Kanban Data generator for depth
-  const getKanbanData = (projectName) => ({
-    backlog: [`Phase 1: ${projectName}`, `Review docs for ${projectName}`],
-    triage: ['Approve Theme Colors'],
-    review: ['Review Copywriting (Sarah)'],
-    completed: ['Buy Domain']
-  });
+  // Dynamic Kanban Data generator based on specific projects
+  const getKanbanData = (projectName) => {
+    if (projectName.includes('MOSO Data Sanitization')) {
+      return {
+        backlog: ['Identify MOSO Sheets via IDE API', 'Map HIPAA scrub fields'],
+        triage: ['Draft CSV template for B2B Partners'],
+        review: ['Review Python Script (Awaiting Lance)'],
+        completed: ['Auth established']
+      };
+    } else if (projectName.includes('GTM Digital Assets')) {
+      return {
+        backlog: ['Draft "Stretch Guide" with Romy', 'Connect Lemon Squeezy API'],
+        triage: ['Define "Oversubscribed" Email Sequence'],
+        review: ['Review Pricing Margins'],
+        completed: []
+      };
+    } else if (projectName.includes('Clinical Blog')) {
+      return {
+        backlog: ['Prompt Engineering for Sniper Agent', 'Disable public comments'],
+        triage: ['RSS Feed logic in Vercel'],
+        review: ['Review Output Format with Lance'],
+        completed: ['Initialize Next.js blog']
+      };
+    } else if (projectName.includes('Telemetry')) {
+      return {
+        backlog: ['Build City/Zip Demographic Dash'],
+        triage: ['Test PostHog Cookie Logic'],
+        review: [],
+        completed: ['Register PostHog']
+      };
+    } else if (projectName.includes('G-Cal')) {
+      return {
+        backlog: ['Map existing Lance G-Cal CRM', 'Draft Edge Function for two-way sync'],
+        triage: ['OAuth with Google API'],
+        review: [],
+        completed: []
+      };
+    }
+
+    return {
+      backlog: [`Phase 1: ${projectName}`, `Review docs for ${projectName}`],
+      triage: ['Define Technical Scope'],
+      review: ['Awaiting Approval'],
+      completed: ['Initialize Repo']
+    };
+  };
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
