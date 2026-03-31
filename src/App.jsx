@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { supabase } from './lib/supabase';
 import './index.css';
 
 // Import Pages
@@ -18,7 +19,6 @@ const GlassCursorBlob = () => {
 
   useEffect(() => {
     const updatePosition = (e) => {
-      // Small delay on blob for smooth following
       setPos({ x: e.clientX - 200, y: e.clientY - 200 });
     };
     window.addEventListener('mousemove', updatePosition);
@@ -28,8 +28,9 @@ const GlassCursorBlob = () => {
   return <div className="cursor-blob" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} />;
 };
 
-const Sidebar = ({ onLogout }) => {
+const Sidebar = ({ user, onLogout }) => {
   const location = useLocation();
+  const displayName = user?.email?.split('@')[0] || 'User';
   const menuItems = [
     { name: 'Mission Control', path: '/', icon: <Home size={20} /> },
     { name: 'The Oracle (API)', path: '/oracle', icon: <Database size={20} /> },
@@ -52,15 +53,14 @@ const Sidebar = ({ onLogout }) => {
             {item.name}
           </Link>
         ))}
-        {/* Settings and Auth */}
         <div style={{ marginTop: 'auto' }}>
           <Link to="/settings" className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`} style={{ marginBottom: '10px' }}>
             <SettingsIcon size={20} style={{ color: '#555' }} />
-            <span style={{ color: '#555' }}>Settings (Lance)</span>
+            <span style={{ color: '#555' }}>Settings ({displayName})</span>
           </Link>
           <div className="nav-item" style={{ cursor: 'pointer' }} onClick={onLogout}>
             <LogOut size={20} style={{ color: '#d32f2f' }} />
-            <span style={{ color: '#d32f2f' }}>Sign Out Lance</span>
+            <span style={{ color: '#d32f2f' }}>Sign Out {displayName}</span>
           </div>
         </div>
       </nav>
@@ -69,13 +69,39 @@ const Sidebar = ({ onLogout }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Serve the secure login page if not authenticated
-  if (!isAuthenticated) {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (!session) {
     return (
       <div className="app-container" style={{ padding: 0 }}>
-        <Login onLogin={() => setIsAuthenticated(true)} />
+        <Login onLogin={() => supabase.auth.getSession().then(({ data: { session } }) => setSession(session))} />
       </div>
     );
   }
@@ -83,14 +109,9 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        {/* Animated BG elements */}
         <div className="animated-bg"></div>
         <GlassCursorBlob />
-        
-        {/* Core Dashboard UI */}
-        <Sidebar onLogout={() => setIsAuthenticated(false)} />
-        
-        {/* Page Routing */}
+        <Sidebar user={session.user} onLogout={handleLogout} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/oracle" element={<Oracle />} />
