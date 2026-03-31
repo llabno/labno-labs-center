@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Database, UploadCloud, BrainCircuit, ShieldAlert, Cpu, Plus, X } from 'lucide-react';
+import { Database, UploadCloud, BrainCircuit, ShieldAlert, Cpu, Plus, X, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+
+const InfoTooltip = ({ text }) => (
+  <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', marginLeft: '4px' }} className="info-tooltip-wrapper">
+    <Info size={14} color="#999" style={{ cursor: 'help' }} />
+    <span className="info-tooltip-text" style={{
+      visibility: 'hidden',
+      position: 'absolute',
+      bottom: '120%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: '#333',
+      color: '#fff',
+      padding: '6px 10px',
+      borderRadius: '6px',
+      fontSize: '0.72rem',
+      whiteSpace: 'nowrap',
+      zIndex: 100,
+      pointerEvents: 'none',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+    }}>
+      {text}
+    </span>
+    <style>{`
+      .info-tooltip-wrapper:hover .info-tooltip-text { visibility: visible !important; }
+    `}</style>
+  </span>
+);
 
 const Oracle = () => {
   const [sops, setSops] = useState([]);
@@ -138,19 +165,26 @@ const Oracle = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(0,0,0,0.03)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>SOP Document</th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Token Count</th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Visibility Tag</th>
-                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Agent Status</th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Title <InfoTooltip text="The name of this Standard Operating Procedure" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Content <InfoTooltip text="The full text/instructions of the SOP" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Visibility <InfoTooltip text="Public Brain = shared with team. Private Brain = internal only" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Status <InfoTooltip text="Synced = up to date. Draft = work in progress" /></th>
+                <th style={{ padding: '1rem', color: '#444', fontWeight: 600 }}>Token Count <InfoTooltip text="Approximate number of AI tokens. Lower = more efficient. Helps track context window usage." /></th>
               </tr>
             </thead>
             <tbody>
               {sops.map((doc) => (
                 <tr key={doc.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                  <td style={{ padding: '1rem', color: '#222', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Database size={16} color="#888" /> {doc.title}
+                  <td style={{ padding: '1rem', color: '#222', fontWeight: 500 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Database size={16} color="#888" /> {doc.title}
+                    </div>
                   </td>
-                  <td style={{ padding: '1rem', color: '#666' }}>{doc.token_count ?? '—'}</td>
+                  <td style={{ padding: '1rem', color: '#666', fontSize: '0.82rem', maxWidth: '280px' }}>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {doc.content || '\u2014'}
+                    </div>
+                  </td>
                   <td style={{ padding: '1rem' }}>
                     <span style={{
                       padding: '4px 10px',
@@ -175,6 +209,7 @@ const Oracle = () => {
                       <span style={{ color: '#388e3c', fontSize: '0.9rem', fontWeight: 500 }}>{doc.status}</span>
                     )}
                   </td>
+                  <td style={{ padding: '1rem', color: '#666' }}>{doc.token_count ?? '\u2014'}</td>
                 </tr>
               ))}
             </tbody>

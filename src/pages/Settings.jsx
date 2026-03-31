@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Shield, Palette, Users, Key, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Palette, Users, Key, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('permissions');
 
   const projects = [
     { name: 'College Career OS', client: 'Northwestern U' },
-    { name: 'Exercise DB V2', client: 'Rehab Hero LLC' },
+    { name: 'Exercise DB V2', client: 'MOSO Comprehensive Exercise Database (Internal)' },
     { name: 'Stretching App', client: 'Internal' },
     { name: 'Art Portfolio', client: 'Internal' },
   ];
 
   const phases = ['Planning', 'Execution', 'Review', 'Maintenance'];
-  const roles = ['Owner', 'Contributor', 'Reviewer', 'Observer'];
+  const roles = ['No Access', 'Owner', 'Contributor', 'Reviewer', 'Observer'];
 
   const employees = [
     { name: 'Lance Labno (Admin)', email: 'lance@labnolabs.com', role: 'Owner' },
     { name: 'Avery', email: 'avery@labnolabs.com', role: 'UX/UI Designer' },
     { name: 'Romy', email: 'romy@labnolabs.com', role: 'Clinical Apps' },
     { name: 'Sarah', email: 'sarah@labnolabs.com', role: 'Project Manager' },
+    { name: 'Bill', email: 'bill@labnolabs.com', role: 'Developer' },
   ];
 
   const clientProjects = [
     { client: 'Northwestern U', project: 'College Career OS', assigned: ['Lance', 'Sarah'] },
-    { client: 'Rehab Hero LLC', project: 'Exercise DB V2', assigned: ['Lance', 'Romy'] },
+    { client: 'MOSO Comprehensive Exercise Database (Internal)', project: 'Exercise DB V2', assigned: ['Lance', 'Romy'] },
   ];
 
   // Task 13: Employee expansion & task assignment
@@ -41,24 +42,52 @@ const Settings = () => {
     initial['Lance Labno (Admin)']['Exercise DB V2'] = { role: 'Owner', phase: 'Review' };
     initial['Sarah']['College Career OS'] = { role: 'Contributor', phase: 'Execution' };
     initial['Romy']['Exercise DB V2'] = { role: 'Contributor', phase: 'Execution' };
+    initial['Romy']['College Career OS'] = { role: 'Observer', phase: 'Planning' };
     initial['Avery']['Art Portfolio'] = { role: 'Owner', phase: 'Planning' };
+    initial['Bill']['College Career OS'] = { role: 'Observer', phase: 'Planning' };
+    initial['Bill']['Exercise DB V2'] = { role: 'Contributor', phase: 'Execution' };
     return initial;
   });
 
   // Task 14: Global permissions
-  const permissionTypes = ['Can create projects', 'Can delete tasks', 'Can view CRM', 'Can manage billing'];
+  const permissionTypes = ['Can create projects', 'Can delete tasks', 'Can view Labno CRM', 'Can view MOSO CRM (HIPAA)', 'Can manage billing'];
   const [permissions, setPermissions] = useState(() => {
     const initial = {};
     employees.forEach(emp => {
       initial[emp.name] = {
         'Can create projects': emp.role === 'Owner',
         'Can delete tasks': emp.role === 'Owner',
-        'Can view CRM': emp.role === 'Owner' || emp.role === 'Project Manager',
+        'Can view Labno CRM': emp.role === 'Owner' || emp.role === 'Project Manager',
+        'Can view MOSO CRM (HIPAA)': emp.name === 'Lance Labno (Admin)',
         'Can manage billing': emp.role === 'Owner',
       };
     });
     return initial;
   });
+
+  // Phase permissions
+  const phaseNames = ['Planning', 'Execution', 'Review', 'Maintenance'];
+  const phaseAccessLevels = ['Full Access', 'Read Only', 'No Access'];
+  const [phasePermissions, setPhasePermissions] = useState(() => {
+    const initial = {};
+    employees.forEach(emp => {
+      initial[emp.name] = {};
+      phaseNames.forEach(phase => {
+        initial[emp.name][phase] = emp.role === 'Owner' ? 'Full Access' : 'Read Only';
+      });
+    });
+    return initial;
+  });
+
+  const updatePhasePermission = (empName, phase, value) => {
+    setPhasePermissions(prev => ({
+      ...prev,
+      [empName]: { ...prev[empName], [phase]: value },
+    }));
+  };
+
+  // Client isolation accordion
+  const [expandedClient, setExpandedClient] = useState(null);
 
   const updateAssignment = (empName, projName, field, value) => {
     setEmployeeAssignments(prev => ({
@@ -223,11 +252,50 @@ const Settings = () => {
 
                 <div>
                   <h4 style={{ marginBottom: '1rem', color: '#444' }}><Shield size={16} /> Client Isolation Boxes</h4>
-                  {clientProjects.map(proj => (
-                    <div key={proj.client} style={{ padding: '1rem', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', marginBottom: '10px', background: '#fff' }}>
-                      <div style={{ fontWeight: 600, color: '#222' }}>{proj.client}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#888' }}>Project: {proj.project}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#1976d2', marginTop: '6px' }}>Assigned: {proj.assigned.join(', ')}</div>
+                  {clientProjects.map((proj, idx) => (
+                    <div key={proj.client} style={{ marginBottom: '10px' }}>
+                      <div
+                        onClick={() => setExpandedClient(expandedClient === idx ? null : idx)}
+                        style={{
+                          padding: '1rem',
+                          border: '1px solid rgba(0,0,0,0.05)',
+                          borderRadius: expandedClient === idx ? '8px 8px 0 0' : '8px',
+                          background: expandedClient === idx ? 'rgba(255, 120, 100, 0.04)' : '#fff',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#222' }}>{proj.client}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#888' }}>Project: {proj.project}</div>
+                        </div>
+                        <div style={{ color: '#aaa' }}>
+                          {expandedClient === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </div>
+                      </div>
+                      {expandedClient === idx && (
+                        <div style={{
+                          padding: '1rem',
+                          border: '1px solid rgba(0,0,0,0.05)',
+                          borderTop: '1px solid rgba(0,0,0,0.06)',
+                          borderRadius: '0 0 8px 8px',
+                          background: '#fff',
+                        }}>
+                          <div style={{ fontSize: '0.8rem', color: '#1976d2', marginBottom: '8px' }}>Assigned: {proj.assigned.join(', ')}</div>
+                          <div style={{ fontSize: '0.78rem', color: '#666' }}>
+                            <strong>Isolation Rules:</strong> This client can only view their own project data. No cross-client data leakage.
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#666', marginTop: '4px' }}>
+                            <strong>Data Region:</strong> US-East (default)
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#666', marginTop: '4px' }}>
+                            <strong>Last Audit:</strong> {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                   <button className="btn-primary" style={{ width: '100%', marginTop: '10px', padding: '0.5rem' }}>+ Create Secure Client Portal</button>
@@ -296,6 +364,62 @@ const Settings = () => {
                               </td>
                             );
                           })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Phase Permissions Matrix */}
+              <div style={{ marginTop: '2rem' }}>
+                <h4 style={{ marginBottom: '1rem', color: '#444', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={16} /> Phase Permissions
+                </h4>
+                <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Control access levels per project phase for each team member.
+                </p>
+                <div className="glass-panel" style={{ overflow: 'hidden', background: '#fff' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'rgba(0,0,0,0.02)' }}>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#444', fontSize: '0.85rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                          Employee
+                        </th>
+                        {phaseNames.map(phase => (
+                          <th key={phase} style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 600, color: '#444', fontSize: '0.78rem', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                            {phase}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {employees.map(emp => (
+                        <tr key={emp.name} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div style={{ fontWeight: 500, color: '#222', fontSize: '0.9rem' }}>{emp.name}</div>
+                            <div style={{ fontSize: '0.72rem', color: '#999' }}>{emp.role}</div>
+                          </td>
+                          {phaseNames.map(phase => (
+                            <td key={phase} style={{ padding: '12px 16px', textAlign: 'center' }}>
+                              <select
+                                value={phasePermissions[emp.name]?.[phase] || 'Read Only'}
+                                onChange={(e) => updatePhasePermission(emp.name, phase, e.target.value)}
+                                style={{
+                                  fontSize: '0.75rem',
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #ddd',
+                                  background: '#fff',
+                                  color: '#444',
+                                }}
+                              >
+                                {phaseAccessLevels.map(level => (
+                                  <option key={level} value={level}>{level}</option>
+                                ))}
+                              </select>
+                            </td>
+                          ))}
                         </tr>
                       ))}
                     </tbody>

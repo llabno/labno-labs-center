@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check } from 'lucide-react';
 
 const AppStudio = () => {
   const apps = [
@@ -34,6 +34,8 @@ const AppStudio = () => {
   const [openStage, setOpenStage] = useState(null);
   const [checklists, setChecklists] = useState(defaultChecklists);
   const [newItemText, setNewItemText] = useState('');
+  // Track "Added!" flash per item: key = "stageIdx-itemIdx"
+  const [addedFlash, setAddedFlash] = useState({});
 
   // Task 9: Portfolio accordion
   const [expandedApp, setExpandedApp] = useState(null);
@@ -68,6 +70,27 @@ const AppStudio = () => {
       updated[stageIdx] = updated[stageIdx].filter((_, i) => i !== itemIdx);
       return updated;
     });
+  };
+
+  // Move item from pipeline to portfolio (mark done + flash)
+  const moveToPortfolio = (stageIdx, itemIdx) => {
+    // Mark as done
+    setChecklists(prev => {
+      const updated = { ...prev };
+      updated[stageIdx] = [...updated[stageIdx]];
+      updated[stageIdx][itemIdx] = { ...updated[stageIdx][itemIdx], done: true };
+      return updated;
+    });
+    // Show "Added!" flash
+    const key = `${stageIdx}-${itemIdx}`;
+    setAddedFlash(prev => ({ ...prev, [key]: true }));
+    setTimeout(() => {
+      setAddedFlash(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }, 1000);
   };
 
   return (
@@ -113,88 +136,136 @@ const AppStudio = () => {
               </div>
             </div>
 
-            {/* Checklist Panel */}
+            {/* Checklist Panel — Elegant Glass Design */}
             {openStage === idx && (
               <div
-                className="glass-panel"
                 style={{
                   padding: '1rem',
-                  background: 'rgba(255,255,255,0.85)',
-                  borderTop: '1px solid rgba(0,0,0,0.06)',
+                  background: 'rgba(255, 255, 255, 0.45)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  borderTop: '1px solid rgba(0,0,0,0.04)',
                   borderTopLeftRadius: 0,
                   borderTopRightRadius: 0,
-                  animation: 'fadeIn 0.2s ease',
+                  borderBottomLeftRadius: '20px',
+                  borderBottomRightRadius: '20px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+                  animation: 'fadeIn 0.25s ease',
                 }}
               >
                 {(checklists[idx] || []).length === 0 && (
                   <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '0.5rem' }}>No items yet. Add one below.</p>
                 )}
-                {(checklists[idx] || []).map((item, itemIdx) => (
-                  <div
-                    key={itemIdx}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '6px 0',
-                      borderBottom: '1px solid rgba(0,0,0,0.04)'
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={item.done}
-                      onChange={() => toggleCheckItem(idx, itemIdx)}
-                      style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#d15a45' }}
-                    />
-                    <span style={{
-                      flex: 1,
-                      fontSize: '0.85rem',
-                      color: item.done ? '#aaa' : '#333',
-                      textDecoration: item.done ? 'line-through' : 'none',
-                      transition: 'all 0.2s',
-                    }}>
-                      {item.text}
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); removeCheckItem(idx, itemIdx); }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', padding: '2px' }}
-                      onMouseOver={(e) => e.currentTarget.style.color = '#f44336'}
-                      onMouseOut={(e) => e.currentTarget.style.color = '#ccc'}
+                {(checklists[idx] || []).map((item, itemIdx) => {
+                  const flashKey = `${idx}-${itemIdx}`;
+                  const isFlashing = addedFlash[flashKey];
+                  return (
+                    <div
+                      key={itemIdx}
+                      className={`checklist-item-glass${item.done ? ' completed' : ''}`}
                     >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-                <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                      {/* Custom circle checkbox */}
+                      <button
+                        className={`pipeline-checkbox${item.done ? ' checked' : ''}`}
+                        onClick={() => toggleCheckItem(idx, itemIdx)}
+                        aria-label={item.done ? 'Uncheck' : 'Check'}
+                      >
+                        {item.done && <Check size={12} strokeWidth={3} />}
+                      </button>
+
+                      <span className="checklist-text" style={{
+                        flex: 1,
+                        fontSize: '0.85rem',
+                        color: item.done ? '#b0ada9' : '#333',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}>
+                        {item.text}
+                      </span>
+
+                      {/* "Added!" flash text */}
+                      {isFlashing && (
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          color: '#4caf50',
+                          animation: 'flash-added 1s ease forwards',
+                        }}>
+                          Added!
+                        </span>
+                      )}
+
+                      {/* Move to portfolio arrow button */}
+                      {!item.done && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); moveToPortfolio(idx, itemIdx); }}
+                          title="Move to portfolio"
+                          style={{
+                            background: 'none',
+                            border: '1px solid rgba(0,0,0,0.08)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: '#9e9a97',
+                            padding: '3px 5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.color = '#b06050'; e.currentTarget.style.borderColor = 'rgba(176,96,80,0.3)'; e.currentTarget.style.background = 'rgba(176,96,80,0.06)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.color = '#9e9a97'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; e.currentTarget.style.background = 'none'; }}
+                        >
+                          <ArrowRight size={13} />
+                        </button>
+                      )}
+
+                      <button
+                        onClick={(e) => { e.stopPropagation(); removeCheckItem(idx, itemIdx); }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#ccc',
+                          padding: '2px',
+                          transition: 'color 0.2s ease',
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.color = '#f44336'}
+                        onMouseOut={(e) => e.currentTarget.style.color = '#ccc'}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {/* Add-item input — glass themed */}
+                <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
                   <input
                     type="text"
                     placeholder="Add a task..."
                     value={newItemText}
                     onChange={(e) => setNewItemText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') addCheckItem(idx); }}
-                    style={{
-                      flex: 1,
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      border: '1px solid #ddd',
-                      fontSize: '0.8rem',
-                      outline: 'none',
-                    }}
+                    className="checklist-add-input"
                   />
                   <button
                     onClick={() => addCheckItem(idx)}
                     style={{
-                      background: '#d15a45',
+                      background: 'linear-gradient(135deg, #b06050 0%, #c47a6a 100%)',
                       color: '#fff',
                       border: 'none',
-                      borderRadius: '6px',
-                      padding: '6px 10px',
+                      borderRadius: '10px',
+                      padding: '8px 14px',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontSize: '0.8rem',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      transition: 'all 0.25s ease',
+                      boxShadow: '0 2px 6px rgba(176,96,80,0.2)',
                     }}
+                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(176,96,80,0.3)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 6px rgba(176,96,80,0.2)'; }}
                   >
                     <Plus size={14} /> Add
                   </button>

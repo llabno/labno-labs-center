@@ -409,3 +409,117 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.15);
 }
+
+/* Terminal cursor blink animation */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Agent status pulse animation */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 4px rgba(80, 250, 123, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(80, 250, 123, 0.7); }
+}
+
+/* Checklist item fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Checklist added flash */
+@keyframes flash-added {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+/* Custom circle checkbox for pipeline checklists */
+.pipeline-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pipeline-checkbox:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(176, 96, 80, 0.1);
+}
+
+.pipeline-checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 6px rgba(176, 96, 80, 0.3);
+}
+
+.pipeline-checkbox.checked svg {
+  stroke: #fff;
+}
+
+/* Glass checklist item */
+.checklist-item-glass {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.checklist-item-glass:hover {
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.checklist-item-glass.completed {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.checklist-item-glass.completed .checklist-text {
+  text-decoration: line-through;
+  color: #b0ada9;
+  opacity: 0.65;
+}
+
+/* Glass add-item input */
+.checklist-add-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.82rem;
+  color: #3a3836;
+  outline: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.checklist-add-input::placeholder {
+  color: #b0ada9;
+}
+
+.checklist-add-input:focus {
+  border-color: rgba(176, 96, 80, 0.35);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(176, 96, 80, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+}

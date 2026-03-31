@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const COLUMNS = ['backlog', 'triage', 'review', 'completed'];
@@ -33,11 +33,12 @@ const Dashboard = () => {
   const [newProject, setNewProject] = useState({ name: '', status: 'Active', due_date: '', complexity: 1 });
   const [ventureFilter, setVentureFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('All');
+  const [showBacklog, setShowBacklog] = useState(false);
 
   const stats = [
     { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
-    { title: 'Daily Active Users (DAU)', value: '1,280', link: 'https://posthog.com/project/dau' },
-    { title: 'Total Daily Revenue', value: '$450.00', link: 'https://app.lemonsqueezy.com/orders' },
+    { title: 'Daily Active Users (DAU)', value: 'Coming Soon', link: '#' },
+    { title: 'Total Daily Revenue (setup needed)', value: '$450.00', link: 'https://app.lemonsqueezy.com/orders' },
   ];
 
   const fetchData = async () => {
@@ -105,6 +106,16 @@ const Dashboard = () => {
 
   const filteredProjects = projects.filter(p => {
     if (ventureFilter !== 'all' && inferCategory(p.name) !== ventureFilter) return false;
+    if (assigneeFilter !== 'All') {
+      const projectTasks = tasksByProject[p.id];
+      if (projectTasks) {
+        const allTasks = Object.values(projectTasks).flat();
+        const hasAssignee = allTasks.some(t => (t.assigned_to || '').toLowerCase() === assigneeFilter.toLowerCase());
+        if (!hasAssignee) return false;
+      } else {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -155,7 +166,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Venture + Assignee Filters */}
+      {/* Venture + Assignee Filters + Backlog Toggle */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
         <div className="filter-bar">
           <span className="filter-label">Venture</span>
@@ -174,6 +185,14 @@ const Dashboard = () => {
             </button>
           ))}
         </div>
+        <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
+        <button
+          className={`filter-pill${showBacklog ? ' active' : ''}`}
+          onClick={() => setShowBacklog(prev => !prev)}
+          style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+        >
+          <ListFilter size={13} /> Show Backlog Overview
+        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
@@ -329,6 +348,78 @@ const Dashboard = () => {
         <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: '#8a8682', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
           <SplitSquareHorizontal size={32} color="#b0ada9" />
           Click up to four projects from the tables above to load and compare their Kanban execution boards.
+        </div>
+      )}
+
+      {/* Backlog Overview */}
+      {showBacklog && (
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <h3 style={{ color: '#2e2c2a', fontSize: '1.1rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ListFilter size={18} color="#b06050" /> Backlog Overview — All Projects
+          </h3>
+          {projects.filter(p => {
+            const tasks = tasksByProject[p.id] || {};
+            return (tasks['backlog'] || []).length > 0;
+          }).length === 0 ? (
+            <p style={{ color: '#8a8682', fontSize: '0.9rem' }}>No backlog tasks across any project.</p>
+          ) : (
+            projects.filter(p => {
+              const tasks = tasksByProject[p.id] || {};
+              return (tasks['backlog'] || []).length > 0;
+            }).map(proj => {
+              const backlogTasks = (tasksByProject[proj.id] || {})['backlog'] || [];
+              return (
+                <div key={proj.id} style={{ marginBottom: '1.25rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#3e3c3a', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    {proj.name}
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {backlogTasks.map(task => (
+                      <div key={task.id} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.45)',
+                        border: '1px solid rgba(255,255,255,0.5)',
+                        backdropFilter: 'blur(8px)',
+                      }}>
+                        <span style={{ flex: 1, fontSize: '0.85rem', color: '#2e2c2a', fontWeight: 500 }}>{task.title}</span>
+                        {task.assigned_to && (
+                          <span style={{ fontSize: '0.72rem', color: '#8a8682', background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: '8px' }}>
+                            {task.assigned_to}
+                          </span>
+                        )}
+                        <button
+                          onClick={() => moveTask(task.id, 'triage')}
+                          title="Move to Triage"
+                          style={{
+                            background: 'none',
+                            border: '1px solid rgba(90,138,191,0.25)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: '#5a8abf',
+                            padding: '3px 8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.7rem',
+                            fontWeight: 500,
+                            transition: 'all 0.2s ease',
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(90,138,191,0.08)'; e.currentTarget.style.borderColor = 'rgba(90,138,191,0.4)'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(90,138,191,0.25)'; }}
+                        >
+                          <ArrowRight size={12} /> Triage
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
