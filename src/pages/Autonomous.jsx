@@ -212,18 +212,35 @@ const Autonomous = () => {
           }}>
             <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6272a4', marginBottom: '8px', fontWeight: 600 }}>System Status</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-              <span style={{ color: '#8a88a0' }}>Agents Online</span>
-              <span style={{ color: '#50fa7b', fontWeight: 600 }}>2 / 3</span>
+              <span style={{ color: '#8a88a0' }}>Queued</span>
+              <span style={{ color: '#f1fa8c', fontWeight: 600 }}>{agentRuns.filter(r => r.status === 'queued').length}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '4px' }}>
-              <span style={{ color: '#8a88a0' }}>Tasks Today</span>
-              <span style={{ color: '#e8e6f0', fontWeight: 600 }}>67</span>
+              <span style={{ color: '#8a88a0' }}>Running</span>
+              <span style={{ color: '#8be9fd', fontWeight: 600 }}>{agentRuns.filter(r => r.status === 'running').length}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '4px' }}>
-              <span style={{ color: '#8a88a0' }}>Errors</span>
-              <span style={{ color: '#ff5555', fontWeight: 600 }}>1</span>
+              <span style={{ color: '#8a88a0' }}>Completed</span>
+              <span style={{ color: '#50fa7b', fontWeight: 600 }}>{agentRuns.filter(r => r.status === 'completed').length}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginTop: '4px' }}>
+              <span style={{ color: '#8a88a0' }}>Failed</span>
+              <span style={{ color: '#ff5555', fontWeight: 600 }}>{agentRuns.filter(r => r.status === 'failed').length}</span>
             </div>
           </div>
+
+          {/* Latest Run Results */}
+          {agentRuns.filter(r => r.result).length > 0 && (
+            <div style={{ marginTop: '12px', background: 'rgba(13, 13, 26, 0.6)', borderRadius: '14px', padding: '1rem' }}>
+              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6272a4', marginBottom: '8px', fontWeight: 600 }}>Latest Results</div>
+              {agentRuns.filter(r => r.result).slice(0, 3).map(r => (
+                <div key={r.id} style={{ marginBottom: '10px', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', borderLeft: `3px solid ${r.status === 'completed' ? '#50fa7b' : '#ff5555'}` }}>
+                  <div style={{ fontSize: '0.78rem', color: '#e8e6f0', fontWeight: 600, marginBottom: '4px' }}>{r.task_title}</div>
+                  <pre style={{ fontSize: '0.68rem', color: '#8a88a0', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.4, maxHeight: '100px', overflow: 'auto' }}>{r.result?.slice(0, 300)}{r.result?.length > 300 ? '...' : ''}</pre>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

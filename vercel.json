@@ -1,6 +1,16 @@
 {
   "framework": "vite",
+  "crons": [
+    {
+      "path": "/api/agent/process",
+      "schedule": "* * * * *"
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

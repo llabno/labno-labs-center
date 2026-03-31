@@ -27,5 +27,11 @@ export default async function handler(req, res) {
   // Move task to triage to indicate it's being worked on
   await supabase.from('global_tasks').update({ column_id: 'triage' }).eq('id', taskId)
 
+  // Trigger the processor immediately (don't wait for cron)
+  try {
+    const baseUrl = `https://${req.headers.host}`
+    fetch(`${baseUrl}/api/agent/process`, { method: 'GET', headers: { Authorization: `Bearer ${process.env.CRON_SECRET || 'manual'}` } }).catch(() => {})
+  } catch (e) { /* fire and forget */ }
+
   return res.status(200).json({ success: true, runId: data.id, status: 'queued' })
 }
