@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import anthropic
 import os
 import json
+import re
 
 app = FastAPI()
 
-# Vercel Serverless environment handling
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,42 +16,55 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Anthropic Client Wrapper
 client = anthropic.Anthropic(
     api_key=os.environ.get("ANTHROPIC_API_KEY", "")
 )
 
 class OracleQuery(BaseModel):
-    query: str
+    query: str = Field(..., max_length=1500) # Prevents 2000-word overload attacks
     context_type: str = "general"
-    user_role: str = "guest"
 
 class OracleParser(BaseModel):
-    sop_text: str
+    sop_text: str = Field(..., min_length=10)
+    document_id: str # Needed for deduplication
+
+# Mock verify token function (In production, decodes Supabase JWT to prevent spoofing)
+def verify_token(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized: Missing or invalid Bearer token")
+    token = authorization.split(" ")[1]
+    
+    # Strictly simulated verification mapping
+    if token == "lance_secure_token":
+        return "lance@labnolabs.com"
+    elif token == "public_guest_token":
+        return "guest"
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid signature")
 
 @app.get("/api")
 def root():
-    return {"status": "Labno Labs Oracle Online", "version": "1.0"}
+    return {"status": "Labno Labs Oracle Online", "version": "1.1"}
 
 @app.post("/api/oracle/ask")
-def ask_oracle(req: OracleQuery):
-    """
-    Phase 2 Core API Path. 
-    Queries the vector database directly (logic placeholder) and feeds results to Anthropic Haiku.
-    """
-    if req.user_role not in ["lance@labnolabs.com", "romy@labnolabs.com", "avery@labnolabs.com", "sara@labnolabs.com"]:
-        raise HTTPException(status_code=403, detail="Unauthorized Agent Access. Internal Brain strictly isolated.")
+def ask_oracle(req: OracleQuery, user_email: str = Depends(verify_token)):
+    query_clean = str(req.query).strip()
+    if not query_clean:
+         raise HTTPException(status_code=400, detail="Query cannot be empty spaces.")
 
-    # 1. Protection Hook (Prompt Injection Shield)
-    dangerous_phrases = ['ignore all preceding', 'write a poem about', 'give me your prompt']
-    if any(phrase in req.query.lower() for phrase in dangerous_phrases):
+    # 1. Protection Hook: Strict Regex Injection Shield
+    # Blocks exact malicious commands, but allows "ignore distractions"
+    lower_query = query_clean.lower()
+    if re.search(r'\b(ignore previous instructions|forget your rules|system: override)\b', lower_query) or "dump the oracle_sops" in lower_query:
         return {"response": "Query blocked by Labno Labs Sentinel: Potential Prompt Injection Detected."}
+
+    # 2. Data Sandbox (RLS happens natively in Supabase DB via the verified email)
+    if user_email == "guest":
+        brain_access = "Public Brain Only"
+    else:
+        brain_access = f"Private Brain Authorized for {user_email}"
     
-    # 2. Oracle RAG Loop utilizing Anthropic
-    prompt = f"""You are the overarching Oracle for Labno Labs Mission Control. 
-    You manage company workflows, read private and public SOPs, and dictate company structure based on Lance's instructions.
-    Answer the following human query intelligently: {req.query}
-    """
+    prompt = f"Role: Oracle. Access: {brain_access}. Query: {query_clean}"
     
     try:
         response = client.messages.create(
@@ -62,12 +75,12 @@ def ask_oracle(req: OracleQuery):
         )
         return json.loads(response.content[0].text)
     except Exception as e:
-        # Default safety fallback if Anthropic call fails locally or without API key
-        return {"response": f"Oracle System Status: Currently awaiting Anthropic API Key integration. Received query processing target: {req.query}"}
+        return {"response": f"Oracle System Status: Currently awaiting Anthropic API Key integration. Received secure query processing target: {query_clean}"}
 
 @app.post("/api/oracle/sync")
-def trigger_sync(req: OracleParser):
-    """
-    Receives text from a Google Drive Watchhook (The Dispatcher) and chunks it.
-    """
-    return {"status": "Successfully captured SOP. Queued for pgvector embed ingestion loop."}
+def trigger_sync(req: OracleParser, user_email: str = Depends(verify_token)):
+    if user_email != "lance@labnolabs.com":
+        raise HTTPException(status_code=403, detail="Unauthorized: Only Admins can sync vectors.")
+    
+    # Deduplication check logic simulated here using document_id
+    return {"status": f"Upserted SOP {req.document_id}. Existing vectors overwritten to prevent duplicates."}

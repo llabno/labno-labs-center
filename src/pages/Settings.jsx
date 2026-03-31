@@ -85,10 +85,33 @@ const Settings = () => {
               <p style={{ color: '#666', marginBottom: '2rem' }}>Modify the Apple Glass background gradients and UI themes across the entire ecosystem.</p>
               
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #ff7e67, #ff9a85)', border: '2px solid #333', cursor: 'pointer' }}></div>
-                <div style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #1976d2, #64b5f6)', opacity: 0.5, cursor: 'pointer' }}></div>
-                <div style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #388e3c, #81c784)', opacity: 0.5, cursor: 'pointer' }}></div>
-                <div style={{ width: '100px', height: '100px', borderRadius: '12px', background: '#222', opacity: 0.5, cursor: 'pointer' }}></div>
+                <div 
+                  onClick={() => {
+                    document.documentElement.style.setProperty('--primary-glow', 'rgba(255, 120, 100, 0.4)');
+                    document.documentElement.style.setProperty('--secondary-glow', 'rgba(220, 190, 160, 0.6)');
+                  }}
+                  style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #ff7e67, #ff9a85)', border: '2px solid #333', cursor: 'pointer' }}></div>
+                
+                <div 
+                  onClick={() => {
+                    document.documentElement.style.setProperty('--primary-glow', 'rgba(25, 118, 210, 0.4)');
+                    document.documentElement.style.setProperty('--secondary-glow', 'rgba(100, 181, 246, 0.6)');
+                  }}
+                  style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #1976d2, #64b5f6)', border: '2px solid transparent', cursor: 'pointer' }}></div>
+                
+                <div 
+                  onClick={() => {
+                    document.documentElement.style.setProperty('--primary-glow', 'rgba(56, 142, 60, 0.4)');
+                    document.documentElement.style.setProperty('--secondary-glow', 'rgba(129, 199, 132, 0.6)');
+                  }}
+                  style={{ width: '100px', height: '100px', borderRadius: '12px', background: 'linear-gradient(135deg, #388e3c, #81c784)', border: '2px solid transparent', cursor: 'pointer' }}></div>
+                
+                <div 
+                  onClick={() => {
+                    document.documentElement.style.setProperty('--primary-glow', 'rgba(20, 20, 20, 0.4)');
+                    document.documentElement.style.setProperty('--secondary-glow', 'rgba(80, 80, 80, 0.6)');
+                  }}
+                  style={{ width: '100px', height: '100px', borderRadius: '12px', background: '#222', border: '2px solid transparent', cursor: 'pointer' }}></div>
               </div>
               <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#888' }}>* Note: Theme syncs across your IDE and mobile devices via Supabase preferences.</p>
             </div>

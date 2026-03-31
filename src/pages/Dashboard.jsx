@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal } from 'lucide-react';
 
 const Dashboard = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [activeBoards, setActiveBoards] = useState([]); // Array of selected projects (up to 2)
 
   const stats = [
     { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
@@ -18,13 +18,26 @@ const Dashboard = () => {
 
   const hotList = internalProjects.filter(p => p.complexity === 'High' || p.status === 'Active');
 
-  // Simulated Kanban Data for the Selected Project
-  const kanbanData = {
-    backlog: ['Setup Cloudflare DNS', 'Map IDE Folders'],
+  const toggleProjectBoard = (proj) => {
+    if (activeBoards.find(b => b.id === proj.id)) {
+      setActiveBoards(activeBoards.filter(b => b.id !== proj.id)); // close it
+    } else {
+      if (activeBoards.length >= 2) {
+        // Replace the second board if 2 are already open
+        setActiveBoards([activeBoards[0], proj]);
+      } else {
+        setActiveBoards([...activeBoards, proj]);
+      }
+    }
+  };
+
+  // Simulated unique Kanban Data generator for depth
+  const getKanbanData = (projectName) => ({
+    backlog: [`Phase 1: ${projectName}`, `Review docs for ${projectName}`],
     triage: ['Approve Theme Colors'],
     review: ['Review Copywriting (Sarah)'],
     completed: ['Buy Domain']
-  };
+  });
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -48,7 +61,7 @@ const Dashboard = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <div>
               <h3 style={{ color: '#333', fontSize: '1.2rem', fontWeight: 600 }}>Top Internal Operations & Projects</h3>
-              <p style={{ color: '#666', fontSize: '0.85rem' }}>Click a project row to open its specific Kanban Board.</p>
+              <p style={{ color: '#666', fontSize: '0.85rem' }}>Click up to 2 projects to open Side-by-Side Workflow Boards.</p>
             </div>
             <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', padding: '0.5rem 1rem' }}
                     onClick={() => alert("Simulated: Open 'New Project' Creation Modal")}>
@@ -66,29 +79,32 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {internalProjects.map((proj) => (
-                  <tr 
-                    key={proj.id} 
-                    style={{ borderBottom: '1px solid rgba(0,0,0,0.02)', background: selectedProject?.id === proj.id ? 'rgba(255, 120, 100, 0.1)' : '#fff', cursor: 'pointer' }}
-                    onClick={() => setSelectedProject(proj)}
-                  >
-                    <td style={{ padding: '1rem', color: '#222', fontWeight: 500 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <LayoutList size={16} color="#888" /> {proj.name}
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', color: '#666', fontSize: '0.9rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {proj.dueDate}</div>
-                    </td>
-                    <td style={{ padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ flex: 1, height: '6px', background: '#eee', borderRadius: '4px', overflow: 'hidden', width: '60px' }}>
-                          <div style={{ width: `${(proj.completed / proj.tasks) * 100}%`, height: '100%', background: '#d15a45' }}></div>
+                {internalProjects.map((proj) => {
+                  const isActive = activeBoards.find(b => b.id === proj.id);
+                  return (
+                    <tr 
+                      key={proj.id} 
+                      style={{ borderBottom: '1px solid rgba(0,0,0,0.02)', background: isActive ? 'rgba(255, 120, 100, 0.1)' : '#fff', cursor: 'pointer', transition: 'background 0.2s' }}
+                      onClick={() => toggleProjectBoard(proj)}
+                    >
+                      <td style={{ padding: '1rem', color: '#222', fontWeight: 500 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <LayoutList size={16} color={isActive ? '#d15a45' : '#888'} /> {proj.name}
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ padding: '1rem', color: '#666', fontSize: '0.9rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {proj.dueDate}</div>
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ flex: 1, height: '6px', background: '#eee', borderRadius: '4px', overflow: 'hidden', width: '60px' }}>
+                            <div style={{ width: `${(proj.completed / proj.tasks) * 100}%`, height: '100%', background: '#d15a45' }}></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -99,64 +115,67 @@ const Dashboard = () => {
           <h3 style={{ color: '#d32f2f', fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
             <Flame size={20} /> The Hot List
           </h3>
-          <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '1rem' }}>Projects demanding immediate action based on deadline or high ROI promise.</p>
+          <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '1rem' }}>Projects demanding immediate action. Click to append to Workflow board.</p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {hotList.map(item => (
-              <div key={item.id} onClick={() => setSelectedProject(item)} style={{ padding: '1rem', background: '#fff', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', cursor: 'pointer', borderLeft: '3px solid #d32f2f' }}>
-                <div style={{ fontWeight: 600, color: '#222' }}>{item.name}</div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem' }}>
-                  <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Cost: {item.cost}</span>
-                  <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Due: {item.dueDate}</span>
+            {hotList.map(item => {
+              const isActive = activeBoards.find(b => b.id === item.id);
+              return (
+                <div key={item.id} onClick={() => toggleProjectBoard(item)} style={{ padding: '1rem', background: isActive ? '#fff3e0' : '#fff', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', cursor: 'pointer', borderLeft: '3px solid #d32f2f' }}>
+                  <div style={{ fontWeight: 600, color: '#222' }}>{item.name}</div>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem' }}>
+                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Cost: {item.cost}</span>
+                    <span style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>Due: {item.dueDate}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
 
-      {/* 4. Global Workflow (Kanban) */}
-      {selectedProject ? (
-        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, transition: 'all 0.3s' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <h3 style={{ color: '#333', fontSize: '1.2rem', fontWeight: 600 }}>Workflow: {selectedProject.name}</h3>
-              <p style={{ color: '#666', fontSize: '0.85rem' }}>Specific execution tasks for this project.</p>
-            </div>
-            <button onClick={() => setSelectedProject(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#666' }}>
-              <X size={16} /> Close Board
-            </button>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
-            <div className="kanban-column">
-              <div className="kanban-header">Backlog</div>
-              {kanbanData.backlog.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff' }}><h4>{t}</h4></div>)}
-            </div>
-            
-            <div className="kanban-column">
-              <div className="kanban-header">Needs Triage</div>
-              {kanbanData.triage.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff', borderLeft: '4px solid #1976d2' }}><h4>{t}</h4></div>)}
-            </div>
+      {/* 4. Global Workflow (Side-by-Side Kanban) */}
+      {activeBoards.length > 0 ? (
+        <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
+          {activeBoards.map(board => {
+            const data = getKanbanData(board.name);
+            return (
+              <div key={board.id} className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <h3 style={{ color: '#333', fontSize: '1.1rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Workflow: {board.name}</h3>
+                  </div>
+                  <button onClick={() => toggleProjectBoard(board)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: '#666' }}>
+                    <X size={16} /> Close
+                  </button>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem', flex: 1, overflowX: 'auto' }}>
+                  <div className="kanban-column" style={{ minWidth: '200px' }}>
+                    <div className="kanban-header">Backlog</div>
+                    {data.backlog.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff' }}><h4>{t}</h4></div>)}
+                  </div>
+                  
+                  <div className="kanban-column" style={{ minWidth: '200px' }}>
+                    <div className="kanban-header">Needs Triage</div>
+                    {data.triage.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff', borderLeft: '4px solid #1976d2' }}><h4>{t}</h4></div>)}
+                  </div>
 
-            <div className="kanban-column">
-              <div className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={16} color="#ed8a19" /> Awaiting Review
+                  <div className="kanban-column" style={{ minWidth: '200px' }}>
+                    <div className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Clock size={16} color="#ed8a19" /> Review
+                    </div>
+                    {data.review.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff', borderLeft: '4px solid #ffaa00' }}><h4>{t}</h4></div>)}
+                  </div>
+                </div>
               </div>
-              {kanbanData.review.map((t, i) => <div key={i} className="task-card glass-panel" style={{ background: '#fff', borderLeft: '4px solid #ffaa00' }}><h4>{t}</h4></div>)}
-            </div>
-
-            <div className="kanban-column">
-              <div className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle size={16} color="#2e7d32" /> Completed
-              </div>
-              {kanbanData.completed.map((t, i) => <div key={i} className="task-card glass-panel" style={{ opacity: 0.6, background: '#fff' }}><h4>{t}</h4></div>)}
-            </div>
-          </div>
+            )
+          })}
         </div>
       ) : (
-        <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: '#777' }}>
-          Click a project from the tables above to load its Kanban execution board.
+        <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center', color: '#777', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+          <SplitSquareHorizontal size={32} color="#aaa" />
+          Click up to two projects from the tables above to load and compare their Kanban execution boards side-by-side.
         </div>
       )}
 
