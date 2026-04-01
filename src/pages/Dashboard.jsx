@@ -142,6 +142,11 @@ const Dashboard = () => {
   });
 
   const toggleProjectBoard = (proj) => {
+    // PostHog Tracking for Behavioral Analysis
+    if (window.posthog) {
+        window.posthog.capture('toggled_kanban_board', { project_name: proj.name, status: proj.status });
+    }
+
     if (activeBoards.find(b => b.id === proj.id)) {
       setActiveBoards(activeBoards.filter(b => b.id !== proj.id));
     } else {
@@ -258,7 +263,10 @@ ${COLUMNS.map(col => `
               <p style={{ color: '#6b6764', fontSize: '0.85rem' }}>Click up to 4 projects to open Side-by-Side Workflow Boards.</p>
             </div>
             <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                    onClick={() => setShowNewProjectModal(true)}>
+                    onClick={() => {
+                      if (window.posthog) window.posthog.capture('clicked_new_project_btn');
+                      setShowNewProjectModal(true);
+                    }}>
               <Plus size={16} /> New Project
             </button>
           </div>
