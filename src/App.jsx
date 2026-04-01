@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -13,6 +13,7 @@ import UILibrary from './pages/UILibrary';
 import SettingsPage from './pages/Settings';
 import Login from './pages/Login';
 import Autonomous from './pages/Autonomous';
+import Reactivation from './pages/Reactivation';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -38,6 +39,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Dual CRM Engine', path: '/crm', icon: <PhoneCall size={20} /> },
     { name: 'App Studio', path: '/studio', icon: <Code size={20} /> },
     { name: 'UI Library Assets', path: '/library', icon: <Layers size={20} /> },
+    { name: 'Reactivation Inbox', path: '/reactivation', icon: <Inbox size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
   ];
 
@@ -139,6 +141,7 @@ function App() {
           <Route path="/crm" element={<DualCRM />} />
           <Route path="/studio" element={<AppStudio />} />
           <Route path="/library" element={<UILibrary />} />
+          <Route path="/reactivation" element={<Reactivation />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
