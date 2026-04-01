@@ -545,7 +545,7 @@ function EdgeCaseList({ edges }) {
   );
 }
 
-export default function Strategic() {
+export default function App() {
   const [tab, setTab] = useState("analysis");
 
   const tabs = [
@@ -555,7 +555,7 @@ export default function Strategic() {
   ];
 
   return (
-    <div className="main-content" style={{ minHeight:"100vh", background:"#0D0F0E", overflow:"auto", fontFamily:"'Georgia',serif", color:"#E8E3DC" }}>
+    <div style={{ minHeight:"100vh", background:"#0D0F0E", fontFamily:"'Georgia',serif", color:"#E8E3DC" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
