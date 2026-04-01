@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Users, Briefcase, Plus, Filter, Search, X, ChevronDown, ChevronUp, ArrowRight, Phone, Mail, MapPin, Activity, DollarSign, Calendar, Tag } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Users, Briefcase, Plus, Filter, Search, X, ChevronDown, ChevronUp, ArrowRight, Phone, Mail, MapPin, Activity, DollarSign, Calendar, Tag, Download, TrendingUp, TrendingDown, Star, Columns, Save, Eye, MoreHorizontal, Check, Copy, Clock, MessageSquare, AlertTriangle, UserCheck, Clipboard } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // Status pipeline stages
@@ -24,6 +24,41 @@ const LABNO_STATUS_COLORS = {
 };
 
 const PAGE_SIZE = 50;
+
+// Pipeline goals (hardcoded targets)
+const PIPELINE_GOALS = {
+  moso: { 'Active': 150, 'Reactivation': 50, 'Waitlist': 10 },
+  labno: { 'Active Client': 20, 'Qualified': 15, 'Proposal': 10 },
+};
+
+// Urgency thresholds — stages that pulse when count exceeds threshold
+const URGENCY_THRESHOLDS = {
+  moso: { 'Waitlist': 5, 'Reactivation': 50 },
+  labno: {},
+};
+
+// Format dollar amounts compactly: $12,500 → "$12.5K"
+const fmtDollars = (n) => {
+  if (n == null || isNaN(n)) return '$0';
+  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+  return `$${Math.round(n)}`;
+};
+
+// Pulse animation CSS (injected once)
+const pulseStyleId = 'crm-pulse-style';
+if (typeof document !== 'undefined' && !document.getElementById(pulseStyleId)) {
+  const style = document.createElement('style');
+  style.id = pulseStyleId;
+  style.textContent = `
+    @keyframes urgencyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(211,47,47,0.25); }
+      50% { box-shadow: 0 0 0 6px rgba(211,47,47,0.08); }
+      100% { box-shadow: 0 0 0 0 rgba(211,47,47,0); }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 const DualCRM = () => {
   const [activeTab, setActiveTab] = useState('moso');
@@ -54,6 +89,19 @@ const DualCRM = () => {
   // Pagination
   const [page, setPage] = useState(0);
 
+  // Detail card enhancements
+  const [activityNotes, setActivityNotes] = useState({}); // { [leadId]: [{text, timestamp}] }
+  const [commLogs, setCommLogs] = useState({}); // { [leadId]: [{type, description, timestamp}] }
+  const [appointments, setAppointments] = useState({}); // { [leadId]: dateString }
+  const [relatedLeads, setRelatedLeads] = useState([]);
+  const [similarLeads, setSimilarLeads] = useState([]);
+  const [quickNoteText, setQuickNoteText] = useState('');
+  const [quickNoteSaving, setQuickNoteSaving] = useState(false);
+  const [exportCopied, setExportCopied] = useState(false);
+  const [newActivityNote, setNewActivityNote] = useState('');
+  const [newCommType, setNewCommType] = useState('Email');
+  const [newCommDesc, setNewCommDesc] = useState('');
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -70,6 +118,36 @@ const DualCRM = () => {
 
   useEffect(() => { fetchData(); }, []);
   useEffect(() => { setPage(0); setSelectedLead(null); }, [activeTab, searchQuery, statusFilter, tierFilter]);
+
+  // Fetch related leads (same referred_by) and similar leads (same case_primary + body_region) when detail opens
+  useEffect(() => {
+    if (!selectedLead) { setRelatedLeads([]); setSimilarLeads([]); setQuickNoteText(''); setExportCopied(false); return; }
+    const isMoso = activeTab === 'moso';
+    const table = isMoso ? 'moso_clinical_leads' : 'labno_consulting_leads';
+
+    // Related leads by referred_by
+    if (selectedLead.referred_by) {
+      supabase.from(table).select('*')
+        .eq('referred_by', selectedLead.referred_by)
+        .neq('id', selectedLead.id)
+        .limit(5)
+        .then(({ data }) => setRelatedLeads(data || []));
+    } else {
+      setRelatedLeads([]);
+    }
+
+    // Similar patients (MOSO only) — same case_primary AND body_region
+    if (isMoso && selectedLead.case_primary && selectedLead.body_region) {
+      supabase.from('moso_clinical_leads').select('*')
+        .eq('case_primary', selectedLead.case_primary)
+        .eq('body_region', selectedLead.body_region)
+        .neq('id', selectedLead.id)
+        .limit(3)
+        .then(({ data }) => setSimilarLeads(data || []));
+    } else {
+      setSimilarLeads([]);
+    }
+  }, [selectedLead?.id, activeTab]);
 
   // Filtered + sorted data
   const filteredLeads = useMemo(() => {
