@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check } from 'lucide-react';
+import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check, ExternalLink } from 'lucide-react';
 
 const PROJECT_OPTIONS = [
   'Unassigned',
@@ -22,11 +22,11 @@ const PROJECT_COLORS = {
 };
 
 const AppStudio = () => {
-  const apps = [
+  const [apps, setApps] = useState([
     { title: 'College Career OS', status: 'Live', mrr: '$1,200', active: '842', color: '#4caf50', description: 'End-to-end career management platform for university students. Features interview prep, resume builder, and job tracking.', progress: 95 },
     { title: 'Stretching App (Romy)', status: 'In Development', mrr: '$0', active: '0', color: '#ff9800', description: 'Clinical stretching and mobility app designed for rehab patients. Currently building exercise library and video integration.', progress: 40 },
     { title: 'Art Portfolio (Avery)', status: 'Planning', mrr: '$0', active: '0', color: '#2196f3', description: 'Minimalist portfolio builder for visual artists. Planning phase — wireframes and feature spec in progress.', progress: 10 },
-  ];
+  ]);
 
   const stages = [
     { name: '1. Spin Up Starter Kit', icon: <Rocket size={20} color="#1976d2" />, desc: 'Next.js + Core UI + API Bridge' },
@@ -95,8 +95,10 @@ const AppStudio = () => {
     });
   };
 
-  // Move item from pipeline to portfolio (mark done + flash)
+  // Move item from pipeline to portfolio (mark done + append + flash)
   const moveToPortfolio = (stageIdx, itemIdx) => {
+    const item = checklists[stageIdx][itemIdx];
+    
     // Mark as done
     setChecklists(prev => {
       const updated = { ...prev };
@@ -104,6 +106,21 @@ const AppStudio = () => {
       updated[stageIdx][itemIdx] = { ...updated[stageIdx][itemIdx], done: true };
       return updated;
     });
+    
+    // Add dynamically to Active Portfolio state
+    setApps(prevApps => [
+      {
+        title: item.text,
+        status: 'In Development',
+        mrr: '$0',
+        active: '0',
+        color: PROJECT_COLORS[item.project]?.color || '#2196f3',
+        description: `Auto-initialized from pipeline (Stage ${stageIdx + 1}). Project scope: ${item.project}.`,
+        progress: 10
+      },
+      ...prevApps
+    ]);
+
     // Show "Added!" flash
     const key = `${stageIdx}-${itemIdx}`;
     setAddedFlash(prev => ({ ...prev, [key]: true }));
@@ -159,22 +176,23 @@ const AppStudio = () => {
               </div>
             </div>
 
-            {/* Checklist Panel — Elegant Glass Design */}
+            {/* Checklist Panel — Elegant 3D Glass Design */}
             {openStage === idx && (
               <div
                 style={{
                   padding: '1rem',
-                  background: 'rgba(255, 255, 255, 0.45)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.55) 0%, rgba(250, 248, 245, 0.4) 100%)',
+                  backdropFilter: 'blur(24px) saturate(1.2)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.55)',
                   borderTop: '1px solid rgba(0,0,0,0.04)',
                   borderTopLeftRadius: 0,
                   borderTopRightRadius: 0,
                   borderBottomLeftRadius: '20px',
                   borderBottomRightRadius: '20px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.02)',
                   animation: 'fadeIn 0.25s ease',
+                  transform: 'perspective(800px) rotateX(0.5deg)',
                 }}
               >
                 {(checklists[idx] || []).length === 0 && (
@@ -335,7 +353,7 @@ const AppStudio = () => {
         ))}
       </div>
 
-      {/* Active Portfolio with Accordion */}
+      {/* Active Portfolio with Accordion — Click to open detail */}
       <h3 style={{ marginBottom: '1.5rem', color: '#333', fontSize: '1.1rem', fontWeight: 600 }}>Active Portfolio</h3>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -350,8 +368,9 @@ const AppStudio = () => {
               gap: '1rem',
               background: '#fff',
               cursor: 'pointer',
-              transition: 'all 0.2s',
+              transition: 'all 0.25s ease',
               border: expandedApp === idx ? '1px solid rgba(209, 90, 69, 0.3)' : undefined,
+              boxShadow: expandedApp === idx ? '0 8px 24px rgba(176,96,80,0.12), 0 2px 8px rgba(0,0,0,0.06)' : undefined,
             }}
             onClick={() => setExpandedApp(expandedApp === idx ? null : idx)}
             onMouseOver={(e) => { if (expandedApp !== idx) e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -412,7 +431,7 @@ const AppStudio = () => {
                   <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>{app.progress}% complete</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.7rem',
                     padding: '3px 8px',
@@ -429,6 +448,29 @@ const AppStudio = () => {
                   <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '10px', background: 'rgba(0,0,0,0.04)', color: '#666' }}>
                     {app.mrr} MRR
                   </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.location.href = '/projects'; }}
+                    style={{
+                      marginLeft: 'auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '5px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(176,96,80,0.25)',
+                      background: 'linear-gradient(135deg, rgba(176,96,80,0.08) 0%, rgba(196,122,106,0.06) 100%)',
+                      color: '#b06050',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease',
+                      boxShadow: '0 1px 4px rgba(176,96,80,0.08)',
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(176,96,80,0.15) 0%, rgba(196,122,106,0.1) 100%)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(176,96,80,0.15)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(176,96,80,0.08) 0%, rgba(196,122,106,0.06) 100%)'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(176,96,80,0.08)'; }}
+                  >
+                    <ExternalLink size={12} /> Open Project Detail
+                  </button>
                 </div>
               </div>
             )}
