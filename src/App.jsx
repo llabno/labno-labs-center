@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -14,6 +14,8 @@ import SettingsPage from './pages/Settings';
 import Login from './pages/Login';
 import Autonomous from './pages/Autonomous';
 import Reactivation from './pages/Reactivation';
+import Strategic from './pages/Strategic';
+import StrategicPlaybook from './pages/StrategicPlaybook';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -40,6 +42,8 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'App Studio', path: '/studio', icon: <Code size={20} /> },
     { name: 'UI Library Assets', path: '/library', icon: <Layers size={20} /> },
     { name: 'Reactivation Inbox', path: '/reactivation', icon: <Inbox size={20} /> },
+    { name: 'Strategic Deep Analysis', path: '/strategic', icon: <Compass size={20} /> },
+    { name: 'Strategic Playbook', path: '/playbook', icon: <Map size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
   ];
 
@@ -142,6 +146,8 @@ function App() {
           <Route path="/studio" element={<AppStudio />} />
           <Route path="/library" element={<UILibrary />} />
           <Route path="/reactivation" element={<Reactivation />} />
+          <Route path="/strategic" element={<Strategic />} />
+          <Route path="/playbook" element={<StrategicPlaybook />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>

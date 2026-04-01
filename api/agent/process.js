@@ -1,10 +1,80 @@
 import { createClient } from '@supabase/supabase-js'
+import { execSync } from 'child_process'
 
 // Vercel Cron: processes queued agent runs
-// When ANTHROPIC_API_KEY is set, uses real Claude API
-// Otherwise runs in simulation mode with realistic delays
+// Routing modes:
+//   AGENT_ROUTE=local  → spawns local Claude CLI (Pro sub, no API cost)
+//   AGENT_ROUTE=api    → uses Anthropic API (paid per-token)
+//   ANTHROPIC_API_KEY set without AGENT_ROUTE → defaults to api
+//   Neither set → simulation mode
 
 export const config = { maxDuration: 60 }
+
+function getRouteMode() {
+  const explicit = process.env.AGENT_ROUTE
+  if (explicit === 'local') return 'local'
+  if (explicit === 'api' || process.env.ANTHROPIC_API_KEY) return 'api'
+  return 'simulation'
+}
+
+function buildAgentPrompt(run) {
+  return `You are an autonomous agent working on a task for Labno Labs.
+
+Task: ${run.task_title}
+Project: ${run.project_name || 'Unassigned'}
+Context: ${run.context || 'None'}
+
+Analyze this task and provide:
+1. A brief plan of action (3-5 steps)
+2. Any blockers or dependencies
+3. Estimated complexity (low/medium/high)
+4. Recommended next steps
+
+Be concise and actionable.`
+}
+
+async function executeViaAPI(prompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  })
+  const data = await response.json()
+  return data.content?.[0]?.text || 'No response from Claude API'
+}
+
+function executeViaLocalCLI(prompt) {
+  // Pipes prompt through local Claude CLI using Pro subscription
+  // Uses --print flag for non-interactive single-shot execution
+  const escaped = prompt.replace(/"/g, '\\"').replace(/\n/g, '\\n')
+  const result = execSync(
+    `echo "${escaped}" | claude --print --model sonnet --output-format text`,
+    { encoding: 'utf-8', timeout: 55000, maxBuffer: 1024 * 1024 }
+  )
+  return result.trim() || 'No response from local Claude CLI'
+}
+
+function executeSimulation(run) {
+  return `[Simulation] Agent analyzed task: "${run.task_title}"
+
+Plan:
+1. Review current state of ${run.project_name || 'project'}
+2. Identify dependencies and blockers
+3. Execute primary implementation
+4. Run validation checks
+5. Update task status
+
+Complexity: Medium
+Route: Set AGENT_ROUTE=local (free, uses Claude Pro) or AGENT_ROUTE=api (paid, uses API key).`
+}
 
 export default async function handler(req, res) {
   // Verify cron secret or allow manual trigger
@@ -18,6 +88,8 @@ export default async function handler(req, res) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
+  const routeMode = getRouteMode()
+
   // Fetch queued runs
   const { data: queuedRuns, error } = await supabase
     .from('agent_runs')
@@ -28,7 +100,7 @@ export default async function handler(req, res) {
 
   if (error) return res.status(500).json({ error: error.message })
   if (!queuedRuns || queuedRuns.length === 0) {
-    return res.status(200).json({ message: 'No queued runs', processed: 0 })
+    return res.status(200).json({ message: 'No queued runs', processed: 0, route: routeMode })
   }
 
   const results = []
@@ -41,56 +113,19 @@ export default async function handler(req, res) {
 
     try {
       let result
+      const prompt = buildAgentPrompt(run)
 
-      if (process.env.ANTHROPIC_API_KEY) {
-        // Real Claude API execution
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1024,
-            messages: [{
-              role: 'user',
-              content: `You are an autonomous agent working on a task for Labno Labs.
-
-Task: ${run.task_title}
-Project: ${run.project_name || 'Unassigned'}
-Context: ${run.context || 'None'}
-
-Analyze this task and provide:
-1. A brief plan of action (3-5 steps)
-2. Any blockers or dependencies
-3. Estimated complexity (low/medium/high)
-4. Recommended next steps
-
-Be concise and actionable.`
-            }]
-          })
-        })
-
-        const data = await response.json()
-        result = data.content?.[0]?.text || 'No response from Claude'
+      if (routeMode === 'local') {
+        result = executeViaLocalCLI(prompt)
+      } else if (routeMode === 'api') {
+        result = await executeViaAPI(prompt)
       } else {
-        // Simulation mode — generate realistic output
         await new Promise(r => setTimeout(r, 1500))
-        result = `[Simulation] Agent analyzed task: "${run.task_title}"
-
-Plan:
-1. Review current state of ${run.project_name || 'project'}
-2. Identify dependencies and blockers
-3. Execute primary implementation
-4. Run validation checks
-5. Update task status
-
-Complexity: Medium
-Status: Ready for execution when ANTHROPIC_API_KEY is configured.
-Tip: Add ANTHROPIC_API_KEY to Vercel env vars to enable real Claude execution.`
+        result = executeSimulation(run)
       }
+
+      // Tag the result with routing info
+      result = `[Route: ${routeMode}]\n${result}`
 
       // Mark completed
       await supabase.from('agent_runs')
@@ -108,7 +143,7 @@ Tip: Add ANTHROPIC_API_KEY to Vercel env vars to enable real Claude execution.`
           .eq('id', run.task_id)
       }
 
-      results.push({ id: run.id, status: 'completed' })
+      results.push({ id: run.id, status: 'completed', route: routeMode })
 
     } catch (err) {
       await supabase.from('agent_runs')
@@ -123,5 +158,5 @@ Tip: Add ANTHROPIC_API_KEY to Vercel env vars to enable real Claude execution.`
     }
   }
 
-  return res.status(200).json({ processed: results.length, results })
+  return res.status(200).json({ processed: results.length, route: routeMode, results })
 }
