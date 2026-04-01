@@ -1,9 +1,49 @@
 import { createClient } from '@supabase/supabase-js'
+import { execSync } from 'child_process'
 
 // Claude Agent SDK integration: trigger task execution from dashboard
-// Uses Claude API to analyze and execute tasks autonomously
+// Routing modes:
+//   AGENT_ROUTE=local  → local Claude CLI (Pro sub, free)
+//   AGENT_ROUTE=api    → Anthropic API (paid per-token)
+//   Neither → simulation mode
 
 export const config = { maxDuration: 120 }
+
+function getRouteMode() {
+  const explicit = process.env.AGENT_ROUTE
+  if (explicit === 'local') return 'local'
+  if (explicit === 'api' || process.env.ANTHROPIC_API_KEY) return 'api'
+  return 'simulation'
+}
+
+async function executeViaAPI(systemPrompt, userPrompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  })
+  const data = await response.json()
+  return data.content?.[0]?.text || JSON.stringify(data)
+}
+
+function executeViaLocalCLI(systemPrompt, userPrompt) {
+  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`
+  const escaped = fullPrompt.replace(/"/g, '\\"').replace(/\n/g, '\\n')
+  const result = execSync(
+    `echo "${escaped}" | claude --print --model sonnet --output-format text`,
+    { encoding: 'utf-8', timeout: 110000, maxBuffer: 1024 * 1024 }
+  )
+  return result.trim() || 'No response from local Claude CLI'
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -34,7 +74,8 @@ export default async function handler(req, res) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
-  // Build detailed prompt from task metadata
+  const routeMode = getRouteMode()
+
   const systemPrompt = `You are an autonomous agent for Labno Labs. You execute tasks for internal projects.
 Your capabilities: code generation, data analysis, API integration, content creation, and task planning.
 Always provide actionable output. If you cannot complete the task fully, provide a detailed plan with next steps.`
@@ -69,28 +110,13 @@ Provide:
   try {
     let result
 
-    if (process.env.ANTHROPIC_API_KEY) {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2048,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }]
-        })
-      })
-
-      const data = await response.json()
-      result = data.content?.[0]?.text || JSON.stringify(data)
+    if (routeMode === 'local') {
+      result = executeViaLocalCLI(systemPrompt, userPrompt)
+    } else if (routeMode === 'api') {
+      result = await executeViaAPI(systemPrompt, userPrompt)
     } else {
-      // Simulation mode
       await new Promise(r => setTimeout(r, 1000))
-      result = `[SDK Agent] Analyzed: "${taskTitle}"
+      result = `[Simulation] Analyzed: "${taskTitle}"
 
 Plan:
 1. Parse task requirements for ${projectName || 'project'}
@@ -98,8 +124,10 @@ Plan:
 3. Execute primary implementation steps
 4. Validate output and update status
 
-Status: Ready for real execution — set ANTHROPIC_API_KEY in Vercel env vars.`
+Route: Set AGENT_ROUTE=local (free, uses Claude Pro) or AGENT_ROUTE=api (paid, uses API key).`
     }
+
+    result = `[Route: ${routeMode}]\n${result}`
 
     // Update run as completed
     await supabase.from('agent_runs').update({
@@ -111,7 +139,7 @@ Status: Ready for real execution — set ANTHROPIC_API_KEY in Vercel env vars.`
     // Move task to review
     await supabase.from('global_tasks').update({ column_id: 'review' }).eq('id', taskId)
 
-    return res.status(200).json({ success: true, runId: run.id, result })
+    return res.status(200).json({ success: true, runId: run.id, route: routeMode, result })
   } catch (err) {
     await supabase.from('agent_runs').update({
       status: 'failed',
@@ -119,6 +147,6 @@ Status: Ready for real execution — set ANTHROPIC_API_KEY in Vercel env vars.`
       completed_at: new Date().toISOString()
     }).eq('id', run.id)
 
-    return res.status(500).json({ error: 'Agent execution failed', runId: run.id })
+    return res.status(500).json({ error: 'Agent execution failed', runId: run.id, route: routeMode })
   }
 }

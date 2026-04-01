@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "moso:sync": "node scripts/moso-bridge-cli.js",
+    "moso:pulse": "node scripts/moso-bridge-cli.js --agent coach --type weekly_pulse",
+    "moso:briefing": "node scripts/moso-bridge-cli.js --agent chief --type morning_briefing",
+    "moso:alert": "node scripts/moso-bridge-cli.js --agent coach --type pattern_alert"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

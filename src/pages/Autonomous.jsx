@@ -42,17 +42,44 @@ const AGENTS = [
   { name: 'Lead Gen Agent', desc: 'Apollo enrichment, outbound sequencing', status: 'stopped', color: '#ff5555', statusLabel: 'Stopped', tasks: 8, uptime: '0m' },
 ];
 
+const MOSO_AGENTS = [
+  { name: 'The Chief', desc: 'Morning briefings, calendar defense, comms', platform: 'Gemini', color: '#bd93f9' },
+  { name: 'The Coach', desc: 'Weekly Pulse, Pattern Alerts, energy tracking', platform: 'Gemini', color: '#ff79c6' },
+  { name: 'The Architect', desc: 'Consulting strategy, client audits', platform: 'Gemini', color: '#ffb86c' },
+];
+
+const ROUTE_LABELS = {
+  local: { label: 'Local CLI (Pro)', color: '#50fa7b', desc: 'Free — uses Claude Pro subscription' },
+  api: { label: 'Vercel API', color: '#f1fa8c', desc: 'Paid — uses ANTHROPIC_API_KEY' },
+  simulation: { label: 'Simulation', color: '#6272a4', desc: 'No API key configured' },
+};
+
 const Autonomous = () => {
   const [visibleLines, setVisibleLines] = useState(5);
   const [agentRuns, setAgentRuns] = useState([]);
+  const [mosoSyncs, setMosoSyncs] = useState([]);
+  const [routeMode, setRouteMode] = useState('detecting...');
 
   useEffect(() => {
     const fetchRuns = async () => {
       const { data } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(20);
-      if (data) setAgentRuns(data);
+      if (data) {
+        setAgentRuns(data);
+        // Detect route mode from latest completed run
+        const latestCompleted = data.find(r => r.result && r.status === 'completed');
+        if (latestCompleted?.result) {
+          const routeMatch = latestCompleted.result.match(/\[Route: (\w+)\]/);
+          if (routeMatch) setRouteMode(routeMatch[1]);
+        }
+      }
+    };
+    const fetchMosoSyncs = async () => {
+      const { data } = await supabase.from('moso_sync_log').select('*').order('synced_at', { ascending: false }).limit(10);
+      if (data) setMosoSyncs(data);
     };
     fetchRuns();
-    const interval = setInterval(fetchRuns, 10000); // poll every 10s
+    fetchMosoSyncs();
+    const interval = setInterval(() => { fetchRuns(); fetchMosoSyncs(); }, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -202,9 +229,63 @@ const Autonomous = () => {
             </div>
           ))}
 
+          {/* Routing Mode indicator */}
+          <div style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${(ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).color}33`,
+            borderRadius: '14px',
+            padding: '1rem',
+            borderLeft: `3px solid ${(ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).color}`,
+          }}>
+            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6272a4', marginBottom: '8px', fontWeight: 600 }}>Agent Routing</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={{
+                width: '10px', height: '10px', borderRadius: '50%',
+                background: (ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).color,
+                boxShadow: `0 0 8px ${(ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).color}66`,
+              }} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: (ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).color }}>
+                {(ROUTE_LABELS[routeMode] || { label: routeMode }).label}
+              </span>
+            </div>
+            <p style={{ fontSize: '0.7rem', color: '#7a789a', margin: 0, lineHeight: 1.4 }}>
+              {(ROUTE_LABELS[routeMode] || ROUTE_LABELS.simulation).desc}
+            </p>
+          </div>
+
+          {/* MOSO Agents (Gemini) */}
+          <div>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#c0bdd0', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              MOSO Agents
+            </h3>
+            {MOSO_AGENTS.map((agent, i) => (
+              <div key={i} style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '10px',
+                padding: '10px 12px',
+                marginBottom: '6px',
+                borderLeft: `3px solid ${agent.color}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#e8e6f0' }}>{agent.name}</span>
+                  <span style={{
+                    fontSize: '0.6rem', fontWeight: 600, padding: '2px 6px', borderRadius: '8px',
+                    background: `${agent.color}18`, color: agent.color, textTransform: 'uppercase',
+                  }}>{agent.platform}</span>
+                </div>
+                <p style={{ fontSize: '0.7rem', color: '#7a789a', margin: '4px 0 0', lineHeight: 1.3 }}>{agent.desc}</p>
+                {mosoSyncs.filter(s => s.agent === agent.name.replace('The ', '').toLowerCase()).length > 0 && (
+                  <div style={{ fontSize: '0.65rem', color: '#50fa7b', marginTop: '4px' }}>
+                    Last sync: {new Date(mosoSyncs.find(s => s.agent === agent.name.replace('The ', '').toLowerCase())?.synced_at).toLocaleString()}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
           {/* System summary card */}
           <div style={{
-            marginTop: 'auto',
             background: 'rgba(139,233,253,0.04)',
             border: '1px solid rgba(139,233,253,0.12)',
             borderRadius: '14px',
