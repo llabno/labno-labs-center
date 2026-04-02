@@ -26,19 +26,16 @@ async function getEmbedding(text) {
 
 // pgvector semantic search via the match_sops database function
 async function vectorSearch(queryEmbedding, userEmail) {
+  // Use database-level visibility filtering (not app-side) for defense in depth
   const { data, error } = await supabase.rpc('match_sops', {
     query_embedding: queryEmbedding,
     match_threshold: 0.5,
     match_count: 5,
+    filter_visibility: userEmail === 'lance@labnolabs.com' ? null : 'Public Brain',
   });
   if (error || !data?.length) return null;
 
-  // Filter by visibility for non-Lance users
-  const filtered = userEmail === 'lance@labnolabs.com'
-    ? data
-    : data.filter(s => s.visibility === 'Public Brain');
-
-  return filtered.length > 0 ? filtered : null;
+  return data;
 }
 
 // Keyword-based fallback search

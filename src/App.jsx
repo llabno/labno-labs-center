@@ -20,6 +20,7 @@ import WorkHistory from './pages/WorkHistory';
 import ClinicalBlog from './pages/ClinicalBlog';
 import Telemetry from './pages/Telemetry';
 import ProjectsTasks from './pages/ProjectsTasks';
+import TaskQueue from './pages/TaskQueue';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -49,6 +50,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Strategic Deep Analysis', path: '/strategic', icon: <Compass size={20} /> },
     { name: 'Strategic Playbook', path: '/playbook', icon: <Map size={20} /> },
     { name: 'Clinical Blog', path: '/blog', icon: <FileText size={20} /> },
+    { name: 'Task Queue (50)', path: '/taskqueue', icon: <Layers size={20} /> },
     { name: 'Work History', path: '/history', icon: <Clock size={20} /> },
     { name: 'Projects & Tasks', path: '/projects', icon: <ListChecks size={20} /> },
     { name: 'Telemetry', path: '/telemetry', icon: <BarChart3 size={20} /> },
@@ -172,6 +174,7 @@ function App() {
           <Route path="/strategic" element={<Strategic />} />
           <Route path="/playbook" element={<StrategicPlaybook />} />
           <Route path="/blog" element={<ClinicalBlog />} />
+          <Route path="/taskqueue" element={<TaskQueue />} />
           <Route path="/history" element={<WorkHistory />} />
           <Route path="/projects" element={<ProjectsTasks />} />
           <Route path="/telemetry" element={<Telemetry />} />

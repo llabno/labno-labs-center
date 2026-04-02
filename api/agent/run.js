@@ -20,9 +20,10 @@ export default async function handler(req, res) {
   const { taskId, taskTitle, projectName, context } = req.body
   if (!taskId || !taskTitle) return res.status(400).json({ error: 'taskId and taskTitle required' })
 
+  // Use service_role for writes (RLS-bypassing, but auth-gated above)
   const supabase = createClient(
     process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
   const prompt = `Execute task: ${taskTitle}\nProject: ${projectName || 'Unassigned'}\nContext: ${context || 'None'}`

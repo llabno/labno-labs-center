@@ -1,3 +1,17 @@
+# Vercel
 .vercel
+
+# Supabase
 supabase/.temp/
+
+# Dependencies
 node_modules/
+dist/
+
+# Environment (secrets)
+.env*.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
