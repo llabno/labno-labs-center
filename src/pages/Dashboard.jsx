@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const COLUMNS = ['backlog', 'triage', 'review', 'completed'];
-const COLUMN_LABELS = { backlog: 'Backlog', triage: 'Needs Triage', review: 'Review', completed: 'Completed' };
-const COLUMN_DOTS = { backlog: '#9e9a97', triage: '#5a8abf', review: '#c49a40', completed: '#6aab6e' };
+const COLUMNS = ['backlog', 'triage', 'in_progress', 'review', 'blocked', 'completed'];
+const COLUMN_LABELS = { backlog: 'Backlog', triage: 'Needs Triage', in_progress: 'In Progress', review: 'Review', blocked: 'Blocked', completed: 'Completed' };
+const COLUMN_DOTS = { backlog: '#9e9a97', triage: '#5a8abf', in_progress: '#b06050', review: '#c49a40', blocked: '#d14040', completed: '#6aab6e' };
 
 const VENTURE_FILTERS = [
   { key: 'all', label: 'All' },
@@ -17,10 +17,28 @@ const ASSIGNEE_FILTERS = ['All', 'Lance', 'Avery', 'Romy', 'Sarah', 'Agent'];
 
 const inferCategory = (name) => {
   const n = (name || '').toLowerCase();
-  if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization')) return 'clinical';
-  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting')) return 'consulting';
-  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center')) return 'apps';
+  if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization') || n.includes('kylie') || n.includes('exercise card')) return 'clinical';
+  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting') || n.includes('greenrope') || n.includes('notion crm')) return 'consulting';
+  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('oracle') || n.includes('mcp')) return 'apps';
   return 'all';
+};
+
+const TIER_KEYWORDS = [
+  { tier: 1, label: 'Tier 1 — This Week', color: '#d14040', keywords: ['mcp stack'] },
+  { tier: 2, label: 'Tier 2 — This Month', color: '#c49a40', keywords: ['oracle v1', 'handoff protocol', 'greenrope', 'notion crm', 'kylie expansion'] },
+  { tier: 3, label: 'Tier 3 — This Quarter', color: '#5a8abf', keywords: ['exercise card', 'somatic', 'referral nurture', 'wardley'] },
+];
+const inferTier = (name) => { const n = (name || '').toLowerCase(); for (const t of TIER_KEYWORDS) { if (t.keywords.some(k => n.includes(k))) return t; } return null; };
+const TIER_ORDER = [1, 2, 3, null];
+const TIER_META = { 1: { label: 'Tier 1 — This Week', color: '#d14040', bg: 'rgba(209,64,64,0.06)' }, 2: { label: 'Tier 2 — This Month', color: '#c49a40', bg: 'rgba(196,154,64,0.06)' }, 3: { label: 'Tier 3 — This Quarter', color: '#5a8abf', bg: 'rgba(90,138,191,0.06)' }, null: { label: 'Other Projects', color: '#8a8682', bg: 'transparent' } };
+const getUrgency = (dueDateStr) => {
+  if (!dueDateStr) return { label: 'No date', color: '#9e9a97', bg: 'rgba(0,0,0,0.04)' };
+  const now = new Date(); const due = new Date(dueDateStr);
+  const daysLeft = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { label: `${Math.abs(daysLeft)}d overdue`, color: '#fff', bg: '#d14040' };
+  if (daysLeft <= 3) return { label: `${daysLeft}d left`, color: '#d14040', bg: 'rgba(209,64,64,0.12)' };
+  if (daysLeft <= 14) return { label: `${daysLeft}d left`, color: '#c49a40', bg: 'rgba(196,154,64,0.10)' };
+  return { label: `${daysLeft}d left`, color: '#6aab6e', bg: 'rgba(106,171,110,0.10)' };
 };
 
 const Dashboard = () => {
@@ -36,6 +54,7 @@ const Dashboard = () => {
   const [showBacklog, setShowBacklog] = useState(false);
   const [collapsedBoards, setCollapsedBoards] = useState({});
   const [executingTasks, setExecutingTasks] = useState({});
+  const [viewMode, setViewMode] = useState('tier');
   const kanbanRef = useRef(null);
 
   const executeTask = async (task, projectName) => {
@@ -281,54 +300,73 @@ ${COLUMNS.map(col => `
               <h3 style={{ color: '#2e2c2a', fontSize: '1.2rem', fontWeight: 600 }}>Top Internal Operations & Projects</h3>
               <p style={{ color: '#6b6764', fontSize: '0.85rem' }}>Click up to 4 projects to open Side-by-Side Workflow Boards.</p>
             </div>
-            <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-                    onClick={() => {
-                      if (window.posthog) window.posthog.capture('clicked_new_project_btn');
-                      setShowNewProjectModal(true);
-                    }}>
-              <Plus size={16} /> New Project
-            </button>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+                <button onClick={() => setViewMode('tier')} style={{ padding: '6px 12px', fontSize: '0.75rem', fontWeight: 500, border: 'none', cursor: 'pointer', background: viewMode === 'tier' ? '#b06050' : 'rgba(255,255,255,0.5)', color: viewMode === 'tier' ? '#fff' : '#6b6764' }}>Tier View</button>
+                <button onClick={() => setViewMode('flat')} style={{ padding: '6px 12px', fontSize: '0.75rem', fontWeight: 500, border: 'none', cursor: 'pointer', background: viewMode === 'flat' ? '#b06050' : 'rgba(255,255,255,0.5)', color: viewMode === 'flat' ? '#fff' : '#6b6764' }}>Flat View</button>
+              </div>
+              <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', padding: '0.5rem 1rem' }} onClick={() => { if (window.posthog) window.posthog.capture('clicked_new_project_btn'); setShowNewProjectModal(true); }}>
+                <Plus size={16} /> New Project
+              </button>
+            </div>
           </div>
 
-          <div style={{ overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'rgba(0,0,0,0.03)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+          {viewMode === 'tier' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {TIER_ORDER.map(tierKey => {
+                const meta = TIER_META[tierKey];
+                const tierProjects = filteredProjects.filter(p => { const t = inferTier(p.name); return tierKey === null ? t === null : t?.tier === tierKey; });
+                if (tierProjects.length === 0) return null;
+                return (
+                  <div key={tierKey ?? 'other'}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', paddingLeft: '4px' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: meta.color, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{meta.label}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#9e9a97' }}>({tierProjects.length})</span>
+                    </div>
+                    <div style={{ overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)', background: meta.bg }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}><tbody>
+                        {tierProjects.map(proj => {
+                          const isActive = activeBoards.find(b => b.id === proj.id);
+                          const urgency = getUrgency(proj.due_date);
+                          return (
+                            <tr key={proj.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.03)', background: isActive ? 'rgba(176,96,80,0.08)' : 'transparent', cursor: 'pointer' }} onClick={() => toggleProjectBoard(proj)}>
+                              <td style={{ padding: '0.85rem 1rem', color: '#1e1d1c', fontWeight: 500 }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><LayoutList size={16} color={isActive ? '#b06050' : '#8a8682'} /> {proj.name}</div></td>
+                              <td style={{ padding: '0.85rem 1rem', width: '120px' }}><span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: urgency.bg, color: urgency.color, whiteSpace: 'nowrap' }}>{urgency.label}</span></td>
+                              <td style={{ padding: '0.85rem 1rem', color: '#6b6764', fontSize: '0.85rem', width: '100px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={13}/> {formatDate(proj.due_date)}</div></td>
+                              <td style={{ padding: '0.85rem 1rem', width: '80px' }}><div style={{ height: '5px', background: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden', minWidth: '40px' }}><div style={{ width: `${proj.total_tasks > 0 ? (proj.completed_tasks / proj.total_tasks) * 100 : 0}%`, height: '100%', background: '#b06050' }}></div></div></td>
+                            </tr>);
+                        })}
+                      </tbody></table>
+                    </div>
+                  </div>);
+              })}
+            </div>
+          ) : (
+            <div style={{ overflow: 'hidden', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead><tr style={{ background: 'rgba(0,0,0,0.03)', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                   <th style={{ padding: '1rem', color: '#3e3c3a', fontWeight: 600 }}>Project Name</th>
+                  <th style={{ padding: '1rem', color: '#3e3c3a', fontWeight: 600 }}>Urgency</th>
                   <th style={{ padding: '1rem', color: '#3e3c3a', fontWeight: 600 }}>Timeline</th>
                   <th style={{ padding: '1rem', color: '#3e3c3a', fontWeight: 600 }}>Progress</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProjects.map((proj) => {
-                  const isActive = activeBoards.find(b => b.id === proj.id);
-                  return (
-                    <tr
-                      key={proj.id}
-                      style={{ borderBottom: '1px solid rgba(0,0,0,0.02)', background: isActive ? 'rgba(176, 96, 80, 0.08)' : 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'background 0.25s ease' }}
-                      onClick={() => toggleProjectBoard(proj)}
-                    >
-                      <td style={{ padding: '1rem', color: '#1e1d1c', fontWeight: 500 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <LayoutList size={16} color={isActive ? '#b06050' : '#8a8682'} /> {proj.name}
-                        </div>
-                      </td>
-                      <td style={{ padding: '1rem', color: '#6b6764', fontSize: '0.9rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {formatDate(proj.due_date)}</div>
-                      </td>
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ flex: 1, height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden', width: '60px' }}>
-                            <div style={{ width: `${proj.total_tasks > 0 ? (proj.completed_tasks / proj.total_tasks) * 100 : 0}%`, height: '100%', background: '#b06050', transition: 'width 0.4s ease' }}></div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                </tr></thead>
+                <tbody>
+                  {filteredProjects.map(proj => {
+                    const isActive = activeBoards.find(b => b.id === proj.id);
+                    const urgency = getUrgency(proj.due_date);
+                    return (
+                      <tr key={proj.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.02)', background: isActive ? 'rgba(176,96,80,0.08)' : 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => toggleProjectBoard(proj)}>
+                        <td style={{ padding: '1rem', color: '#1e1d1c', fontWeight: 500 }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><LayoutList size={16} color={isActive ? '#b06050' : '#8a8682'} /> {proj.name}</div></td>
+                        <td style={{ padding: '1rem' }}><span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', background: urgency.bg, color: urgency.color }}>{urgency.label}</span></td>
+                        <td style={{ padding: '1rem', color: '#6b6764', fontSize: '0.9rem' }}><div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> {formatDate(proj.due_date)}</div></td>
+                        <td style={{ padding: '1rem' }}><div style={{ height: '6px', background: 'rgba(0,0,0,0.06)', borderRadius: '4px', overflow: 'hidden', width: '60px' }}><div style={{ width: `${proj.total_tasks > 0 ? (proj.completed_tasks / proj.total_tasks) * 100 : 0}%`, height: '100%', background: '#b06050' }}></div></div></td>
+                      </tr>);
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* 3. The Hot List */}
@@ -341,10 +379,16 @@ ${COLUMNS.map(col => `
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {hotList.map(item => {
               const isActive = activeBoards.find(b => b.id === item.id);
+              const urgency = getUrgency(item.due_date);
+              const tier = inferTier(item.name);
               return (
-                <div key={item.id} onClick={() => toggleProjectBoard(item)} style={{ padding: '1rem', background: isActive ? 'rgba(176,96,80,0.08)' : 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', cursor: 'pointer', borderLeft: '3px solid #b04a3a', transition: 'all 0.25s ease' }}>
-                  <div style={{ fontWeight: 600, color: '#1e1d1c' }}>{item.name}</div>
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '0.75rem' }}>
+                <div key={item.id} onClick={() => toggleProjectBoard(item)} style={{ padding: '1rem', background: isActive ? 'rgba(176,96,80,0.08)' : 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '8px', cursor: 'pointer', borderLeft: `3px solid ${tier ? tier.color : '#b04a3a'}`, transition: 'all 0.25s ease' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, color: '#1e1d1c', flex: 1 }}>{item.name}</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: '5px', background: urgency.bg, color: urgency.color, whiteSpace: 'nowrap', flexShrink: 0 }}>{urgency.label}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '6px', fontSize: '0.72rem', flexWrap: 'wrap' }}>
+                    {tier && <span style={{ padding: '2px 6px', borderRadius: '4px', background: tier.color + '18', color: tier.color, fontWeight: 500 }}>Tier {tier.tier}</span>}
                     <span style={{ background: 'rgba(0,0,0,0.04)', padding: '2px 6px', borderRadius: '4px', color: '#6b6764' }}>Cost: {costLabel(item.complexity)}</span>
                     <span style={{ background: 'rgba(0,0,0,0.04)', padding: '2px 6px', borderRadius: '4px', color: '#6b6764' }}>Due: {formatDate(item.due_date)}</span>
                   </div>
@@ -393,7 +437,9 @@ ${COLUMNS.map(col => `
                     {COLUMNS.map(col => {
                       const colStyles = {
                         triage: { borderLeft: '3px solid #5a8abf' },
+                        in_progress: { borderLeft: '3px solid #b06050' },
                         review: { borderLeft: '3px solid #c49a40' },
+                        blocked: { borderLeft: '3px solid #d14040', background: 'rgba(209,64,64,0.04)' },
                         completed: { borderLeft: '3px solid #6aab6e' },
                       };
                       return (
