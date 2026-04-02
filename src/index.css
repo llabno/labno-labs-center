@@ -347,8 +347,8 @@ body {
 .kanban-grid {
   display: grid;
   gap: 1.5rem;
-  flex: 1;
-  overflow: hidden;
+  min-height: 320px;
+  overflow: visible;
 }
 
 .kanban-grid[data-boards="1"] {
