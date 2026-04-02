@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -17,6 +17,7 @@ import Reactivation from './pages/Reactivation';
 import Strategic from './pages/Strategic';
 import StrategicPlaybook from './pages/StrategicPlaybook';
 import WorkHistory from './pages/WorkHistory';
+import ClinicalBlog from './pages/ClinicalBlog';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -45,6 +46,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Reactivation Inbox', path: '/reactivation', icon: <Inbox size={20} /> },
     { name: 'Strategic Deep Analysis', path: '/strategic', icon: <Compass size={20} /> },
     { name: 'Strategic Playbook', path: '/playbook', icon: <Map size={20} /> },
+    { name: 'Clinical Blog', path: '/blog', icon: <FileText size={20} /> },
     { name: 'Work History', path: '/history', icon: <Clock size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
   ];
@@ -150,6 +152,7 @@ function App() {
           <Route path="/reactivation" element={<Reactivation />} />
           <Route path="/strategic" element={<Strategic />} />
           <Route path="/playbook" element={<StrategicPlaybook />} />
+          <Route path="/blog" element={<ClinicalBlog />} />
           <Route path="/history" element={<WorkHistory />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />

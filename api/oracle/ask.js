@@ -5,6 +5,59 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Generate embedding via OpenAI (if key available)
+async function getEmbedding(text) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.data?.[0]?.embedding || null;
+  } catch {
+    return null;
+  }
+}
+
+// pgvector semantic search via the match_sops database function
+async function vectorSearch(queryEmbedding, userEmail) {
+  const { data, error } = await supabase.rpc('match_sops', {
+    query_embedding: queryEmbedding,
+    match_threshold: 0.5,
+    match_count: 5,
+  });
+  if (error || !data?.length) return null;
+
+  // Filter by visibility for non-Lance users
+  const filtered = userEmail === 'lance@labnolabs.com'
+    ? data
+    : data.filter(s => s.visibility === 'Public Brain');
+
+  return filtered.length > 0 ? filtered : null;
+}
+
+// Keyword-based fallback search
+function keywordSearch(allSops, query) {
+  const queryTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+  const scored = allSops.map(sop => {
+    const text = `${sop.title} ${sop.content}`.toLowerCase();
+    let score = 0;
+    queryTerms.forEach(term => {
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      score += (text.match(new RegExp(escaped, 'g')) || []).length;
+      if (sop.title.toLowerCase().includes(term)) score += 3;
+    });
+    return { ...sop, score, similarity: score / 10 };
+  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+
+  return scored.length > 0 ? scored.slice(0, 5) : allSops.slice(0, 3).map(s => ({ ...s, score: 0, similarity: 0 }));
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -40,34 +93,38 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch SOPs — filter by visibility for non-Lance users
-    let sopQuery = supabase.from('oracle_sops').select('id, title, content, visibility, token_count');
-    if (userEmail !== 'lance@labnolabs.com') {
-      sopQuery = sopQuery.eq('visibility', 'Public Brain');
-    }
-    const { data: allSops, error: sopErr } = await sopQuery;
-    if (sopErr) return res.status(500).json({ error: sopErr.message });
+    let contextSops = null;
+    let searchMethod = 'keyword';
 
-    if (!allSops || allSops.length === 0) {
-      return res.json({ response: 'No SOPs found in the Oracle. Add some first.', sources: [], model: 'none', sopCount: 0 });
+    // Strategy 1: Try pgvector semantic search (if embeddings + OpenAI key exist)
+    const queryEmbedding = await getEmbedding(query);
+    if (queryEmbedding) {
+      contextSops = await vectorSearch(queryEmbedding, userEmail);
+      if (contextSops) searchMethod = 'pgvector';
     }
 
-    // Keyword-based relevance ranking (until pgvector embeddings are wired)
-    const queryTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
-    const scored = allSops.map(sop => {
-      const text = `${sop.title} ${sop.content}`.toLowerCase();
-      let score = 0;
-      queryTerms.forEach(term => {
-        score += (text.match(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
-        if (sop.title.toLowerCase().includes(term)) score += 3;
-      });
-      return { ...sop, score };
-    }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+    // Strategy 2: Fall back to keyword search
+    if (!contextSops) {
+      let sopQuery = supabase.from('oracle_sops').select('id, title, content, visibility, token_count');
+      if (userEmail !== 'lance@labnolabs.com') {
+        sopQuery = sopQuery.eq('visibility', 'Public Brain');
+      }
+      const { data: allSops, error: sopErr } = await sopQuery;
+      if (sopErr) return res.status(500).json({ error: sopErr.message });
 
-    const contextSops = scored.length > 0 ? scored.slice(0, 5) : allSops.slice(0, 3);
+      if (!allSops || allSops.length === 0) {
+        return res.json({ response: 'No SOPs found in the Oracle. Add some first.', sources: [], model: 'none', searchMethod: 'none', sopCount: 0 });
+      }
 
-    // Build RAG context
-    const sopContext = contextSops.map((s, i) => `[SOP ${i + 1}: ${s.title}]\n${s.content}`).join('\n\n---\n\n');
+      contextSops = keywordSearch(allSops, query);
+    }
+
+    // Build RAG context from the matched SOPs
+    const sopContext = contextSops.map((s, i) =>
+      `[SOP ${i + 1}: ${s.title}]${s.similarity ? ` (relevance: ${(s.similarity * 100).toFixed(0)}%)` : ''}\n${s.content}`
+    ).join('\n\n---\n\n');
+
+    const { count: totalSopCount } = await supabase.from('oracle_sops').select('id', { count: 'exact', head: true });
 
     const systemPrompt = `You are The Oracle — Labno Labs' internal knowledge assistant. Answer questions based ONLY on the SOPs provided below. If the answer isn't in the SOPs, say so honestly. Be concise and actionable. Reference which SOP(s) you used.
 
@@ -80,16 +137,16 @@ ${sopContext}
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      // Fallback if API key not configured — return the matched SOPs directly
       return res.json({
-        response: `Found ${contextSops.length} relevant SOP(s) for your query. Configure ANTHROPIC_API_KEY in Vercel to enable AI-powered answers.\n\nTop match: "${contextSops[0]?.title}"`,
-        sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.score || 0 })),
+        response: `Found ${contextSops.length} relevant SOP(s) via ${searchMethod} search. Configure ANTHROPIC_API_KEY to enable AI answers.\n\nTop match: "${contextSops[0]?.title}"`,
+        sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
         model: 'keyword-only',
-        sopCount: allSops.length,
+        searchMethod,
+        sopCount: totalSopCount || contextSops.length,
       });
     }
 
-    // Call Claude via raw fetch (no SDK dependency needed)
+    // Call Claude
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -98,7 +155,7 @@ ${sopContext}
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 800,
         system: systemPrompt,
         messages: [{ role: 'user', content: query }],
@@ -106,12 +163,12 @@ ${sopContext}
     });
 
     if (!anthropicRes.ok) {
-      const errBody = await anthropicRes.text();
       return res.json({
-        response: `Oracle found ${contextSops.length} matching SOP(s) but the AI response failed. Top match: "${contextSops[0]?.title}"\n\nTry again or check the ANTHROPIC_API_KEY.`,
-        sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.score || 0 })),
+        response: `Oracle found ${contextSops.length} matching SOP(s) but AI response failed. Top match: "${contextSops[0]?.title}"`,
+        sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
         model: 'fallback',
-        sopCount: allSops.length,
+        searchMethod,
+        sopCount: totalSopCount || contextSops.length,
       });
     }
 
@@ -120,9 +177,10 @@ ${sopContext}
 
     return res.json({
       response: answer,
-      sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.score || 0 })),
-      model: 'claude-3-haiku',
-      sopCount: allSops.length,
+      sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
+      model: 'claude-3-5-haiku',
+      searchMethod,
+      sopCount: totalSopCount || contextSops.length,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
