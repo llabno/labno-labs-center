@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -49,6 +49,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Clinical Blog', path: '/blog', icon: <FileText size={20} /> },
     { name: 'Work History', path: '/history', icon: <Clock size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
+    { name: 'Screenshot to Code', path: null, icon: <Image size={20} />, external: 'https://design-to-code-app.vercel.app' },
   ];
 
   return (
@@ -56,14 +57,28 @@ const Sidebar = ({ user, onLogout }) => {
       <h2>Labno Labs</h2>
       <nav>
         {menuItems.map((item) => (
-          <Link 
-            key={item.name} 
-            to={item.path} 
-            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-          >
-            {item.icon}
-            {item.name}
-          </Link>
+          item.external ? (
+            <a
+              key={item.name}
+              href={item.external}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-item"
+            >
+              {item.icon}
+              {item.name}
+              <span style={{ fontSize: '10px', opacity: 0.4, marginLeft: 'auto' }}>↗</span>
+            </a>
+          ) : (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+            >
+              {item.icon}
+              {item.name}
+            </Link>
+          )
         ))}
         <div style={{ marginTop: 'auto' }}>
           <Link to="/settings" className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`} style={{ marginBottom: '10px' }}>
