@@ -60,9 +60,10 @@ const Dashboard = () => {
   const executeTask = async (task, projectName) => {
     setExecutingTasks(prev => ({ ...prev, [task.id]: 'queued' }));
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/agent/run', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
         body: JSON.stringify({ taskId: task.id, taskTitle: task.title, projectName, context: `Assigned to: ${task.assigned_to}` })
       });
       const data = await res.json();

@@ -3,6 +3,20 @@ import { createClient } from '@supabase/supabase-js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  // Auth gate: verify Bearer token and restrict to employees
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' })
+  }
+  const authClient = createClient(
+    process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  )
+  const { data: { user }, error: authError } = await authClient.auth.getUser(authHeader.split(' ')[1])
+  if (authError || !user || !(user.email?.endsWith('@labnolabs.com') || user.email?.endsWith('@movement-solutions.com'))) {
+    return res.status(403).json({ error: 'Access denied' })
+  }
+
   const { taskId, taskTitle, projectName, context } = req.body
   if (!taskId || !taskTitle) return res.status(400).json({ error: 'taskId and taskTitle required' })
 
