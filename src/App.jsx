@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -18,6 +18,8 @@ import Strategic from './pages/Strategic';
 import StrategicPlaybook from './pages/StrategicPlaybook';
 import WorkHistory from './pages/WorkHistory';
 import ClinicalBlog from './pages/ClinicalBlog';
+import Telemetry from './pages/Telemetry';
+import ProjectsTasks from './pages/ProjectsTasks';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -48,6 +50,8 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Strategic Playbook', path: '/playbook', icon: <Map size={20} /> },
     { name: 'Clinical Blog', path: '/blog', icon: <FileText size={20} /> },
     { name: 'Work History', path: '/history', icon: <Clock size={20} /> },
+    { name: 'Projects & Tasks', path: '/projects', icon: <ListChecks size={20} /> },
+    { name: 'Telemetry', path: '/telemetry', icon: <BarChart3 size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
     { name: 'Screenshot to Code', path: null, icon: <Image size={20} />, external: 'https://design-to-code-app.vercel.app' },
   ];
@@ -169,6 +173,8 @@ function App() {
           <Route path="/playbook" element={<StrategicPlaybook />} />
           <Route path="/blog" element={<ClinicalBlog />} />
           <Route path="/history" element={<WorkHistory />} />
+          <Route path="/projects" element={<ProjectsTasks />} />
+          <Route path="/telemetry" element={<Telemetry />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
