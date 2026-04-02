@@ -15,6 +15,16 @@ const TYPE_COLORS = {
   nav: '#ec4899', modal: '#6366f1', widget: '#14b8a6', layout: '#f97316', other: '#6b7280',
 };
 
+const STAGE_CONFIG = {
+  discovery:   { label: 'Discovery',   color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', icon: '\uD83D\uDD0D', order: 1 },
+  design:      { label: 'Design',      color: '#ec4899', bg: 'rgba(236,72,153,0.12)', icon: '\uD83C\uDFA8', order: 2 },
+  build:       { label: 'Build',       color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: '\uD83D\uDD28', order: 3 },
+  integration: { label: 'Integration', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', icon: '\uD83D\uDD0C', order: 4 },
+  polish:      { label: 'Polish',      color: '#14b8a6', bg: 'rgba(20,184,166,0.12)', icon: '\u2728',       order: 5 },
+  deploy:      { label: 'Deploy',      color: '#f97316', bg: 'rgba(249,115,22,0.12)', icon: '\uD83D\uDE80', order: 6 },
+  operate:     { label: 'Operate',     color: '#22c55e', bg: 'rgba(34,197,94,0.12)',  icon: '\u2699\uFE0F', order: 7 },
+};
+
 const UILibrary = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [assets, setAssets] = useState([]);
@@ -23,6 +33,7 @@ const UILibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterVenture, setFilterVenture] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [filterStage, setFilterStage] = useState('all');
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showCode, setShowCode] = useState(false);
 
@@ -56,6 +67,7 @@ const UILibrary = () => {
   const filtered = assets.filter(a => {
     if (filterVenture !== 'all' && a.metadata?.venture !== filterVenture) return false;
     if (filterType !== 'all' && a.metadata?.componentType !== filterType) return false;
+    if (filterStage !== 'all' && a.metadata?.workflowStage !== filterStage) return false;
     return true;
   });
 
@@ -124,15 +136,24 @@ const UILibrary = () => {
                 {asset.description}
               </div>
 
-              {/* Venture badge */}
-              <span style={{
-                fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px',
-                background: ventureStyle.bg, color: ventureStyle.color,
-                fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px',
-                display: 'inline-block', marginBottom: 6,
-              }}>
-                {asset.metadata?.venture}
-              </span>
+              {/* Badges */}
+              <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px', background: ventureStyle.bg, color: ventureStyle.color, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                  {asset.metadata?.venture}
+                </span>
+                {asset.metadata?.workflowStage && STAGE_CONFIG[asset.metadata.workflowStage] && (
+                  <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '10px', background: STAGE_CONFIG[asset.metadata.workflowStage].bg, color: STAGE_CONFIG[asset.metadata.workflowStage].color, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                    {STAGE_CONFIG[asset.metadata.workflowStage].icon} {STAGE_CONFIG[asset.metadata.workflowStage].label}
+                  </span>
+                )}
+              </div>
+
+              {/* Preview description */}
+              {asset.previewDescription && (
+                <p style={{ fontSize: '0.68rem', color: '#999', marginBottom: 6, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {asset.previewDescription}
+                </p>
+              )}
 
               {/* Tags */}
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -354,6 +375,34 @@ const UILibrary = () => {
               </div>
             </div>
 
+            {/* Workflow Stage */}
+            {selectedAsset.metadata?.workflowStage && STAGE_CONFIG[selectedAsset.metadata.workflowStage] && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ color: '#999', fontSize: '0.7rem', marginBottom: 6 }}>Workflow Stage</div>
+                <span style={{ fontSize: '0.75rem', padding: '3px 10px', borderRadius: 10, background: STAGE_CONFIG[selectedAsset.metadata.workflowStage].bg, color: STAGE_CONFIG[selectedAsset.metadata.workflowStage].color, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  {STAGE_CONFIG[selectedAsset.metadata.workflowStage].icon} {STAGE_CONFIG[selectedAsset.metadata.workflowStage].label} (Stage {STAGE_CONFIG[selectedAsset.metadata.workflowStage].order}/7)
+                </span>
+              </div>
+            )}
+
+            {/* Preview Description */}
+            {selectedAsset.previewDescription && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ color: '#999', fontSize: '0.7rem', marginBottom: 6 }}>Preview Description</div>
+                <p style={{ fontSize: '0.82rem', color: '#555', lineHeight: 1.5, margin: 0 }}>{selectedAsset.previewDescription}</p>
+              </div>
+            )}
+
+            {/* Mock Preview Data */}
+            {selectedAsset.previewProps && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ color: '#999', fontSize: '0.7rem', marginBottom: 6 }}>Sample Data (HIPAA-safe mock)</div>
+                <div style={{ background: '#f8f8f8', borderRadius: 8, padding: '0.75rem', fontSize: '0.75rem', fontFamily: 'monospace', color: '#444', lineHeight: 1.5, maxHeight: 200, overflow: 'auto' }}>
+                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{JSON.stringify(selectedAsset.previewProps, null, 2)}</pre>
+                </div>
+              </div>
+            )}
+
             {/* Design Tokens */}
             {selectedAsset.metadata?.designTokensUsed?.length > 0 && (
               <div style={{ marginTop: 16 }}>
@@ -494,6 +543,27 @@ const UILibrary = () => {
               style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ccc', width: 240, fontSize: '0.8rem' }}
             />
           </div>
+        </div>
+
+        {/* Workflow Stage Pipeline */}
+        <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: 4, alignItems: 'center', overflowX: 'auto' }}>
+          <button onClick={() => setFilterStage('all')} style={{ padding: '4px 12px', borderRadius: 14, border: 'none', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, whiteSpace: 'nowrap', background: filterStage === 'all' ? '#222' : 'rgba(0,0,0,0.04)', color: filterStage === 'all' ? '#fff' : '#888', transition: 'all 0.2s' }}>
+            All Stages ({assets.length})
+          </button>
+          {Object.entries(STAGE_CONFIG).map(([key, cfg]) => {
+            const count = assets.filter(a => a.metadata?.workflowStage === key).length;
+            if (count === 0) return null;
+            return (
+              <button key={key} onClick={() => setFilterStage(key)} style={{ padding: '4px 12px', borderRadius: 14, border: 'none', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', background: filterStage === key ? cfg.color : cfg.bg, color: filterStage === key ? '#fff' : cfg.color, transition: 'all 0.2s' }}>
+                <span>{cfg.icon}</span> {cfg.label} ({count})
+              </button>
+            );
+          })}
+          {filterStage !== 'all' && STAGE_CONFIG[filterStage] && (
+            <span style={{ marginLeft: 8, fontSize: '0.7rem', color: '#999', fontStyle: 'italic' }}>
+              Stage {STAGE_CONFIG[filterStage].order}/7 in the build pipeline
+            </span>
+          )}
         </div>
 
         {/* Content */}
