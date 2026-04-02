@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [showBacklog, setShowBacklog] = useState(false);
   const [collapsedBoards, setCollapsedBoards] = useState({});
   const [executingTasks, setExecutingTasks] = useState({});
+  const kanbanRef = useRef(null);
 
   const executeTask = async (task, projectName) => {
     setExecutingTasks(prev => ({ ...prev, [task.id]: 'queued' }));
@@ -174,6 +175,8 @@ const Dashboard = () => {
       } else {
         setActiveBoards([...activeBoards, proj]);
       }
+      // Scroll Kanban into view after state update
+      setTimeout(() => kanbanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     }
   };
 
@@ -354,7 +357,7 @@ ${COLUMNS.map(col => `
 
       {/* 4. Global Workflow (Side-by-Side Kanban - up to 4) */}
       {activeBoards.length > 0 ? (
-        <div className="kanban-grid" data-boards={activeBoards.length}>
+        <div ref={kanbanRef} className="kanban-grid" data-boards={activeBoards.length}>
           {activeBoards.map(board => {
             const data = getKanbanData(board.id);
             const isCollapsed = collapsedBoards[board.id];
@@ -399,6 +402,9 @@ ${COLUMNS.map(col => `
                             <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: COLUMN_DOTS[col] }}></span>
                             {COLUMN_LABELS[col]}
                           </div>
+                          {data[col].length === 0 && col === 'backlog' && (
+                            <div style={{ padding: '12px', fontSize: '0.78rem', color: '#b0ada9', textAlign: 'center', fontStyle: 'italic' }}>No tasks yet — add one below</div>
+                          )}
                           {data[col].map(t => (
                             <div key={t.id} className={`task-card glass-panel${executingTasks[t.id] ? ' task-executing' : ''}`} style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
