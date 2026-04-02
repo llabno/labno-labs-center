@@ -1,6 +1,19 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Users, Briefcase, Plus, Search, X, ChevronDown, ChevronUp, ArrowRight, Phone, Mail, MapPin, Activity, DollarSign, Calendar, Tag, Download, Check, Edit3, Save, BarChart3, AlertTriangle, Copy, Filter, Columns, TrendingUp, Hash } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sanitizeClinicalLead, sanitizeConsultingLead } from '../lib/data-sanitizer';
+
+// HIPAA audit logger — fire-and-forget, never blocks UI
+const logAudit = async (action, table, recordId, details) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch('/api/audit/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+      body: JSON.stringify({ type: 'audit', action, table, record_id: recordId, details, user_email: session?.user?.email }),
+    });
+  } catch { /* silent — audit should never break the app */ }
+};
 
 // Status pipeline stages
 const MOSO_STATUSES = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'PITA-DNC'];
@@ -300,17 +313,25 @@ const DualCRM = () => {
 
   const handleAddClinical = async (e) => {
     e.preventDefault(); setSubmitting(true);
-    const { error } = await supabase.from('moso_clinical_leads').insert([newClinical]);
+    const cleaned = sanitizeClinicalLead(newClinical);
+    const { data, error } = await supabase.from('moso_clinical_leads').insert([cleaned]).select('id');
     if (error) setError(error.message);
-    else { setNewClinical({ patient_name: '', email: '', condition_notes: '', status: 'Active' }); setShowForm(false); await fetchData(); }
+    else {
+      logAudit('insert', 'moso_clinical_leads', data?.[0]?.id, { patient_name: cleaned.patient_name });
+      setNewClinical({ patient_name: '', email: '', condition_notes: '', status: 'Active' }); setShowForm(false); await fetchData();
+    }
     setSubmitting(false);
   };
 
   const handleAddConsulting = async (e) => {
     e.preventDefault(); setSubmitting(true);
-    const { error } = await supabase.from('labno_consulting_leads').insert([{ ...newConsulting, lifetime_value: parseFloat(newConsulting.lifetime_value) || 0 }]);
+    const cleaned = sanitizeConsultingLead({ ...newConsulting, lifetime_value: parseFloat(newConsulting.lifetime_value) || 0 });
+    const { data, error } = await supabase.from('labno_consulting_leads').insert([cleaned]).select('id');
     if (error) setError(error.message);
-    else { setNewConsulting({ company_name: '', email: '', app_interest: '', lifetime_value: 0 }); setShowForm(false); await fetchData(); }
+    else {
+      logAudit('insert', 'labno_consulting_leads', data?.[0]?.id, { company_name: cleaned.company_name });
+      setNewConsulting({ company_name: '', email: '', app_interest: '', lifetime_value: 0 }); setShowForm(false); await fetchData();
+    }
     setSubmitting(false);
   };
 
@@ -318,14 +339,18 @@ const DualCRM = () => {
     const table = activeTab === 'moso' ? 'moso_clinical_leads' : 'labno_consulting_leads';
     const field = activeTab === 'moso' ? 'status' : 'client_status';
     const { error } = await supabase.from(table).update({ [field]: newStatus }).eq('id', leadId);
-    if (!error) { await fetchData(); if (selectedLead?.id === leadId) setSelectedLead(prev => ({ ...prev, [field]: newStatus })); }
+    if (!error) {
+      logAudit('status_change', table, leadId, { field, new_status: newStatus });
+      await fetchData(); if (selectedLead?.id === leadId) setSelectedLead(prev => ({ ...prev, [field]: newStatus }));
+    }
   };
 
   const saveInlineEdit = async (leadId, field, value) => {
     const table = activeTab === 'moso' ? 'moso_clinical_leads' : 'labno_consulting_leads';
     const parsedVal = ['total_visits', 'lifetime_value', 'est_annual_revenue', 'rate_per_session', 'tier'].includes(field) ? (parseFloat(value) || 0) : value;
     const { error: err } = await supabase.from(table).update({ [field]: parsedVal }).eq('id', leadId);
-    if (!err) await fetchData(); else setError(err.message);
+    if (!err) { logAudit('inline_edit', table, leadId, { field, value: parsedVal }); await fetchData(); }
+    else setError(err.message);
     setEditingCell(null);
   };
 
@@ -338,7 +363,7 @@ const DualCRM = () => {
     });
     if (Object.keys(updates).length === 0) { setDetailEditMode(false); return; }
     const { error: err } = await supabase.from(table).update(updates).eq('id', selectedLead.id);
-    if (!err) { await fetchData(); setSelectedLead(prev => ({ ...prev, ...updates })); setDetailEdits({}); setDetailEditMode(false); }
+    if (!err) { logAudit('detail_edit', table, selectedLead.id, updates); await fetchData(); setSelectedLead(prev => ({ ...prev, ...updates })); setDetailEdits({}); setDetailEditMode(false); }
     else setError(err.message);
   };
 
@@ -351,9 +376,11 @@ const DualCRM = () => {
       if (!window.confirm(`Delete ${ids.length} lead(s)? This cannot be undone.`)) return;
       const { error: err } = await supabase.from(table).delete().in('id', ids);
       if (err) setError(err.message);
+      else logAudit('bulk_delete', table, null, { count: ids.length, ids: ids.slice(0, 5) });
     } else {
       const { error: err } = await supabase.from(table).update({ [field]: bulkAction }).in('id', ids);
       if (err) setError(err.message);
+      else logAudit('bulk_status_change', table, null, { count: ids.length, new_status: bulkAction });
     }
     setSelectedIds(new Set()); setBulkAction(''); await fetchData();
   };
@@ -866,6 +893,18 @@ const DualCRM = () => {
         </div>
         <button onClick={exportCSV} className="filter-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '6px 12px' }}>
           <Download size={12} /> CSV
+        </button>
+        <button onClick={async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) { setError('Not logged in'); return; }
+          const res = await fetch(`/api/data/quality-report?type=${activeTab === 'moso' ? 'moso' : 'labno'}`, {
+            headers: { Authorization: `Bearer ${session.access_token}` }
+          });
+          const report = await res.json();
+          if (report.error) { setError(report.error); return; }
+          alert(`Data Quality: Grade ${report.grade}\n\n${report.summary.total} leads\nMissing email: ${report.summary.missingEmail}\nInvalid email: ${report.summary.invalidEmail}\nDuplicates: ${report.summary.duplicateEmails}\nMissing name: ${report.summary.missingName}\n\nFill rates:\n${Object.entries(report.fillRates).map(([k,v]) => `  ${k}: ${v}`).join('\n')}\n\n${report.issueCount} issues found`);
+        }} className="filter-pill" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '6px 12px' }}>
+          <BarChart3 size={12} /> Quality
         </button>
         <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }} onClick={() => setShowForm(!showForm)}>
           {showForm ? <><X size={14} /> Cancel</> : <><Plus size={14} /> Add</>}

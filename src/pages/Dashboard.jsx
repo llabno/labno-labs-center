@@ -57,10 +57,29 @@ const Dashboard = () => {
     }
   };
 
+  const [liveStats, setLiveStats] = useState({ leads: 0, activePipeline: 0, sops: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const [clinical, consulting, sops] = await Promise.all([
+        supabase.from('moso_clinical_leads').select('id', { count: 'exact', head: true }),
+        supabase.from('labno_consulting_leads').select('id', { count: 'exact', head: true }),
+        supabase.from('oracle_sops').select('id', { count: 'exact', head: true }),
+      ]);
+      const clinicalActive = await supabase.from('moso_clinical_leads').select('id', { count: 'exact', head: true }).eq('status', 'Active');
+      setLiveStats({
+        leads: (clinical.count || 0) + (consulting.count || 0),
+        activePipeline: clinicalActive.count || 0,
+        sops: sops.count || 0,
+      });
+    };
+    fetchStats();
+  }, []);
+
   const stats = [
-    { title: 'Unread Ventures & Ideas', value: '14', link: '#venturedesk' },
-    { title: 'Daily Active Users (DAU)', value: 'Coming Soon', link: '#' },
-    { title: 'Total Daily Revenue (setup needed)', value: '$450.00', link: 'https://app.lemonsqueezy.com/orders' },
+    { title: 'Total CRM Contacts', value: liveStats.leads.toLocaleString(), link: '/crm' },
+    { title: 'Active Clinical Pipeline', value: liveStats.activePipeline.toLocaleString(), link: '/crm' },
+    { title: 'Oracle SOPs Loaded', value: liveStats.sops.toLocaleString(), link: '/oracle' },
   ];
 
   const fetchData = async () => {

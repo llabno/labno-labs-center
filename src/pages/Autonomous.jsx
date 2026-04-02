@@ -2,18 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Terminal, Activity, Cpu, Circle, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const MOCK_FEED = [
-  { time: '14:32', msg: 'Claude indexed 3 SOPs from Notion workspace', status: 'success' },
-  { time: '14:28', msg: 'Exercise Scraper found 12 new entries on PhysioPedia', status: 'success' },
-  { time: '14:25', msg: 'Lead Gen enriched 8 contacts via Apollo API', status: 'warning' },
-  { time: '14:20', msg: 'Claude committed fix for date-parsing edge case', status: 'success' },
-  { time: '14:15', msg: 'Exercise Scraper rate-limited — backing off 60s', status: 'warning' },
-  { time: '14:10', msg: 'Lead Gen pipeline paused — API quota reached', status: 'error' },
-  { time: '14:05', msg: 'Claude generated test suite for Oracle module', status: 'success' },
-  { time: '13:58', msg: 'Exercise Scraper exported CSV batch (42 rows)', status: 'success' },
-  { time: '13:50', msg: 'System health check — all agents nominal', status: 'success' },
-  { time: '13:42', msg: 'Claude refactored DualCRM filter logic', status: 'success' },
-];
+// No mock data — only real agent_runs and moso_syncs from Supabase
+const MOCK_FEED = [];
 
 const TERMINAL_LINES = [
   { text: '$ claude --model opus-4 --task "index SOPs"', color: '#8be9fd' },

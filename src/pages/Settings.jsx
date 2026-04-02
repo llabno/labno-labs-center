@@ -481,6 +481,28 @@ const Settings = () => {
                 </div>
                 <button className="btn-primary" style={{ width: '100%' }}>Update Password</button>
               </div>
+
+              {/* Backup & Data Export */}
+              <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: '#333' }}>Data Backup & Export</h4>
+                <p style={{ color: '#888', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Download a full JSON backup of all CRM leads, projects, tasks, SOPs, and agent logs.
+                </p>
+                <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/backup/export');
+                      const data = await res.json();
+                      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a'); a.href = url;
+                      a.download = `labno-backup-${new Date().toISOString().split('T')[0]}.json`;
+                      a.click(); URL.revokeObjectURL(url);
+                    } catch (err) { alert('Backup failed: ' + err.message); }
+                  }}>
+                  Download Full Backup (JSON)
+                </button>
+              </div>
             </div>
           )}
 

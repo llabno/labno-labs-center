@@ -68,3 +68,39 @@ CREATE POLICY "telemetry_write_lance" ON geo_telemetry
 CREATE POLICY "telemetry_update_lance" ON geo_telemetry
     FOR UPDATE
     USING (auth.email() = 'lance@labnolabs.com');
+
+-- ============================================
+-- pgvector: Semantic SOP search function
+-- Used by /api/oracle/ask when embeddings are available
+-- ============================================
+CREATE OR REPLACE FUNCTION match_sops(
+    query_embedding vector(1536),
+    match_threshold float DEFAULT 0.7,
+    match_count int DEFAULT 5
+)
+RETURNS TABLE (
+    id uuid,
+    title text,
+    content text,
+    visibility text,
+    token_count integer,
+    similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        oracle_sops.id,
+        oracle_sops.title,
+        oracle_sops.content,
+        oracle_sops.visibility,
+        oracle_sops.token_count,
+        1 - (oracle_sops.embedding <=> query_embedding) AS similarity
+    FROM oracle_sops
+    WHERE oracle_sops.embedding IS NOT NULL
+      AND 1 - (oracle_sops.embedding <=> query_embedding) > match_threshold
+    ORDER BY oracle_sops.embedding <=> query_embedding
+    LIMIT match_count;
+END;
+$$;
