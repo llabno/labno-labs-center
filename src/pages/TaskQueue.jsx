@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { LayoutList, Columns, Waypoints, List, GitBranch, Zap, Shield, XCircle, Copy, Check, Clock, Play, Terminal } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 // ─── TRIGGER READINESS ────────────────────────────────────────────────────────
 // auto     = Claude Code can run end-to-end autonomously
@@ -683,9 +684,35 @@ const TaskQueue = () => {
     return s;
   }, [casesWithStatus]);
 
-  const handleStatusChange = (id, newStatus) => {
+  const handleStatusChange = async (id, newStatus) => {
+    const c = casesWithStatus.find(x => x.id === id);
+    const oldStatus = c?.status;
     setStatuses(prev => ({ ...prev, [id]: newStatus }));
     setSelected(prev => prev ? { ...prev, status: newStatus } : prev);
+
+    // Auto-log status change to work_history
+    if (c && oldStatus !== newStatus) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          fetch('/api/hooks/work-log', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              task_title: `CASE-${c.id}: ${c.title} → ${newStatus}`,
+              project_name: 'labno-labs-center',
+              category: c.domain === 'INFRA' ? 'Infrastructure' : c.domain === 'BRAIN' ? 'Feature' : c.domain === 'CONTENT' ? 'UI/UX' : 'Feature',
+              status: newStatus === 'DONE' ? 'completed' : newStatus === 'IN_PROGRESS' ? 'in_progress' : newStatus.toLowerCase(),
+              notes: `${c.desc}\nPriority: ${c.priority} | Agent: ${c.agent} | Previous: ${oldStatus}`,
+              agent_or_mcp: c.agent === 'Claude Code' ? 'Claude Opus' : c.agent,
+            }),
+          }).catch(() => {});
+        }
+      } catch {}
+    }
   };
 
   const selectedWithStatus = selected
