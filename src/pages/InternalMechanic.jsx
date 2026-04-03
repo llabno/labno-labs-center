@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle, BookOpen, UserPlus, UsersRound } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 // ============================================
@@ -28,6 +28,7 @@ const UNBURDENING_STEPS = [
 ];
 
 const TABS = [
+  { id: 'journal', label: 'Journal', icon: <BookOpen size={18} /> },
   { id: 'log', label: 'New Log', icon: <Send size={18} /> },
   { id: 'analysis', label: 'Analysis', icon: <Activity size={18} /> },
   { id: 'entities', label: 'Entities', icon: <User size={18} /> },
@@ -36,6 +37,11 @@ const TABS = [
   { id: 'contracts', label: 'Conscious Contracts', icon: <FileText size={18} /> },
   { id: 'unburdening', label: 'Unburdening', icon: <RefreshCw size={18} /> },
   { id: 'relationships', label: 'Relationships', icon: <Users size={18} /> },
+];
+
+const DEFAULT_RELATIONSHIP_TYPES = [
+  'parent', 'partner', 'sibling', 'child', 'friend', 'colleague',
+  'authority', 'client', 'therapist', 'mentor', 'self', 'other',
 ];
 
 const MODULE_NAMES = {
@@ -1069,7 +1075,302 @@ const RelationshipsTab = ({ relationships, parts, fetchRelationships, userId }) 
 // ============================================
 // Log Submission Tab (5-step intake from Gem)
 // ============================================
-const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId }) => {
+// ============================================
+// Journal Tab (free-flow diary + entity extraction)
+// ============================================
+const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCustomRelTypes }) => {
+  const [entries, setEntries] = useState([]);
+  const [writing, setWriting] = useState(false);
+  const [content, setContent] = useState('');
+  const [nsStateBefore, setNsStateBefore] = useState('');
+  const [nsStateAfter, setNsStateAfter] = useState('');
+  const [analyzing, setAnalyzing] = useState(null);
+  const [viewEntry, setViewEntry] = useState(null);
+  const [newRelType, setNewRelType] = useState('');
+
+  const fetchEntries = async () => {
+    const { data } = await supabase.from('ifs_journal_entries').select('*').order('created_at', { ascending: false }).limit(50);
+    if (data) setEntries(data);
+  };
+
+  useEffect(() => { fetchEntries(); }, []);
+
+  const saveEntry = async () => {
+    if (content.trim().length < 10) return;
+    const { data } = await supabase.from('ifs_journal_entries').insert({
+      user_id: userId, content: content.trim(), entry_type: 'freeflow',
+      ns_state_before: nsStateBefore || null, ns_state_after: nsStateAfter || null,
+      word_count: content.trim().split(/\s+/).length,
+    }).select().single();
+    if (data) {
+      setContent(''); setNsStateBefore(''); setNsStateAfter(''); setWriting(false);
+      fetchEntries();
+      analyzeEntry(data.id);
+    }
+  };
+
+  const analyzeEntry = async (id) => {
+    setAnalyzing(id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/mechanic/journal-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ journalId: id }),
+      });
+      const data = await res.json();
+      if (data.status === 'completed') {
+        fetchEntries();
+        // Offer to create new entities
+        if (data.new_entities?.length > 0) {
+          for (const ne of data.new_entities) {
+            if (confirm(`New person detected: "${ne.name}" (${ne.relationship_guess}). Add to your entities?`)) {
+              await supabase.from('ifs_entities').insert({
+                user_id: userId, name: ne.name,
+                relationship_type: ne.relationship_guess || 'other',
+                is_group: ne.is_group || false,
+              });
+              fetchEntities();
+            }
+          }
+        }
+      }
+    } catch (err) { console.error('Journal analysis error:', err); }
+    setAnalyzing(null);
+  };
+
+  const addCustomRelType = async () => {
+    if (!newRelType.trim()) return;
+    await supabase.from('ifs_relationship_types').insert({
+      user_id: userId, label: newRelType.trim().toLowerCase(), is_group: false,
+    });
+    setNewRelType('');
+    fetchCustomRelTypes();
+  };
+
+  // Viewing an analyzed entry
+  if (viewEntry) {
+    const a = viewEntry.analysis_result;
+    return (
+      <div>
+        <button style={s.btn('ghost')} onClick={() => setViewEntry(null)}>← Back</button>
+        <div style={{ ...s.card, marginTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px' }}>{new Date(viewEntry.entry_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+              <span style={{ fontSize: '12px', color: '#888' }}>{viewEntry.word_count} words</span>
+            </div>
+            {viewEntry.ns_state_before && <span style={s.badge(SOMATIC_STATES.find(st => st.id === viewEntry.ns_state_before)?.color || '#999')}>Before: {viewEntry.ns_state_before}</span>}
+          </div>
+          <p style={{ fontSize: '14px', color: '#444', whiteSpace: 'pre-wrap', lineHeight: '1.7', marginBottom: '16px' }}>{viewEntry.content}</p>
+        </div>
+
+        {a && (
+          <>
+            {/* Extracted Entities */}
+            {a.entities?.length > 0 && (
+              <div style={{ ...s.card, borderLeft: '4px solid #6b8e9b' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px' }}><User size={14} /> People & Groups Mentioned</h4>
+                {a.entities.map((e, i) => (
+                  <div key={i} style={{ marginBottom: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(107,142,155,0.06)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {e.is_group ? <UsersRound size={14} style={{ color: '#6b8e9b' }} /> : <User size={14} style={{ color: '#6b8e9b' }} />}
+                      <strong style={{ fontSize: '14px' }}>{e.name}</strong>
+                      <span style={s.badge(e.sentiment === 'positive' ? '#4caf50' : e.sentiment === 'negative' ? '#d32f2f' : '#ff9800')}>{e.sentiment}</span>
+                      <span style={{ fontSize: '11px', color: '#999' }}>{e.relationship_guess}</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#666', marginTop: '4px', fontStyle: 'italic' }}>"{e.context_snippet}"</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Detected Parts */}
+            {a.parts?.length > 0 && (
+              <div style={{ ...s.card, borderLeft: '4px solid #b06050' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px' }}><Brain size={14} /> Parts Detected</h4>
+                <div style={s.tagInput}>
+                  {a.parts.map((p, i) => (
+                    <span key={i} style={s.tag(ROLE_CONFIG[p.role]?.color || '#b06050')}>
+                      {p.name} ({p.role}) — {p.activation_level}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Themes */}
+            {a.themes?.length > 0 && (
+              <div style={{ ...s.card, borderLeft: '4px solid #6b5b8a' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '10px' }}>Themes</h4>
+                <div style={s.tagInput}>
+                  {a.themes.map((t, i) => <span key={i} style={s.tag('#6b5b8a')}>{t}</span>)}
+                </div>
+              </div>
+            )}
+
+            {/* NS State & Summary */}
+            {a.ns_state_read && (
+              <div style={s.card}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#888' }}>NS STATE READ: </span>
+                <span style={{ color: a.ns_state_read === 'green' ? '#4caf50' : a.ns_state_read === 'amber' ? '#ff9800' : '#d32f2f', fontWeight: 600 }}>
+                  {a.ns_state_read.toUpperCase()}
+                </span>
+                <p style={{ fontSize: '13px', color: '#666', marginTop: '6px' }}>{a.ns_state_reasoning}</p>
+              </div>
+            )}
+
+            {a.summary && (
+              <div style={{ ...s.card, background: 'rgba(176,96,80,0.04)' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '6px' }}>Summary</h4>
+                <p style={{ fontSize: '13px', color: '#666' }}>{a.summary}</p>
+              </div>
+            )}
+
+            {/* Suggested Interactions */}
+            {a.suggested_interactions?.length > 0 && (
+              <div style={{ ...s.card, background: 'rgba(90,138,191,0.06)', border: '1px solid rgba(90,138,191,0.2)' }}>
+                <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>Suggested for Full Analysis</h4>
+                {a.suggested_interactions.map((si, i) => (
+                  <p key={i} style={{ fontSize: '13px', color: '#5a8abf', marginBottom: '4px' }}>
+                    → <strong>{si.entity_name}</strong>: {si.description}
+                  </p>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Writing mode
+  if (writing) {
+    return (
+      <div>
+        <div style={s.card}>
+          <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>Free-Flow Journal</h3>
+          <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>
+            Write freely. No structure needed. The Mechanic will extract people, parts, and patterns.
+          </p>
+
+          <div style={{ marginBottom: '12px' }}>
+            <label style={s.label}>How are you right now? (Optional)</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {SOMATIC_STATES.map(st => (
+                <div key={st.id} onClick={() => setNsStateBefore(st.id)}
+                  style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                    background: nsStateBefore === st.id ? `${st.color}20` : 'rgba(0,0,0,0.03)',
+                    border: nsStateBefore === st.id ? `2px solid ${st.color}` : '2px solid transparent',
+                    color: st.color, fontWeight: nsStateBefore === st.id ? 600 : 400 }}>
+                  {st.id.toUpperCase()}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <textarea style={{ ...s.textarea, minHeight: '300px', fontSize: '15px', lineHeight: '1.8' }}
+            value={content} onChange={e => setContent(e.target.value)}
+            placeholder="What's on your mind? Write about interactions, feelings, people, whatever comes up..."
+            autoFocus />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+            <span style={{ fontSize: '12px', color: '#aaa' }}>{content.trim().split(/\s+/).filter(Boolean).length} words</span>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button style={s.btn('ghost')} onClick={() => { setWriting(false); setContent(''); }}>
+                <X size={14} /> Discard
+              </button>
+              <button style={s.btn('primary')} onClick={saveEntry} disabled={content.trim().length < 10}>
+                <Save size={14} /> Save & Analyze
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Custom relationship type manager */}
+        <div style={{ ...s.card, marginTop: '12px' }}>
+          <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>Custom Relationship Types</h4>
+          <p style={{ fontSize: '12px', color: '#888', marginBottom: '10px' }}>Add types like "bandmate", "softball parent", "church group" — they'll appear in all dropdowns.</p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input style={{ ...s.input, flex: 1 }} value={newRelType} onChange={e => setNewRelType(e.target.value)}
+              placeholder="New type..." onKeyDown={e => e.key === 'Enter' && addCustomRelType()} />
+            <button style={s.btn('primary')} onClick={addCustomRelType} disabled={!newRelType.trim()}>
+              <Plus size={14} /> Add
+            </button>
+          </div>
+          <div style={{ ...s.tagInput, marginTop: '8px' }}>
+            {DEFAULT_RELATIONSHIP_TYPES.map(t => <span key={t} style={s.tag('#999')}>{t}</span>)}
+            {customRelTypes.map(t => <span key={t.id} style={s.tag('#5a8abf')}>{t.label}</span>)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Entry list
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <span style={{ fontSize: '14px', color: '#888' }}>{entries.length} entries</span>
+        <button style={s.btn('primary')} onClick={() => setWriting(true)}>
+          <BookOpen size={14} /> New Entry
+        </button>
+      </div>
+
+      {entries.length === 0 ? (
+        <div style={s.emptyState}>
+          <BookOpen size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
+          <p style={{ fontSize: '16px', marginBottom: '8px' }}>No journal entries yet</p>
+          <p style={{ fontSize: '13px' }}>Write freely — the Mechanic will extract people, parts, and relational patterns from your words.</p>
+        </div>
+      ) : (
+        entries.map(entry => {
+          const entityCount = (entry.extracted_entities || []).length;
+          const partCount = (entry.extracted_parts || []).length;
+          const isLoading = analyzing === entry.id;
+          return (
+            <div key={entry.id} style={{ ...s.card, cursor: 'pointer' }} onClick={() => entry.is_analyzed && setViewEntry(entry)}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 600 }}>
+                      {new Date(entry.entry_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    <span style={{ fontSize: '12px', color: '#aaa' }}>{entry.word_count} words</span>
+                    {entry.is_analyzed ? (
+                      <>
+                        {entityCount > 0 && <span style={s.badge('#6b8e9b')}>{entityCount} people</span>}
+                        {partCount > 0 && <span style={s.badge('#b06050')}>{partCount} parts</span>}
+                        {entry.analysis_result?.ns_state_read && (
+                          <span style={s.badge(entry.analysis_result.ns_state_read === 'green' ? '#4caf50' : entry.analysis_result.ns_state_read === 'amber' ? '#ff9800' : '#d32f2f')}>
+                            {entry.analysis_result.ns_state_read}
+                          </span>
+                        )}
+                      </>
+                    ) : isLoading ? (
+                      <span style={s.badge('#ff9800')}><Loader size={10} /> Analyzing...</span>
+                    ) : (
+                      <button style={s.btn('ghost')} onClick={(e) => { e.stopPropagation(); analyzeEntry(entry.id); }}>Analyze</button>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '600px' }}>
+                    {entry.content.slice(0, 150)}{entry.content.length > 150 ? '...' : ''}
+                  </p>
+                </div>
+                {entry.is_analyzed && <ChevronRight size={20} style={{ color: '#ccc' }} />}
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// Log Submission Tab (5-step intake from Gem)
+// ============================================
+const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customRelTypes }) => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     entity_id: '', entity_name: '', relationship_type: 'other', is_new_entity: false,
@@ -1183,7 +1484,7 @@ const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId }) => {
               <div style={s.col}>
                 <label style={s.label}>Relationship</label>
                 <select style={{ ...s.select, width: '100%' }} value={form.relationship_type} onChange={e => setForm({ ...form, relationship_type: e.target.value })}>
-                  {['parent', 'partner', 'sibling', 'child', 'friend', 'colleague', 'authority', 'self', 'other'].map(t => <option key={t} value={t}>{t}</option>)}
+                  {[...DEFAULT_RELATIONSHIP_TYPES, ...(customRelTypes || []).map(c => c.label)].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>
@@ -1472,11 +1773,11 @@ const AnalysisHistory = ({ analyses, entities, fetchAnalyses }) => {
 // ============================================
 // Entity Profiles Tab
 // ============================================
-const EntityProfiles = ({ entities, fetchEntities, userId }) => {
+const EntityProfiles = ({ entities, fetchEntities, userId, customRelTypes }) => {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
 
-  const blank = { name: '', relationship_type: 'other', notes: '', color: '#6b8e9b' };
+  const blank = { name: '', relationship_type: 'other', notes: '', color: '#6b8e9b', is_group: false, group_description: '', group_members: [] };
   const startNew = () => { setForm(blank); setEditing('new'); };
   const startEdit = (e) => { setForm({ ...e }); setEditing(e.id); };
   const cancel = () => { setEditing(null); setForm({}); };
@@ -1502,19 +1803,48 @@ const EntityProfiles = ({ entities, fetchEntities, userId }) => {
   if (editing) {
     return (
       <div style={s.card}>
-        <h3 style={{ fontSize: '18px', marginBottom: '16px' }}>{editing === 'new' ? 'Add Person' : `Edit: ${form.name}`}</h3>
+        <h3 style={{ fontSize: '18px', marginBottom: '16px' }}>{editing === 'new' ? (form.is_group ? 'Add Group' : 'Add Person') : `Edit: ${form.name}`}</h3>
+        <div style={{ marginBottom: '12px' }}>
+          <label style={{ ...s.label, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={form.is_group || false} onChange={e => setForm({ ...form, is_group: e.target.checked })} />
+            This is a group (e.g., "Softball parents", "Old band", "Staff meeting")
+          </label>
+        </div>
         <div style={s.row}>
           <div style={s.col}>
-            <label style={s.label}>Name</label>
-            <input style={s.input} value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Name or identifier" />
+            <label style={s.label}>{form.is_group ? 'Group Name' : 'Name'}</label>
+            <input style={s.input} value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })}
+              placeholder={form.is_group ? 'e.g., Willard softball parents' : 'Name or identifier'} />
           </div>
           <div style={s.col}>
-            <label style={s.label}>Relationship</label>
+            <label style={s.label}>Type</label>
             <select style={{ ...s.select, width: '100%' }} value={form.relationship_type || 'other'} onChange={e => setForm({ ...form, relationship_type: e.target.value })}>
-              {['parent', 'partner', 'sibling', 'child', 'friend', 'colleague', 'authority', 'self', 'other'].map(t => <option key={t} value={t}>{t}</option>)}
+              {[...DEFAULT_RELATIONSHIP_TYPES, ...(customRelTypes || []).map(c => c.label)].map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
         </div>
+        {form.is_group && (
+          <div style={{ marginBottom: '12px' }}>
+            <label style={s.label}>Group Description</label>
+            <textarea style={s.textarea} value={form.group_description || ''} onChange={e => setForm({ ...form, group_description: e.target.value })}
+              placeholder="Who is in this group? What context do you interact with them in?" />
+            <label style={{ ...s.label, marginTop: '8px' }}>Members (select existing entities)</label>
+            <div style={{ ...s.tagInput, gap: '8px' }}>
+              {entities.filter(e => !e.is_group && e.id !== form.id).map(ent => {
+                const isIn = (form.group_members || []).includes(ent.id);
+                return (
+                  <span key={ent.id} style={{ ...s.tag(isIn ? '#5a8abf' : '#ccc'), cursor: 'pointer', opacity: isIn ? 1 : 0.5 }}
+                    onClick={() => {
+                      const members = form.group_members || [];
+                      setForm({ ...form, group_members: isIn ? members.filter(id => id !== ent.id) : [...members, ent.id] });
+                    }}>
+                    {ent.name}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ marginBottom: '12px' }}>
           <label style={s.label}>Notes</label>
           <textarea style={s.textarea} value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} />
@@ -1530,8 +1860,11 @@ const EntityProfiles = ({ entities, fetchEntities, userId }) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <span style={{ fontSize: '14px', color: '#888' }}>{entities.length} entities tracked</span>
-        <button style={s.btn('primary')} onClick={startNew}><Plus size={14} /> Add Person</button>
+        <span style={{ fontSize: '14px', color: '#888' }}>{entities.filter(e => !e.is_group).length} people, {entities.filter(e => e.is_group).length} groups</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={s.btn('primary')} onClick={() => { setForm(blank); setEditing('new'); }}><UserPlus size={14} /> Person</button>
+          <button style={s.btn('ghost')} onClick={() => { setForm({ ...blank, is_group: true }); setEditing('new'); }}><UsersRound size={14} /> Group</button>
+        </div>
       </div>
       {entities.length === 0 ? (
         <div style={s.emptyState}>
@@ -1584,13 +1917,14 @@ const EntityProfiles = ({ entities, fetchEntities, userId }) => {
 // Main Page Component
 // ============================================
 export default function InternalMechanic() {
-  const [activeTab, setActiveTab] = useState('log');
+  const [activeTab, setActiveTab] = useState('journal');
   const [parts, setParts] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [relationships, setRelationships] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [entities, setEntities] = useState([]);
   const [analyses, setAnalyses] = useState([]);
+  const [customRelTypes, setCustomRelTypes] = useState([]);
   const [userId, setUserId] = useState(null);
 
   const fetchParts = async () => {
@@ -1623,6 +1957,11 @@ export default function InternalMechanic() {
     if (data) setAnalyses(data);
   };
 
+  const fetchCustomRelTypes = async () => {
+    const { data } = await supabase.from('ifs_relationship_types').select('*').order('label', { ascending: true });
+    if (data) setCustomRelTypes(data);
+  };
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -1634,6 +1973,7 @@ export default function InternalMechanic() {
         fetchSessions();
         fetchEntities();
         fetchAnalyses();
+        fetchCustomRelTypes();
       }
     };
     init();
@@ -1654,14 +1994,15 @@ export default function InternalMechanic() {
         ))}
       </div>
 
-      {activeTab === 'log' && <LogSubmission entities={entities} fetchEntities={fetchEntities} fetchAnalyses={fetchAnalyses} userId={userId} />}
+      {activeTab === 'journal' && <JournalTab entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} fetchCustomRelTypes={fetchCustomRelTypes} />}
+      {activeTab === 'log' && <LogSubmission entities={entities} fetchEntities={fetchEntities} fetchAnalyses={fetchAnalyses} userId={userId} customRelTypes={customRelTypes} />}
       {activeTab === 'analysis' && <AnalysisHistory analyses={analyses} entities={entities} fetchAnalyses={fetchAnalyses} />}
-      {activeTab === 'entities' && <EntityProfiles entities={entities} fetchEntities={fetchEntities} userId={userId} />}
+      {activeTab === 'entities' && <EntityProfiles entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} />}
       {activeTab === 'parts' && <PartsRegistry parts={parts} setParts={setParts} fetchParts={fetchParts} userId={userId} />}
       {activeTab === 'board' && <VisualBoard parts={parts} relationships={relationships} fetchParts={fetchParts} fetchRelationships={fetchRelationships} />}
       {activeTab === 'contracts' && <ConsciousContracts contracts={contracts} parts={parts} fetchContracts={fetchContracts} userId={userId} />}
       {activeTab === 'unburdening' && <UnburdeningFlow parts={parts} sessions={sessions} fetchSessions={fetchSessions} userId={userId} />}
-      {activeTab === 'relationships' && <RelationshipsTab relationships={relationships} parts={parts} fetchRelationships={fetchRelationships} userId={userId} />}
+      {activeTab === 'relationships' && <RelationshipsTab relationships={relationships} parts={parts} fetchRelationships={fetchRelationships} userId={userId} customRelTypes={customRelTypes} />}
     </div>
   );
 }
