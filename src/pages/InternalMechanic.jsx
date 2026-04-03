@@ -1084,9 +1084,15 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
   const [content, setContent] = useState('');
   const [nsStateBefore, setNsStateBefore] = useState('');
   const [nsStateAfter, setNsStateAfter] = useState('');
+  const [logPeriod, setLogPeriod] = useState('');
   const [analyzing, setAnalyzing] = useState(null);
   const [viewEntry, setViewEntry] = useState(null);
   const [newRelType, setNewRelType] = useState('');
+  const [showPatterns, setShowPatterns] = useState(false);
+  const [patterns, setPatterns] = useState(null);
+  const [loadingPatterns, setLoadingPatterns] = useState(false);
+  const [consultation, setConsultation] = useState(null);
+  const [loadingConsultation, setLoadingConsultation] = useState(false);
 
   const fetchEntries = async () => {
     const { data } = await supabase.from('ifs_journal_entries').select('*').order('created_at', { ascending: false }).limit(50);
@@ -1097,10 +1103,15 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
 
   const saveEntry = async () => {
     if (content.trim().length < 10) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const autoPeriod = logPeriod || (hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening');
     const { data } = await supabase.from('ifs_journal_entries').insert({
       user_id: userId, content: content.trim(), entry_type: 'freeflow',
       ns_state_before: nsStateBefore || null, ns_state_after: nsStateAfter || null,
       word_count: content.trim().split(/\s+/).length,
+      log_period: autoPeriod,
+      time_of_day_hour: hour,
     }).select().single();
     if (data) {
       setContent(''); setNsStateBefore(''); setNsStateAfter(''); setWriting(false);
@@ -1269,10 +1280,40 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
             </div>
           </div>
 
+          <div style={{ marginBottom: '12px' }}>
+            <label style={s.label}>Log Period (auto-detected, or choose)</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['morning', 'afternoon', 'evening'].map(p => (
+                <div key={p} onClick={() => setLogPeriod(p)}
+                  style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                    background: logPeriod === p ? 'rgba(176,96,80,0.12)' : 'rgba(0,0,0,0.03)',
+                    border: logPeriod === p ? '2px solid #b06050' : '2px solid transparent',
+                    fontWeight: logPeriod === p ? 600 : 400 }}>
+                  {p}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <textarea style={{ ...s.textarea, minHeight: '300px', fontSize: '15px', lineHeight: '1.8' }}
             value={content} onChange={e => setContent(e.target.value)}
             placeholder="What's on your mind? Write about interactions, feelings, people, whatever comes up..."
             autoFocus />
+
+          <div style={{ marginTop: '12px' }}>
+            <label style={s.label}>How do you feel after writing? (Optional)</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {SOMATIC_STATES.map(st => (
+                <div key={st.id} onClick={() => setNsStateAfter(st.id)}
+                  style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                    background: nsStateAfter === st.id ? `${st.color}20` : 'rgba(0,0,0,0.03)',
+                    border: nsStateAfter === st.id ? `2px solid ${st.color}` : '2px solid transparent',
+                    color: st.color, fontWeight: nsStateAfter === st.id ? 600 : 400 }}>
+                  {st.id.toUpperCase()}
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
             <span style={{ fontSize: '12px', color: '#aaa' }}>{content.trim().split(/\s+/).filter(Boolean).length} words</span>
@@ -1312,10 +1353,107 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <span style={{ fontSize: '14px', color: '#888' }}>{entries.length} entries</span>
-        <button style={s.btn('primary')} onClick={() => setWriting(true)}>
-          <BookOpen size={14} /> New Entry
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button style={s.btn('ghost')} onClick={async () => {
+            setLoadingPatterns(true);
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              const res = await fetch('/api/mechanic/patterns', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                body: '{}',
+              });
+              const data = await res.json();
+              setPatterns(data); setShowPatterns(true);
+            } catch (e) { console.error(e); }
+            setLoadingPatterns(false);
+          }} disabled={loadingPatterns}>
+            <Activity size={14} /> {loadingPatterns ? 'Analyzing...' : 'Patterns'}
+          </button>
+          <button style={s.btn('ghost')} onClick={async () => {
+            setLoadingConsultation(true);
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              const res = await fetch('/api/mechanic/export-consultation', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+                body: JSON.stringify({ timeRange: 30 }),
+              });
+              const data = await res.json();
+              setConsultation(data);
+            } catch (e) { console.error(e); }
+            setLoadingConsultation(false);
+          }} disabled={loadingConsultation}>
+            <FileText size={14} /> {loadingConsultation ? 'Generating...' : 'Peer Consultation'}
+          </button>
+          <button style={s.btn('primary')} onClick={() => setWriting(true)}>
+            <BookOpen size={14} /> New Entry
+          </button>
+        </div>
       </div>
+
+      {/* Patterns View */}
+      {showPatterns && patterns && (
+        <div style={{ ...s.card, background: 'rgba(90,138,191,0.04)', border: '1px solid rgba(90,138,191,0.15)', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '16px' }}>Temporal & Relational Patterns</h3>
+            <button style={s.btn('ghost')} onClick={() => setShowPatterns(false)}><X size={14} /></button>
+          </div>
+          {patterns.status === 'insufficient_data' ? (
+            <p style={{ fontSize: '13px', color: '#888' }}>{patterns.message} ({patterns.journal_count} journals, {patterns.analysis_count} analyses)</p>
+          ) : patterns.patterns ? (
+            <>
+              {patterns.patterns.key_insight && (
+                <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(176,96,80,0.06)', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '14px', color: '#b06050', fontWeight: 500 }}>{patterns.patterns.key_insight}</p>
+                </div>
+              )}
+              {patterns.patterns.time_patterns?.map((tp, i) => (
+                <div key={i} style={{ marginBottom: '8px' }}>
+                  <span style={s.badge(tp.confidence === 'high' ? '#4caf50' : tp.confidence === 'medium' ? '#ff9800' : '#999')}>{tp.confidence}</span>
+                  <span style={{ fontSize: '13px', marginLeft: '8px' }}>{tp.pattern}</span>
+                </div>
+              ))}
+              {patterns.patterns.trigger_clusters?.map((tc, i) => (
+                <div key={i} style={{ marginBottom: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(255,152,0,0.06)' }}>
+                  <p style={{ fontSize: '13px', color: '#e65100' }}>Structural theme: <strong>{tc.structural_theme}</strong></p>
+                  <p style={{ fontSize: '12px', color: '#888' }}>Trigger: {tc.trigger} — across: {tc.entities?.join(', ')}</p>
+                </div>
+              ))}
+              {patterns.patterns.somatic_trend && (
+                <p style={{ fontSize: '13px', marginTop: '8px' }}>
+                  Regulation trend: <strong style={{ color: patterns.patterns.somatic_trend.direction === 'regulating' ? '#4caf50' : '#ff9800' }}>
+                    {patterns.patterns.somatic_trend.direction}
+                  </strong> — {patterns.patterns.somatic_trend.evidence}
+                </p>
+              )}
+              {patterns.patterns.recommendation && (
+                <p style={{ fontSize: '13px', color: '#5c7a6f', marginTop: '12px', fontStyle: 'italic' }}>{patterns.patterns.recommendation}</p>
+              )}
+            </>
+          ) : null}
+        </div>
+      )}
+
+      {/* Peer Consultation Export */}
+      {consultation?.markdown && (
+        <div style={{ ...s.card, background: 'rgba(92,122,111,0.04)', border: '1px solid rgba(92,122,111,0.15)', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '16px', color: '#5c7a6f' }}>Peer Consultation Summary</h3>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button style={s.btn('ghost')} onClick={() => {
+                navigator.clipboard.writeText(consultation.markdown);
+                alert('Copied to clipboard!');
+              }}><FileText size={14} /> Copy</button>
+              <button style={s.btn('ghost')} onClick={() => setConsultation(null)}><X size={14} /></button>
+            </div>
+          </div>
+          <div style={{ fontSize: '13px', color: '#444', whiteSpace: 'pre-wrap', lineHeight: '1.7' }}>
+            {consultation.markdown}
+          </div>
+          <p style={{ fontSize: '11px', color: '#aaa', marginTop: '12px' }}>
+            Based on {consultation.metadata?.journal_count} journal entries + {consultation.metadata?.analysis_count} analyses from the last {consultation.metadata?.time_range_days} days
+          </p>
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <div style={s.emptyState}>

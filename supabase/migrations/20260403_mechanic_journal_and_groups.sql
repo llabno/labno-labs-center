@@ -48,7 +48,13 @@ CREATE TABLE IF NOT EXISTS ifs_journal_entries (
     word_count INTEGER DEFAULT 0,
     is_analyzed BOOLEAN DEFAULT false,
     analysis_result JSONB,                           -- Full AI analysis output
+    -- Time tracking
     entry_date DATE DEFAULT CURRENT_DATE,
+    entry_time TIME WITH TIME ZONE DEFAULT CURRENT_TIME,
+    log_period TEXT,                                  -- morning | afternoon | evening | unset
+    time_of_day_hour INTEGER,                        -- 0-23, auto-set from entry_time
+    -- Emotional valence per entity mention
+    entity_valence JSONB DEFAULT '[]'::jsonb,        -- [{entity_name, valence: positive|negative|neutral|mixed, intensity: 1-5}]
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
