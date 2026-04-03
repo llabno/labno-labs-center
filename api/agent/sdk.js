@@ -13,7 +13,8 @@ export const config = { maxDuration: 120 }
 function getRouteMode() {
   const explicit = process.env.AGENT_ROUTE
   if (explicit === 'local') return 'local'
-  if (explicit === 'api' || process.env.ANTHROPIC_API_KEY) return 'api'
+  if (explicit === 'api') return 'api'
+  // Default to simulation — never spend money without explicit opt-in
   return 'simulation'
 }
 
@@ -26,8 +27,8 @@ async function executeViaAPI(systemPrompt, userPrompt, taskId) {
       'anthropic-version': '2023-06-01'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2048,
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 512,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }]
     })
@@ -36,7 +37,7 @@ async function executeViaAPI(systemPrompt, userPrompt, taskId) {
   if (data.usage) {
     logTokenUsage({
       endpoint: '/api/agent/sdk',
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-haiku-4-5-20251001',
       inputTokens: data.usage.input_tokens,
       outputTokens: data.usage.output_tokens,
       taskId,

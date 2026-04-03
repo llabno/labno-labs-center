@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/agent/process",
-      "schedule": "* * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/backup/export?cron=true",
