@@ -1,0 +1,698 @@
+{
+  "module": "m18",
+  "phase6_rules": [
+    {
+      "rule_name": "ci_precaution_1_client_readiness_gate",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client lacks capacity to witness, to ground, or to be aware of their body and breath (as assessed through observation or direct inquiry)",
+      "then_directive": "Do NOT use Compassionate Inquiry micro-interventions. Use Compassionate Listening only. Spend as many sessions as required practicing Compassionate Listening to build resources before implementing any CI-informed awareness work.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16), Social Engagement Assessment Gate (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_2_relational_container_required",
+      "rule_category": "safety_protocol",
+      "if_condition": "Trust and safety have NOT developed between clinician and client OR safe relational container cannot be created",
+      "then_directive": "Do NOT use Compassionate Inquiry micro-interventions. Take time to get to know the client. CI can bring awareness to events in childhood that were painful and difficult to bear - original painful feelings require safe relational container to be held, experienced and expressed.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_5_permission_before_depth",
+      "rule_category": "permission_protocol",
+      "if_condition": "Clinician senses distress or resistance in client OR intends to shift from biomechanical work to awareness-oriented work",
+      "then_directive": "Ask permission to continue. Use language: 'Would you be willing to try [intervention]?' or 'Is this feeling safe for you right now?' or 'You can say no \u2014 that's completely okay.' Respect client's directives and end the inquiry when they wish. Almost yes is still NO.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Protector Permission Mandate (M16), Command vs Invitation Protocol (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_7_acute_distress_contraindication",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client is in acute distress (Red/Dorsal state with slumped posture, flat voice, numb/foggy, crying uncontrollably, inability to speak or move)",
+      "then_directive": "Do NOT use Compassionate Inquiry. Be a calm presence for them, ask them what they need, and do what is necessary to keep them safe. Provide consistent regulated presence as secure neurochemical base. Route to dorsal protocol per M9.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal Assessment Invalidity (M9), PANIC/GRIEF Dominant Red Routing (M9), Exile Flooding Emergency Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_4_referral_for_trauma_disclosure",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client discloses trauma history during movement work that clinician is not trained to process",
+      "then_directive": "Acknowledge disclosure with: 'Thank you for sharing that with me. That takes courage.' Do NOT attempt to process trauma content \u2014 outside scope. Make referral plan: 'Would you be open to me connecting you with [trauma-specialized therapist/resource]?' Ensure client has supports in place. CI is not designed to be stand-alone treatment.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_6_boundary_maintenance",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client is a family member or friend of clinician",
+      "then_directive": "Do NOT use Compassionate Inquiry. Refer them to a colleague.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_3_ongoing_relationship_required",
+      "rule_category": "safety_protocol",
+      "if_condition": "CI micro-intervention has surfaced difficult material AND clinician does not have regular ongoing relationship with client",
+      "then_directive": "Ensure client has access to continued support. CI is meant to be part of ongoing therapeutic process. Do not open material that cannot be processed within existing relationship structure.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_precaution_8_clinician_self_care",
+      "rule_category": "therapist_self_regulation",
+      "if_condition": "Clinician notices ongoing depletion, activation, or loss of Self-presence across sessions",
+      "then_directive": "Use Compassionate Inquiry with yourself. Engage in regular sessions with another practitioner for your ongoing wellness and psychological maturity.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "tuning_out_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client states 'I'm tuning out' or 'I forgot the question' or 'I'm not sure what you're saying' immediately after challenging question or topic, OR movement becomes mechanical, disconnected, or frozen despite capacity for the movement",
+      "then_directive": "STOP movement work. Shift to Compassionate Listening only. Use Stone 6 gently: 'Can you feel your feet on the floor? Your back against the table?' Do NOT proceed with origin tracing or belief work. Welcome and normalize: 'Okay, great, thank you.' Reframe as brain process: 'You're not even doing it, your mind is just doing it.'",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal State Detection (M9), Dorsal Assessment Invalidity (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "tuning_out_escalation",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client cannot access any body sensation after Stone 6 invitation OR shows floating away quality persisting beyond 5 minutes of co-regulation attempts",
+      "then_directive": "Route to dorsal protocol: imagine movement, self-touch, remember-imagine-enact connection. Consider ending session if freeze persists. This is neural numbing as protective coping from overwhelm.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Ascending Transition Support from Dorsal (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "intellectualization_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client talks ABOUT the movement rather than describing felt sensation, uses 'I feel that...' followed by analysis (e.g., 'I feel like my hip is compensating because of my SI joint dysfunction')",
+      "then_directive": "Use Stone 7: 'That's an analysis. What do you actually FEEL in your hip right now? Hot? Tight? Empty?' If client cannot access sensation, return to Stone 6 before continuing movement work. Do NOT accept intellectual statements as emotional expressions.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16), Manager intellectualization blocks Stone 7 (M9+M19 crosswalk)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "intellectualization_escalation",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Manager resistance increases when intellectualization is gently challenged (client becomes more controlled, deflects to analysis, shows subtle defensive response)",
+      "then_directive": "Acknowledge protective function with Stone 12: 'Your analyzing is doing something for you \u2014 keeping you from having to feel something.' Ask permission with Stone 2 before continuing. Do NOT force past this defense \u2014 indicates system not ready for deeper embodied work.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Protector Permission Mandate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "exile_voice_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client's voice quality shifts to little girl or little boy voice during movement \u2014 pitch, tone, cadence discrepant with chronological age, may include small hesitant movements or physical posture of withdrawal",
+      "then_directive": "Pause movement immediately. Recognize Exile speaking \u2014 movement has accessed young traumatized part. Use Stone 2: 'How old do you feel right in this moment?' and check permission to continue. Use Stone 6 for gentle embodiment check. If client maintains enough Self-leadership to witness, can explore with Stones 8-9 briefly (30-90 seconds max).",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Exile voice quality signals part identification (M9+M19 crosswalk), Feel Towards Diagnostic Test (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "exile_flooding_response",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Voice becomes increasingly childlike, posture collapses, or client starts crying without ability to witness own experience (cannot speak, loses contact with present moment)",
+      "then_directive": "STOP all movement and inquiry. Return to Compassionate Listening only. Establish safety. Do NOT push belief identification while Exile flooded \u2014 protective parts overwhelmed. Provide consistent regulated presence as secure neurochemical base per CARE system. May require ending session.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Exile Flooding Emergency Protocol (M16), PANIC/GRIEF Dominant Red Routing (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "restless_feet_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client states 'my feet keep wanting to run' or shows restless lower body during movement work \u2014 constant weight shifting, inability to ground, impulse to flee",
+      "then_directive": "Ask: 'What do your feet/legs want to do right now?' This is trapped fight-or-flight energy. Check for Amber markers: high shoulders, breath holding, jaw clenching. If RAGE present: use Stone 2 (invitation-only) and Stone 12 (acknowledge as coping). If FEAR present: use Stone 1 (engage with invitation) and Stone 6 (establish safety). Stones 8-14 contraindicated until sympathetic de-escalates.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Sympathetic State Detection (M9), RAGE Dominant Amber Routing (M9), FEAR Dominant Amber Routing (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "restless_feet_escalation",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Restlessness escalates to lashing out quality (RAGE) or freezing response solidifies (FEAR shifting to dorsal)",
+      "then_directive": "STOP movement work immediately. Route to Settle track. Do NOT proceed with deeper inquiry \u2014 will amplify dysregulation.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Descending Transition Arrest Amber-to-Red (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "externalization_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client externalizes internal process \u2014 'Why is my body doing this to me?' or 'My pain won't let me...' \u2014 creates 'it' as separate entity acting upon them",
+      "then_directive": "Challenge gently using Mat\u00e9's reframe: 'What if there's no it? What if this is a process inside YOU? What are YOU experiencing right now?' Return to Stone 6. This is micro-intervention \u2014 30 seconds to 1 minute max before returning to movement work.",
+      "override_level": "contextual",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "externalization_escalation",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client cannot shift from externalized to internal perspective after two attempts",
+      "then_directive": "Protective parts likely too strong. Acknowledge the protection with Stone 12 and return to purely biomechanical work. Do NOT push \u2014 this is not the session for deeper awareness work.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Protector Permission Mandate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "heart_shutdown_detection",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Client's heart shuts down when movement touches painful area \u2014 sudden shift in presence, affect, or ability to connect; observable withdrawal from relational connection even while physically present; physical constriction in chest, shallow breathing",
+      "then_directive": "Pause movement immediately. Acknowledge protective function with Stone 12: 'Your heart is doing what it knows how to do to keep you safe.' Can ask: 'What would your heart say if you asked it, Why are you shutting down right now?' Use CARE system engagement \u2014 Stone 10 may activate self-compassion. If PANIC/GRIEF deepens, STOP all movement and provide consistent regulated presence.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Nurturance Soothes Grief Protocol (M9+M19), CARE Inhibits PANIC/GRIEF (M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "heart_shutdown_escalation",
+      "rule_category": "disconnection_detection",
+      "if_condition": "Heart shutdown continues despite co-regulation OR client shows deeper dorsal collapse (numb, foggy, floating away)",
+      "then_directive": "End movement work for this session. May require medical intervention if freeze persists. This is acute distress territory \u2014 Compassionate Inquiry contraindicated per Precaution #7.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "ci_precaution_7_acute_distress_contraindication",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "self_critical_belief_surfacing",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client makes self-critical statement during movement work \u2014 'I'm so weak' or 'I'm such an idiot for not being able to do this' \u2014 AND movement IS achievable but client believes they 'can't' or 'shouldn't' (superego attack observable)",
+      "then_directive": "Use Stone 13 adapted: 'What does it mean about you that you can't do this movement right now?' followed by Stone 7: 'Is that a feeling or a belief?' Brief \u2014 30 seconds to 2 minutes max. Goal is to NAME the belief so it's visible, not to process origin. Then return to movement.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "self_critical_belief_deepening",
+      "rule_category": "belief_awareness",
+      "if_condition": "After self-critical belief is named, client accesses strong emotion (tears, anger) and remains Self-led (can witness own experience)",
+      "then_directive": "Can extend to Stone 8 briefly: 'Is this the first time you've felt this way about yourself?' 30-90 seconds max. If Exile floods or protective parts activate, STOP immediately and return to movement work or end session.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16), Feel Towards Diagnostic Test (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "self_critical_belief_resolution",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client recognizes belief and movement quality improves ('Oh... I CAN do this, I just BELIEVE I can't')",
+      "then_directive": "Acknowledge shift with Stone 16: 'You're not the same person anymore. You're not that [belief].' Continue movement work. Belief work successful \u2014 no further inquiry needed this session.",
+      "override_level": "contextual",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "movement_avoidance_pattern_detection",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client avoids specific movement pattern repeatedly despite capacity \u2014 always modifies, always finds excuse, always deflects \u2014 pattern consistent across sessions, avoidance is anxiety-driven not pain-driven",
+      "then_directive": "Use Stone 4: 'What does avoiding this movement do for you? What does it protect you from?' Then Stone 2: 'Would you be willing to try it just once and notice what happens in your body?' 1-2 minutes for inquiry. Do NOT push if client says no.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Protector Permission Mandate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "movement_avoidance_trauma_response",
+      "rule_category": "belief_awareness",
+      "if_condition": "During avoidance exploration, client accesses FEAR or memory \u2014 avoidance is trauma-based",
+      "then_directive": "Shift to Stone 6 (embodiment) and Stone 1 (establish safety). Can explore briefly with Stone 8 if client remains resourced. If overwhelm appears, return to Compassionate Listening only.",
+      "override_level": "recommended",
+      "interacts_with_rule": "FEAR Dominant Amber Routing (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "movement_avoidance_resolution",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client identifies protective function ('I'm afraid of hurting myself because I always get hurt') and can attempt movement with new awareness",
+      "then_directive": "Movement becomes therapeutic intervention. Acknowledge courage with Stone 21: 'You just did something your system said was impossible.' Continue with movement work.",
+      "override_level": "contextual",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "spontaneous_childhood_connection",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client connects current movement limitation to childhood experience spontaneously \u2014 'This reminds me of when my dad used to...' or 'I haven't felt this way since...' \u2014 material surfacing naturally during movement work",
+      "then_directive": "Follow client's lead. Use Stone 5 to hear basic story, then Stone 6: 'What do you feel in your body right now?' to anchor in present. Can use Stone 9 if client remains regulated. Do NOT dig deeper unless client initiates. 2-5 minutes maximum. Return to movement work when client signals readiness.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "spontaneous_connection_deepening",
+      "rule_category": "belief_awareness",
+      "if_condition": "After spontaneous childhood connection, client accesses Exile or PANIC/GRIEF intensifies",
+      "then_directive": "Use Stone 2 (permission to pause) and assess autonomic state. If Green maintained, can continue briefly with Stones 10-11 to access self-compassion. If shift to Amber or Red, STOP and co-regulate.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Exile voice quality signals part identification (crosswalk), PANIC/GRIEF Dominant Red Routing (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "spontaneous_connection_resolution",
+      "rule_category": "belief_awareness",
+      "if_condition": "Brief awareness moment allows client to release holding pattern and movement improves",
+      "then_directive": "THIS is healing integration. Acknowledge with Stone 16: 'You're not that child anymore, you're here now and you're safe.' Continue movement work. Session successful.",
+      "override_level": "contextual",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "body_belief_language_detection",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client's belief about their body becomes visible through language \u2014 'My body always betrays me' or 'I can't trust my body' or 'My body is broken' \u2014 interpretation not accurate assessment",
+      "then_directive": "Use Stone 7: 'Is that what your body is DOING right now, or is that what you BELIEVE about your body?' Then Stone 13: 'When did you decide your body couldn't be trusted?' Brief \u2014 1-3 minutes max. Name it, don't excavate it. Goal is to create separation between sensation and interpretation.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Burden vs Structural Differentiation (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "body_belief_origin_emergence",
+      "rule_category": "belief_awareness",
+      "if_condition": "After body belief is named, origin tracing begins spontaneously (client remembers when belief formed)",
+      "then_directive": "Can follow with Stone 8-9 briefly (30-90 seconds). If emotional intensity rises, check autonomic state before continuing. Return to movement work as soon as belief is named.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "body_belief_resolution",
+      "rule_category": "belief_awareness",
+      "if_condition": "Client can distinguish 'my hip hurts right now' (sensation) from 'my body is broken' (belief)",
+      "then_directive": "Movement quality often shifts immediately. Sensation becomes information not identity. Acknowledge with Stone 16 and continue with movement work informed by new awareness.",
+      "override_level": "contextual",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "vulnerable_position_permission",
+      "rule_category": "permission_protocol",
+      "if_condition": "Client hesitates or withdraws when clinician suggests movement into vulnerable position (supine, prone, eyes closed)",
+      "then_directive": "Use permission language: 'Would you be willing to try [position]? Is this feeling safe for you right now? You can say no \u2014 that's completely okay.' GREEN response (says yes, remains regulated): proceed. AMBER response (hesitates, FEAR markers): modify with scaffolding \u2014 smallest step possible, eyes open first, partial position. RED response (says no, freezes, dorsal shift): STOP immediately, return to upright, acknowledge: 'Your system is saying no right now. We'll honor that.'",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Threat Language Substitution (M9), FEAR Dominant Amber Routing (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "strong_emotion_during_movement",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client begins crying or shows strong emotion during movement work",
+      "then_directive": "Use language: 'It's okay to feel this. I'm right here with you. What do you need right now? Would you like to pause or would you like to stay with this?' GREEN response (cries but Self-led, can witness, says 'I'm okay' or 'I need to feel this'): hold space, use Stone 6 and Stone 12, continue when ready. AMBER response (uncertain, looks for guidance, cannot state needs): pause movement, provide co-regulation, use Stone 2 before continuing. RED response (cannot speak, collapses, voice childlike or disappears): STOP all movement work, Compassionate Listening only, provide secure neurochemical base, do NOT attempt inquiry.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Exile Flooding Emergency Protocol (M16), Nurturance Soothes Grief Protocol (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "clinician_activation_management",
+      "rule_category": "therapist_self_regulation",
+      "if_condition": "Clinician notices own discomfort or activation during session (countertransference)",
+      "then_directive": "Per Pillar 4: Take responsibility for what arises in you instead of taking it out on client. Can say: 'I'm noticing I need to check in with myself for a moment. Let's pause here. I want to make sure I'm fully present with you.' GREEN response from client: take 30-60 seconds to self-regulate, then resume. AMBER response ('Did I do something wrong?'): reassure 'This is about me taking care of myself so I can be fully here for you, not about anything you did', then resume. RED response (client shows distress at withdrawal): stay present, acknowledge 'I see this is hard for you', co-regulate together rather than separating. May need to end session if clinician cannot re-establish own regulation.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "client_stop_request",
+      "rule_category": "safety_protocol",
+      "if_condition": "Client asks to stop movement or session \u2014 'I can't do this' or 'I need to stop'",
+      "then_directive": "Respond immediately: 'Absolutely. We can stop right now. Thank you for telling me. What do you need in this moment?' GREEN response (clearly states needs): honor immediately, use Stone 17 for closure if ending. AMBER response (uncertain, 'I don't know, I just feel...'): stop current activity, use Stone 6 to help access what system needs, follow client's capacity. RED response (acute distress, cannot articulate, dorsal or sympathetic overwhelm): stop all work per Precaution #7, be calm presence, do what is necessary to keep them safe, establish follow-up plan before client leaves.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "ci_precaution_7_acute_distress_contraindication",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "interpretation_not_feeling_redirect",
+      "rule_category": "feeling_differentiation",
+      "if_condition": "Client says 'I feel like my body is broken' or 'I feel that I should be able to do this by now' \u2014 cognitive belief or interpretation masquerading as feeling",
+      "then_directive": "Use Stone 7: 'That's an interpretation about your body. What are you actually FEELING right now? In your body, in this moment.' Guide to sensation: 'Point to where you feel that. What's the sensation there? Hot? Tight? Empty? Numb?' Use body as access point to actual feeling beneath interpretation.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager intellectualization blocks Stone 7 (crosswalk)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "perception_not_feeling_redirect",
+      "rule_category": "feeling_differentiation",
+      "if_condition": "Client says 'I feel rejected by my body' \u2014 perception or interpretation of relational event with body",
+      "then_directive": "Use Stone 7: 'Rejected is not a feeling, it's a perception. What's the actual feeling underneath that perception? Sad? Angry? Scared?' Return to sensory reality: 'Your body isn't rejecting you \u2014 your hip is sending you information through sensation. What is that information? What's the actual sensation you're experiencing?'",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "valid_feeling_validation",
+      "rule_category": "feeling_differentiation",
+      "if_condition": "Client says 'I'm so frustrated I can't do this movement' or 'I'm sad that my body can't do what it used to' \u2014 valid core emotion expressed",
+      "then_directive": "VALIDATE, do not redirect: 'Yes, you're frustrated. That's real.' OR 'Yes, you're sad. And sad doesn't tolerate a however after it, okay? You feel sad.' Then use Stone 6 to deepen: 'Where do you feel that [frustration/sadness] in your body?' Frustration as information: 'Frustration often means we're pushing against a constraint. What's the constraint? Is it actual limitation or is it belief about limitation?'",
+      "override_level": "recommended",
+      "interacts_with_rule": "RAGE System Primary Detection (M19), PANIC/GRIEF System Primary Detection (M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "confused_not_feeling_redirect",
+      "rule_category": "feeling_differentiation",
+      "if_condition": "Client says 'I feel confused about why this hurts' \u2014 cognitive state masquerading as feeling (intellectualization)",
+      "then_directive": "Use Stone 7: 'Confused is not a feeling, it's a cognitive state. Drop the confusion for a moment. What do you FEEL about the fact that this hurts? Sad? Angry? Scared?' Bypass cognitive loop: 'Set aside trying to understand WHY. Just be with WHAT IS. What's the sensation? What's the emotion about the sensation?'",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "should_superego_redirect",
+      "rule_category": "feeling_differentiation",
+      "if_condition": "Client says 'I feel that I should be able to do this by now' \u2014 superego attack masquerading as feeling",
+      "then_directive": "Use Stone 7: 'That's not a feeling, that's a should \u2014 that's your superego talking. What do you actually FEEL about not being able to do this yet? Disappointed? Ashamed? Angry?' Interrupt superego loop: 'Your superego is beating you up right now. That's an old friend from childhood who can't learn anything new. What does YOUR body \u2014 not your superego \u2014 need right now?'",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "head_level_client_descent",
+      "rule_category": "mind_body_integration",
+      "if_condition": "Client can explain movement biomechanics, recite anatomy, analyze dysfunction intellectually but cannot access felt sense \u2014 movement technically correct but performed not inhabited, often with Manager control and perfectionism",
+      "then_directive": "Use Stone 6: 'I can hear you understand this intellectually. Now drop into your body. What do you actually FEEL?' Use Stone 7 to distinguish intellectual understanding from somatic reality. Requires descent from head to heart/gut.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "heart_level_client_integration",
+      "rule_category": "mind_body_integration",
+      "if_condition": "Client can access emotions during movement work \u2014 tears, anger, joy \u2014 and articulate emotional content, but movement has emotional quality yet may lack stability or grounding",
+      "then_directive": "VALIDATE heart access (major achievement). Then invite gut integration: 'You're feeling this. Beautiful. Now what does your gut \u2014 your deepest knowing \u2014 say about this? What does your body's wisdom tell you?' Use Stone 3 to access intuitive guidance.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "gut_level_client_support",
+      "rule_category": "mind_body_integration",
+      "if_condition": "Client accesses intuitive body wisdom \u2014 knows what they need without intellectual analysis, trusts sensation as information, movement emerges from internal guidance not external instruction",
+      "then_directive": "SUPPORT and trust client's process per Pillar 1 and Pillar 2. Clinician role shifts to witness and occasional guide. Use Stone 2 before any intervention \u2014 client is accessing own wisdom. When three levels are working together, you've got no problem.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "head_heart_split_bridging",
+      "rule_category": "mind_body_integration",
+      "if_condition": "Client can analyze (head) OR feel (heart) but cannot do both simultaneously \u2014 switches between intellectualization when emotion rises and emotional flooding when trying to think; movement either mechanical or chaotic",
+      "then_directive": "Build bridge between levels: 'You can think about this AND feel about this at the same time. What do you understand (head)? What do you feel (heart)? Can you hold both?' Use Stone 6 to anchor in body as bridge. Polyvagal ventral state required for integration \u2014 check autonomic state first.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9), Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "gut_blocked_trauma_work",
+      "rule_category": "mind_body_integration",
+      "if_condition": "Client can think (head) and feel (heart) but cannot trust body's wisdom (gut) \u2014 ignores internal signals, overrides sensation, constantly looks to clinician for validation ('Am I doing this right?'), cannot trust own sensory feedback",
+      "then_directive": "Address trust deficit using attachment vs. authenticity framework: 'You learned early that to trust your gut was to threaten the relationship. Your gut is giving you information right now \u2014 can you listen to it even if it's scary?' Use Stone 10-11 to access compassion for child who had to ignore gut to survive.",
+      "override_level": "contextual",
+      "interacts_with_rule": "Exile Work Sequence Enforcement (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "functionality_question_for_guarding",
+      "rule_category": "inquiry_micro_intervention",
+      "if_condition": "Client guards, avoids, or compensates around a movement pattern AND has capacity for Self-presence (can witness, is not in acute distress)",
+      "then_directive": "Use Mat\u00e9's core functionality question adapted: 'What does [this guarding/this avoidance/not doing this movement] do for you?' This is the bridge question between biomechanical and CI-informed territory. Do NOT ask about mechanism ('why does your hip do that?') \u2014 ask about function ('what does avoiding hip flexion do for you?'). If client can answer, opens door to Stone 12 (reframe as coping) or Stone 13 (underlying belief).",
+      "override_level": "contextual",
+      "interacts_with_rule": "Protector Permission Mandate (M16), Manager Bracing vs Structural Restriction (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_autonomic_green_full_protocol",
+      "rule_category": "session_routing",
+      "if_condition": "Client in Green/Ventral Vagal state \u2014 spontaneous breath, melodic voice, eye contact, warm expressive face, AND client has capacity to witness, ground, and be aware of body and breath",
+      "then_directive": "Full CI micro-intervention capacity available. All stepping stones accessible for brief (30 second to 2 minute) awareness moments within movement work. Pillar 1 (faith in client's process) and Pillar 2 (faith in your intuition) are priority. Quality needed: Curiosity and Authenticity \u2014 client can handle genuine inquiry.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9), Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_autonomic_amber_modified_protocol",
+      "rule_category": "session_routing",
+      "if_condition": "Client in Amber/Sympathetic state \u2014 high shoulders, rapid speech, darting eyes, breath holding, jaw clenching",
+      "then_directive": "Modified CI only \u2014 Compassionate Listening with selective stepping stones. Available stones: 1, 2, 6, 7, 12, 17 (engagement, permission, embodiment, feeling identification, reframing coping, closure). Contraindicated: 8, 9, 10, 11, 13, 14 (origin tracing and belief work). Pillar 5 (compassion) is priority \u2014 system needs co-regulation not inquiry pressure. Quality needed: Empathetic Abiding Presence and Non-Judgement.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Sympathetic State Detection (M9), RAGE Dominant Amber Routing (M9), FEAR Dominant Amber Routing (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_autonomic_red_contraindicated",
+      "rule_category": "session_routing",
+      "if_condition": "Client in Red/Dorsal Vagal state \u2014 slumped posture, flat voice, numb/foggy, disconnection, floating away quality",
+      "then_directive": "CI contraindicated \u2014 Compassionate Listening only. Available stones: 1, 6 only if client can tolerate (gentle engagement and embodiment). All inquiry stones 2-5, 7-17 contraindicated in shutdown state. Pillar 5 (compassion) is priority. Quality needed: Empathetic Abiding Presence only \u2014 consistent regulated presence as secure neurochemical base.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal State Detection (M9), Dorsal Assessment Invalidity (M9), ci_precaution_7_acute_distress_contraindication",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_parts_self_present",
+      "rule_category": "cross_module",
+      "if_condition": "Client speaks with stronger and calmer voice, articulates experience with understanding and self-compassion without judgment, maintains social engagement markers",
+      "then_directive": "Self present \u2014 full CI protocol available with permission. All stepping stones accessible. Mat\u00e9 addresses Self with direct questions assuming capacity for reflection: 'What are you feeling about it?' 'What did you make that mean when you were a kid?' Risk is minimal \u2014 primary consideration is maintaining Self-leadership through permission-asking (Stone 2).",
+      "override_level": "recommended",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16), Feel Towards Diagnostic Test (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_parts_manager_present",
+      "rule_category": "cross_module",
+      "if_condition": "Client presents with perfectionism, control, intellectualization, people-pleasing \u2014 'I feel that...' followed by thought, uses cognitive-state words like 'confused' instead of emotion words",
+      "then_directive": "Manager present \u2014 Stone 7 critical (distinguish feeling from perception). Mat\u00e9 interrupts: 'No, that's not a feeling. That's an opinion. What are you feeling about it?' Use Stone 15 (bring issue back to them). Interrupt story per Skill #15. Manager resistance indicates protective function \u2014 do not force past Manager without permission per Stone 2.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16), Manager intellectualization blocks Stone 7 (crosswalk)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_parts_firefighter_present",
+      "rule_category": "cross_module",
+      "if_condition": "Problem behavior/addiction present, OR client showing impulsive reactive behavior, OR sudden rage/dissociation in session",
+      "then_directive": "Firefighter present \u2014 Stone 4 (what does it do for you?) and Stone 12 (reframe as coping) are primary. Mat\u00e9 asks: 'So what does it do for you? It does something for you, otherwise you wouldn't do it.' Do NOT make behavior wrong \u2014 see it as treasure per Pillar 7. CI not stand-alone treatment for addictions per Precaution #4. Shaming increases Firefighter activation.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Firefighter Detection Protocol (M16), RAGE System Primary Detection (M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ci_parts_exile_present",
+      "rule_category": "cross_module",
+      "if_condition": "Little girl/little boy voice appears, OR client accesses deep emotional pain with child quality, OR Stones 8-9 have accessed childhood origin",
+      "then_directive": "Exile speaking \u2014 Stones 8-11 are Exile-accessing sequence. Stone 13 names Exile's core wound. Requires Stone 2 permission repeatedly \u2014 Exile contact is delicate. Mat\u00e9 notes voice quality: 'sounds like a little girl' and 'speaking from little girl self.' Precaution #2 critical \u2014 safe relational container required. If Exile floods system, route to dorsal protocol per Exile Flooding Emergency Protocol.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Exile voice quality signals part identification (crosswalk), Exile Flooding Emergency Protocol (M16), Protector Permission Mandate (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "dorsal_panic_grief_blocks_all_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Red (Dorsal Vagal) with slumped posture, flat voice, numb/foggy, disconnection AND PANIC/GRIEF markers (separation distress, crying, sorrowful despairing postures, context of social loss) AND Exile flooded or extreme Firefighter collapse",
+      "then_directive": "CI contraindicated. Compassionate Listening only. Clinician provides consistent regulated presence as secure neurochemical base per CARE system engagement. Use coming back to life protocol: imagine movement, self-touch, remember-imagine-enact connection. Do NOT attempt belief identification or origin tracing.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal PANIC/GRIEF blocks all CI (crosswalk), PANIC/GRIEF Dominant Red Routing (M9+M19), Exile Flooding Emergency Protocol (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "sympathetic_rage_requires_invitation_only_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Amber (Sympathetic) with high shoulders, breath holding, jaw clenching, body tensely arched AND RAGE markers (hissing/growling vocalizations, lashing out potential, frustration at constraints) AND Manager rigidly controlling OR Firefighter actively defending",
+      "then_directive": "Modified CI only. Stone 2 (ask permission) continuously. Stone 12 (reframe as coping) to acknowledge protective function. Do NOT use commands \u2014 only invitations per Command vs Invitation Protocol. Stones 8-14 (origin/belief work) contraindicated until RAGE de-escalates. Use calm up to organize sympathetic energy from flood to flow. Acknowledge frustration explicitly.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Sympathetic RAGE requires invitation-only CI (crosswalk), RAGE Dominant Amber Routing (M9+M19), Command vs Invitation Protocol (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "sympathetic_fear_requires_safety_first_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Amber (Sympathetic) with darting eyes, freezing response, jumpiness, excessive vigilance AND FEAR markers (precipitous flight, anxiety about movement, avoidance, threat-management) AND Manager hypervigilant OR young Exile afraid to emerge",
+      "then_directive": "Modified CI with extensive safety-building. Stone 1 (engage with invitation) and Stone 6 (bring into bodily experience) are foundation. Use scaffolded approach: smallest steps possible. Shift language per Threat Language Substitution. Stones 8-11 (childhood exploration) only if anxiety reduces and social engagement markers return. Clinician's regulated nervous system provides external vagal brake.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Sympathetic FEAR requires safety-first CI (crosswalk), FEAR Dominant Amber Routing (M9+M19), Threat Language Substitution (M9)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ventral_seeking_channels_explore_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Green (Ventral Vagal) with spontaneous breath, melodic voice, eye contact, warm expressive face AND SEEKING markers (energetic forward locomotion, excited anticipation toward goal, vigorous exploration) AND Self-led",
+      "then_directive": "Full CI protocol available. Stone 3 (what would you like help with) channels SEEKING motivation. Stones 8-14 (origin and belief identification sequence) accessible. Stone 15 (100% responsibility) empowers goal-directed action. Use client's exploratory energy to investigate childhood origins and challenge beliefs.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral SEEKING channels into Explore CI (crosswalk), SEEKING Dominant Green Routing (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "ventral_care_activates_self_compassion_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Green (Ventral Vagal) with spontaneous breath, melodic voice, warm facial expression AND CARE markers (gentle caresses, hovering, nurturing movements, attentive parenting quality) AND Self with compassion online",
+      "then_directive": "Stones 10-11 (imagine child, who would you want them to talk to) are primary. Use CARE system to access Self-compassion. Stone 12 (reframe behavior as coping) leverages nurturing perspective toward self. If PANIC/GRIEF present in background, CARE system engagement powerfully inhibits separation distress. Co-regulation through CARE builds secure neurochemical base.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral CARE activates Self-compassion CI (crosswalk), CARE Dominant Green Routing (M9+M19), CARE Inhibits PANIC/GRIEF (M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "play_absence_does_not_contraindicate_ci",
+      "rule_category": "cross_module",
+      "if_condition": "Green (Ventral Vagal) with social engagement online but PLAY reduced or absent \u2014 may be medication effect if on psychostimulants",
+      "then_directive": "Proceed with standard CI protocol. PLAY is not required for CI capacity. Psychostimulants markedly reduce play behaviors per Panksepp so absence of playfulness is not deficit if SEEKING functional. CI framework appears serious in tone not playful \u2014 Mat\u00e9 sessions show depth work not ludic engagement.",
+      "override_level": "contextual",
+      "interacts_with_rule": "PLAY absence does not contraindicate CI (crosswalk), Stimulants Reduce Play Consideration (M9+M19)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "stop_the_rep_with_ci_awareness",
+      "rule_category": "cross_module",
+      "if_condition": "Client holds breath, clenches jaw, or curls toes during movement",
+      "then_directive": "Stop activity immediately. State 'The rep doesn't count.' Then add CI-informed layer: 'A part of you just got scared or frustrated. What are you noticing in your body right now?' (Stone 6). Assess if sympathetic activation is RAGE-driven or FEAR-driven. If client can access awareness, brief moment: 'What was your system protecting you from just then?' (Stone 4 adapted). Return to co-regulation before resuming.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Stop the Rep Rule (M9), Stop the Rep Rule with Parts Assessment (M16)",
+      "source_module": "M18_CI"
+    },
+    {
+      "rule_name": "downshift_protocol_with_parts_gratitude",
+      "rule_category": "cross_module",
+      "if_condition": "Manual work has created new space in tissue",
+      "then_directive": "Before client gets up: (1) Find floor with heels, take three breaths where exhale longer than inhale, (2) Tell nervous system safe to keep this new space, (3) Add CI-informed integration: 'Thank the parts of you that have been holding this tension. Let them know you can maintain safety now without their extreme effort.' This prevents Manager from immediately reinstating protective bracing.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Downshift Protocol Mandate (M9), Downshift Protocol with Parts Integration (M16)",
+      "source_module": "M18_CI"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_disconnection_detection": [
+      {
+        "observation": "Client's movement becomes mechanical, disconnected, or 'frozen' despite capacity for the movement",
+        "if_check": "Ask: 'What are you noticing in your body right now?' Observe if client can access sensation or if response is intellectual ('I don't know' or cognitive analysis)",
+        "probable_pattern": "Tuning out (dissociation) \u2014 'neural numbing' as protective coping from overwhelm",
+        "autonomic_cross_check": "Check for dorsal markers: slumped posture, flat voice, foggy awareness, disconnection from present moment",
+        "then_routing": "STOP movement work. Shift to Compassionate Listening only. Use Stone 6 (bring into bodily experience) gently: 'Can you feel your feet on the floor? Your back against the table?' Do NOT proceed with origin tracing or belief work.",
+        "escalation_trigger": "If client cannot access any body sensation or shows 'floating away' quality, route to dorsal protocol: imagine movement, self-touch, remember-imagine-enact connection. Consider ending session if freeze persists beyond 5 minutes of co-regulation attempts."
+      },
+      {
+        "observation": "Client intellectualizes movement experience \u2014 talks ABOUT the movement rather than describing felt sensation",
+        "if_check": "Listen for 'I feel that...' followed by analysis. Example: 'I feel like my hip is compensating because of my SI joint dysfunction' (interpretation, not feeling)",
+        "probable_pattern": "Intellectualization defense \u2014 Manager part using cognitive analysis to avoid emotional contact",
+        "autonomic_cross_check": "Often occurs in Green or Amber state \u2014 client may appear regulated but is using thinking to bypass feeling",
+        "then_routing": "Use Stone 7 (distinguish feeling from perception). Redirect: 'That's an analysis. What do you actually FEEL in your hip right now? Hot? Tight? Empty?' If client cannot access sensation, return to Stone 6 before continuing movement work.",
+        "escalation_trigger": "If Manager resistance increases when intellectualization is gently challenged, acknowledge the protective function (Stone 12) and ask permission to continue (Stone 2). Do NOT force past this defense \u2014 indicates system not ready for deeper embodied work."
+      },
+      {
+        "observation": "Client's voice quality shifts to 'little girl' or 'little boy' voice during movement \u2014 regression markers appear",
+        "if_check": "Note pitch, tone, cadence shifts. Client may also present small, hesitant movements or withdraw physically. Ask: 'How old do you feel right in this moment?'",
+        "probable_pattern": "Exile speaking \u2014 movement has accessed young traumatized part",
+        "autonomic_cross_check": "Exile can appear in any autonomic state but indicates underlying Red vulnerability. Check for PANIC/GRIEF markers: separation distress quality, crying, sorrowful posture",
+        "then_routing": "Pause movement immediately. Use Stone 2 (ask permission to continue) and Stone 6 (gentle embodiment check). If client maintains enough Self-leadership to witness, can explore with Stones 8-9 (origin tracing) briefly (30-90 seconds max). If Exile floods system, stop all inquiry and return to co-regulation.",
+        "escalation_trigger": "If voice becomes increasingly childlike, posture collapses, or client starts crying without ability to witness own experience, protective parts overwhelmed. STOP all movement and inquiry. Return to Compassionate Listening and establish safety. Do NOT push belief identification while Exile flooded."
+      },
+      {
+        "observation": "Client states 'my feet keep wanting to run' or shows restless lower body during movement work",
+        "if_check": "Observe for constant weight shifting, inability to ground, impulse to flee the exercise. Ask: 'What do your feet/legs want to do right now?'",
+        "probable_pattern": "Trapped fight-or-flight energy \u2014 somatic expression of sympathetic activation and constraint",
+        "autonomic_cross_check": "Check for Amber (Sympathetic) markers: high shoulders, breath holding, jaw clenching, RAGE or FEAR affective tone",
+        "then_routing": "If RAGE present: use Stone 2 (invitation-only language) and Stone 12 (acknowledge as coping). If FEAR present: use Stone 1 (engage with invitation) and Stone 6 (establish safety before continuing). Consider 'calm up' protocol to organize sympathetic energy from flood to flow. Stones 8-14 (origin/belief work) contraindicated until sympathetic de-escalates.",
+        "escalation_trigger": "If restlessness escalates to 'lashing out' quality (RAGE) or freezing response solidifies (FEAR shifting to dorsal), STOP movement work immediately. Route to Settle track. Do NOT proceed with deeper inquiry \u2014 will amplify dysregulation."
+      },
+      {
+        "observation": "Client externalizes internal process during movement \u2014 'Why is my body doing this to me?' or 'My pain won't let me...'",
+        "if_check": "Listen for language that personifies or externalizes symptoms. Client creates 'it' as separate entity acting upon them rather than process within them.",
+        "probable_pattern": "Disconnection from self \u2014 seeing body/pain/anxiety as separate attacker rather than own process",
+        "autonomic_cross_check": "Can occur in any state but indicates fundamental disconnection from present-moment self",
+        "then_routing": "Challenge gently using Mat\u00e9's reframe: 'What if there's no \"it\"? What if this is a process inside YOU? What are YOU experiencing right now?' Return to Stone 6 (bodily experience of present moment). This is micro-intervention \u2014 30 seconds to 1 minute max before returning to movement work.",
+        "escalation_trigger": "If client cannot shift from externalized to internal perspective after two attempts, protective parts likely too strong. Acknowledge the protection (Stone 12) and return to purely biomechanical work. Do NOT push \u2014 this is not the session for deeper awareness work."
+      },
+      {
+        "observation": "Client's heart 'shuts down' when movement touches painful area \u2014 sudden shift in presence, affect, or ability to connect",
+        "if_check": "Observable withdrawal from relational connection even while physically present. Can ask: 'What would your heart say if you asked it, \"Why are you shutting down right now?\"'",
+        "probable_pattern": "Heart shutting down \u2014 protective coping from 'bruised heart' from emotional injury or abandonment, classic PANIC/GRIEF response",
+        "autonomic_cross_check": "Check for dorsal shift: physical constriction in chest, shallow breathing, disconnection quality despite earlier engagement",
+        "then_routing": "Pause movement immediately. Acknowledge protective function (Stone 12): 'Your heart is doing what it knows how to do to keep you safe.' Use CARE system engagement if client can access it \u2014 Stone 10 (imagine child) may activate self-compassion. If PANIC/GRIEF deepens, STOP all movement and provide 'consistent regulated presence as secure neurochemical base' per Precaution #7.",
+        "escalation_trigger": "If heart shutdown continues despite co-regulation or client shows deeper dorsal collapse (numb, foggy, floating away), end movement work for this session. May require medical intervention if freeze persists. This is acute distress territory \u2014 Compassionate Inquiry contraindicated per Precaution #7."
+      }
+    ],
+    "Phase5_belief_surfacing": [
+      {
+        "trigger": "Client makes self-critical statement during movement work \u2014 'I'm so weak' or 'I'm such an idiot for not being able to do this'",
+        "recognition_cue": "Distinguish from biomechanical limitation: if movement IS achievable but client believes they 'can't' or 'shouldn't,' belief-driven. Superego attack observable: client beats themselves up.",
+        "ci_micro_intervention": "Use Stone 13 adapted: 'What does it mean about you that you can't do this movement right now?' followed by Stone 7: 'Is that a feeling or a belief?' Brief \u2014 1-2 minutes max. Then return to movement.",
+        "timing_window": "30 seconds to 2 minutes maximum. This is awareness-pointing not full inquiry. Goal is to NAME the belief so it's visible, not to process origin in this moment.",
+        "if_deepens": "If client accesses strong emotion (tears, anger) and remains Self-led (can witness), can extend to Stone 8 (Is this the first time?) briefly. If Exile floods or protective parts activate, STOP immediately and return to movement work or end session.",
+        "if_resolves": "If client recognizes belief and movement quality improves ('Oh... I CAN do this, I just BELIEVE I can't'), acknowledge shift (Stone 16: see client for their possibility) and continue movement work. Belief work successful \u2014 no further inquiry needed this session."
+      },
+      {
+        "trigger": "Client avoids specific movement pattern repeatedly despite capacity \u2014 always modifies, always finds excuse, always deflects",
+        "recognition_cue": "Pattern is consistent across sessions. Avoidance is not pain-driven (client can perform related movements) but anxiety-driven. Often accompanied by Manager explanations.",
+        "ci_micro_intervention": "Use Stone 4 (functionality): 'What does avoiding this movement do for you? What does it protect you from?' Then Stone 2 (permission): 'Would you be willing to try it just once and notice what happens in your body?' [ADAPTED \u2014 source principle applied to movement context]",
+        "timing_window": "1-2 minutes for inquiry, then either attempt movement with awareness or acknowledge protection and move on. Do NOT push if client says no.",
+        "if_deepens": "If avoidance is trauma-based (client accesses FEAR or memory), shift to Stone 6 (embodiment) and Stone 1 (establish safety). Can explore briefly with Stone 8 (first time?) if client remains resourced. If overwhelm appears, return to Compassionate Listening only.",
+        "if_resolves": "If client identifies protective function ('I'm afraid of hurting myself because I always get hurt') and can attempt movement with new awareness, movement becomes therapeutic intervention. Acknowledge courage (Stone 21: taste of victory) and continue."
+      },
+      {
+        "trigger": "Client connects current movement limitation to childhood experience spontaneously \u2014 'This reminds me of when my dad used to...' or 'I haven't felt this way since...'",
+        "recognition_cue": "Client makes connection unprompted. This is emergence not excavation \u2014 material surfacing naturally during movement work.",
+        "ci_micro_intervention": "Follow client's lead. Use Stone 5 (What happened?) to hear basic story, then Stone 6 (What do you feel in your body right now?) to anchor in present. Can use Stone 9 (Who did you tell?) if client remains regulated. Do NOT dig deeper unless client initiates. [ADAPTED \u2014 movement context requires following emergence not leading inquiry]",
+        "timing_window": "2-5 minutes maximum. Client-led means client sets pace. Mechanic role is to HOLD space not DRIVE inquiry. Return to movement work when client signals readiness.",
+        "if_deepens": "If client accesses Exile or PANIC/GRIEF intensifies, use Stone 2 (permission to pause) and assess autonomic state. If Green maintained, can continue briefly with Stones 10-11 (child imagination) to access self-compassion. If shift to Amber or Red, STOP and co-regulate.",
+        "if_resolves": "If brief awareness moment allows client to release holding pattern and movement improves, THIS is healing integration. Acknowledge (Stone 16: reframe to present reality \u2014 'You're not that child anymore, you're here now and you're safe') and continue movement work. Session successful."
+      },
+      {
+        "trigger": "Client's belief about their body becomes visible through language \u2014 'My body always betrays me' or 'I can't trust my body' or 'My body is broken'",
+        "recognition_cue": "Distinguish from accurate assessment (actual injury) vs. belief overlay (interpretation of sensation as evidence of fundamental flaw). Often accompanied by self_worth or safety belief categories.",
+        "ci_micro_intervention": "Use Stone 7 (feeling vs. perception): 'Is that what your body is DOING right now, or is that what you BELIEVE about your body?' Then Stone 13 (identify belief): 'When did you decide your body couldn't be trusted?' Brief \u2014 name it, don't excavate it. [ADAPTED \u2014 source principle applied to movement context]",
+        "timing_window": "1-3 minutes maximum. Goal is to create separation between sensation and interpretation, not to process origin. Client needs to see belief AS belief not as fact.",
+        "if_deepens": "If origin tracing begins spontaneously (client remembers when belief formed), can follow with Stone 8-9 briefly (30-90 seconds). If emotional intensity rises, check autonomic state before continuing. Return to movement work as soon as belief is named.",
+        "if_resolves": "If client can distinguish 'my hip hurts right now' (sensation) from 'my body is broken' (belief), movement quality often shifts immediately. Sensation becomes information not identity. Acknowledge this (Stone 16: see possibility) and continue with movement work informed by new awareness."
+      }
+    ],
+    "Phase5_safety_protocol": [
+      {
+        "situation": "Client hesitates or withdraws when Mechanic suggests movement into vulnerable position (supine, prone, eyes closed)",
+        "ci_principle_applied": "Precaution #5: 'Ask permission to continue if you sense distress or resistance'",
+        "language_template": "Would you be willing to try [position]? | Is this feeling safe for you right now? | You can say no \u2014 that's completely okay.",
+        "client_response_green": "Client says yes or tries position and remains regulated (breathing continues, eye contact maintained, social engagement online)",
+        "client_response_amber": "Client hesitates, asks questions, or shows FEAR markers (darting eyes, shallow breath). Proceed with scaffolding: smallest step possible, eyes open first, partial position.",
+        "client_response_red": "Client says no, freezes, or shows dorsal shift (disconnect, floating away quality). STOP immediately. Return to seated or standing position. Acknowledge protection: 'Your system is saying no right now. We'll honor that.'",
+        "mechanic_action_per_response": "GREEN: Proceed with movement. AMBER: Modify approach, use Stone 1 (invitation) and Stone 6 (safety language). RED: End vulnerable positioning for this session, stay with upright work only."
+      },
+      {
+        "situation": "Client begins crying or shows strong emotion during movement work",
+        "ci_principle_applied": "Precaution #2: 'Maintain safe relational container so original painful feelings can be held, experienced, and expressed'",
+        "language_template": "It's okay to feel this. I'm right here with you. | What do you need right now? | Would you like to pause or would you like to stay with this?",
+        "client_response_green": "Client cries but maintains Self-leadership \u2014 can speak, can witness own experience, social engagement maintained. Says 'I'm okay' or 'I need to feel this.'",
+        "client_response_amber": "Client cries and shows uncertainty \u2014 looks to Mechanic for guidance, cannot clearly state needs. Can respond to prompts but needs more support.",
+        "client_response_red": "Client cannot speak, collapses into body, loses contact with present moment (Exile flooding). Voice becomes childlike or disappears entirely.",
+        "mechanic_action_per_response": "GREEN: Hold space, allow expression, use Stone 6 (stay with body) and Stone 12 (normalize as coping). Continue when client signals ready. AMBER: Pause movement, provide co-regulation through regulated presence, use Stone 2 (check permission) before continuing. RED: STOP all movement work. Use Compassionate Listening only. Provide 'consistent regulated presence as secure neurochemical base' per CARE system. Do NOT attempt inquiry."
+      },
+      {
+        "situation": "Mechanic notices own discomfort or activation during session (countertransference)",
+        "ci_principle_applied": "Pillar 4: 'Take responsibility for what arises in you during session, instead of taking it out on client'",
+        "language_template": "I'm noticing I need to check in with myself for a moment. | Let's pause here. | I want to make sure I'm fully present with you.",
+        "client_response_green": "Client can tolerate brief pause in session while Mechanic self-regulates. Understands this as Mechanic's self-care not abandonment.",
+        "client_response_amber": "Client shows anxiety about pause \u2014 'Did I do something wrong?' or 'Are you okay?' Needs reassurance.",
+        "client_response_red": "Client interprets pause as rejection or abandonment (trauma trigger). Shows distress at Mechanic's withdrawal of attention.",
+        "mechanic_action_per_response": "GREEN: Take 30-60 seconds to self-regulate (breath, ground, check own body), then resume. AMBER: Reassure client ('This is about me taking care of myself so I can be fully here for you, not about anything you did'), then brief self-regulation and resume. RED: Recognize client's attachment wound is active. Stay present, acknowledge client's experience ('I see this is hard for you'), and co-regulate together rather than separating. May need to end session early if Mechanic cannot re-establish own regulation."
+      },
+      {
+        "situation": "Client asks to stop movement or session \u2014 'I can't do this' or 'I need to stop'",
+        "ci_principle_applied": "Precaution #5: 'Respect client's directives and end session when they wish'",
+        "language_template": "Absolutely. We can stop right now. | Thank you for telling me. | What do you need in this moment?",
+        "client_response_green": "Client clearly states needs: 'I need to stop this exercise but I'm okay to continue session' or 'I need to end for today.' Can articulate reason.",
+        "client_response_amber": "Client is uncertain \u2014 'I don't know, I just feel...' Cannot clearly state needs but knows something is wrong. Shows Manager or Firefighter activation.",
+        "client_response_red": "Client is in acute distress \u2014 cannot articulate needs, shows dorsal shutdown or sympathetic overwhelm. May just repeat 'I can't' without explanation.",
+        "mechanic_action_per_response": "GREEN: Honor client's stated need immediately. If stopping exercise only, shift to different approach. If ending session, use Stone 17 (closure with gratitude). AMBER: Stop current activity immediately, use Stone 6 (what's happening in body?) to help client access what system needs. May be able to continue with modified approach or may need to end. Follow client's capacity. RED: Stop all work immediately per Precaution #7. 'Be calm presence, ask what they need, do what is necessary to keep them safe.' Session ends. Follow-up plan established before client leaves."
+      },
+      {
+        "situation": "Client discloses trauma history during movement work that Mechanic is not trained to process",
+        "ci_principle_applied": "Precaution #4: 'CI not designed to be stand-alone treatment... Refer clients when beneficial to engage in other therapies'",
+        "language_template": "Thank you for sharing that with me. That takes courage. | I want to acknowledge what you've told me, and I also want to make sure you have the right support for processing this. | Would you be open to me connecting you with [trauma-specialized therapist/resource]?",
+        "client_response_green": "Client appreciates acknowledgment and is open to referral. Can continue session focused on movement without needing to process disclosure further.",
+        "client_response_amber": "Client needs more support in this moment \u2014 disclosure has activated system. Shows PANIC/GRIEF or FEAR. May not be ready to shift to referral conversation.",
+        "client_response_red": "Client is overwhelmed by own disclosure \u2014 Exile has flooded, cannot regulate. Disclosure was Firefighter attempt to get help but system cannot contain it.",
+        "mechanic_action_per_response": "GREEN: Acknowledge, offer referral, continue movement work if client able. Follow up on referral at next session. AMBER: Pause movement work, provide co-regulation and Compassionate Listening for remainder of session. Make referral plan before client leaves. Do NOT attempt to process trauma content \u2014 outside scope. RED: Stop movement work entirely. Use Compassionate Listening and stabilization for remainder of session. Make immediate referral to crisis support if needed. Ensure client has safety plan before leaving. Do NOT see client again until stabilizing support in place."
+      }
+    ]
+  },
+  "rule_count": 62,
+  "phase5_count": 15
+}

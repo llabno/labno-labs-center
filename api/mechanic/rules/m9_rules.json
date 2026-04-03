@@ -1,0 +1,441 @@
+{
+  "module": "m9",
+  "phase6_rules": [
+    {
+      "rule_name": "Stop the Rep Rule",
+      "rule_category": "state_detection",
+      "if_condition": "IF client holds breath, clenches jaw, or curls toes during movement",
+      "then_directive": "THEN stop activity immediately and state 'The rep doesn't count' - implement co-regulation intervention to restore neuroception of safety before resuming. Assess if sympathetic activation is RAGE-driven (frustration at constraint, body tensely arched) or FEAR-driven (anxiety about movement, freezing or flight tendency) and apply appropriate Settle track intervention before continuing.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Downshift Protocol Mandate",
+      "rule_category": "state_transition",
+      "if_condition": "IF manual work has created new space in tissue",
+      "then_directive": "THEN before client gets up: find floor with heels, take three breaths where exhale is longer than inhale, tell nervous system it is safe to keep this new space. This protocol engages vagal brake and shifts neuroception from threat to safety.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Threat Language Substitution",
+      "rule_category": "co_regulation",
+      "if_condition": "IF client is in sympathetic state (high shoulders, rapid speech, darting eyes, breath holding, jaw clenching)",
+      "then_directive": "THEN substitute 'Does this hurt?' with 'Does this feel safe, or does it feel like a negotiation?' to shift neuroception from danger assessment to safety assessment.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Dorsal Assessment Invalidity",
+      "rule_category": "session_routing",
+      "if_condition": "IF client presents with slumped posture, flat voice, disconnected movement quality, numb/foggy reporting",
+      "then_directive": "THEN defer structural assessment, implement coming back to life protocol through imagined then gentle movement to activate motor cortex, use self-touch to restore sensation, restore minimal mobilizing energy through safe traversal of sympathetic activation before attempting any movement testing or tissue palpation. If PANIC/GRIEF identified as driver, prioritize co-regulation through CARE system engagement.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Nurturance Soothes Grief",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Social Engagement Assessment Gate",
+      "rule_category": "state_detection",
+      "if_condition": "IF social engagement system indicators absent (no prosody, no eye contact, no facial expression modulation, flat voice)",
+      "then_directive": "THEN route to Settle track, establish co-regulation through clinician's regulated social engagement system (prosodic voice, warm facial expression, inviting head gestures) before proceeding with treatment plan. Assess whether sympathetic (RAGE or FEAR) or dorsal (PANIC/GRIEF or extreme shutdown) to determine specific Settle approach.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Command vs Invitation Protocol",
+      "rule_category": "co_regulation",
+      "if_condition": "IF client shows sympathetic activation (especially RAGE indicators: tense body, resistance, frustration) AND clinician needs to guide movement",
+      "then_directive": "THEN use invitations and questions rather than commands - commands register as constraints on freedom and amplify RAGE response in sympathetic state. Frame as choices that respect autonomy: 'Would you be willing to...' rather than 'I need you to...'",
+      "override_level": "recommended",
+      "interacts_with_rule": "De-escalate Rage",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Dissolution Sequence Recognition",
+      "rule_category": "state_transition",
+      "if_condition": "IF client moves from ventral to sympathetic to dorsal within session",
+      "then_directive": "THEN recognize dissolution sequence in progress, pause all biomechanical work immediately, implement state-appropriate co-regulation to reverse dissolution sequence. Must address what triggered drop: if RAGE/FEAR drove sympathetic, reduce threat/frustration cues; if PANIC/GRIEF driving toward dorsal, engage CARE system for secure base. Cannot skip hierarchy in return - must safely traverse sympathetic mobilizing energy to return to ventral.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Ventral State Detection",
+      "rule_category": "state_detection",
+      "if_condition": "IF client enters with spontaneous breath, melodic voice, eye contact, warm expressive face",
+      "then_directive": "THEN confirm social engagement system online and route to Explore track. Assess which affective system dominant (SEEKING: energetic forward locomotion; PLAY: bouncy bounding movement; CARE: gentle nurturing quality; LUST: courting patterns if contextually appropriate) and frame intervention accordingly.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Channel Seeking Drive",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Sympathetic State Detection",
+      "rule_category": "state_detection",
+      "if_condition": "IF client enters with high shoulders, rapid speech, darting eyes, breath holding, jaw clenching",
+      "then_directive": "THEN assess whether sympathetic activation is RAGE-driven (body tensely arched, lashing out potential, frustration at constraints, hissing/growling vocalizations) OR FEAR-driven (freezing response, precipitous flight, jumpiness, excessive vigilance, anxiety about movement) and route to Settle track with appropriate intervention.",
+      "override_level": "recommended",
+      "interacts_with_rule": "De-escalate Rage",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Dorsal State Detection",
+      "rule_category": "state_detection",
+      "if_condition": "IF client enters with slumped posture, flat voice, 'I've tried everything', numb/foggy presentation, going through motions without awareness",
+      "then_directive": "THEN assess whether PANIC/GRIEF dominant (separation distress, crying, sorrowful despairing postures, context of social loss or abandonment) OR extreme FEAR freeze (immobilization freeze with loss of muscle activation, context of life threat not social loss) and route to Settle track with appropriate dorsal protocol.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Soothe Grief Before Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Rage Suppresses Seeking Integration",
+      "rule_category": "cross_module",
+      "if_condition": "IF client showing RAGE indicators (hissing/growling vocalizations, body tensely arched, lashing out potential, frustration at constraints)",
+      "then_directive": "THEN prioritize down-regulating RAGE through Settle track (serotonin, opioid, oxytocin pathways; rant to release; sigh of frustration; calm up from flood to flow) before engaging SEEKING-based Explore activities. Attempting to activate SEEKING while RAGE dominant will fail and may escalate anger.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Rage Suppresses Seeking",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Fear Inhibits Play Gate",
+      "rule_category": "cross_module",
+      "if_condition": "IF signs of FEAR present (freezing response, precipitous flight, jumpiness, excessive vigilance, anxiety about movement)",
+      "then_directive": "THEN prioritize down-regulating FEAR through Settle track (benzodiazepine-like GABAergic calming, reduce CRF/glutamate activation, build neuroception of safety) before attempting PLAY-based interventions in Explore track. PLAY requires ventral vagal state with social engagement online; FEAR blocks this.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Fear Inhibits Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Grief Inhibits Play Gate",
+      "rule_category": "cross_module",
+      "if_condition": "IF signs of PANIC/GRIEF present (separation distress, crying, sorrowful despairing postures, flat voice, context of social loss)",
+      "then_directive": "THEN prioritize co-regulation to settle PANIC/GRIEF system through CARE engagement (nurturance, social contact to inhibit separation distress, opioid/oxytocin/prolactin pathways to restore secure neurochemical base) before attempting PLAY-based interventions. PLAY and GRIEF are reciprocally opposed.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Grief Inhibits Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Nurturance Soothes Grief Protocol",
+      "rule_category": "cross_module",
+      "if_condition": "IF PANIC/GRIEF dominant (separation distress, sorrowful postures, crying, despairing bodily collapse, context of social loss or abandonment)",
+      "then_directive": "THEN engage CARE system through nurturance and social contact to powerfully inhibit separation distress: clinician provides consistent regulated presence as secure neurochemical base, use gentle nurturing touch appropriate to context, activate oxytocin and prolactin pathways through co-regulation, acknowledge social pain and loss explicitly.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Nurturance Soothes Grief",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Stimulants Reduce Play Consideration",
+      "rule_category": "cross_module",
+      "if_condition": "IF client is on psychostimulants (amphetamines, methylphenidate/Ritalin, cocaine) which facilitate dopamine and promote SEEKING system",
+      "then_directive": "THEN expect reduced expression of PLAY system as psychostimulants markedly reduce play behaviors even while increasing SEEKING exploratory drive. Do not interpret lack of playfulness as resistance or deficit - is medication effect. Adjust expectations and intervention approach accordingly.",
+      "override_level": "advisory",
+      "interacts_with_rule": "Stimulants Reduce Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Affective System Differentiation for Movement Quality",
+      "rule_category": "cross_module",
+      "if_condition": "IF client showing energetic non-stationary behavior that could be SEEKING (goal-directed exploration, excited anticipation) OR PLAY (bouncy bounding movement, chasing quality) OR mania/attention deficit",
+      "then_directive": "THEN differentiate by assessing: SEEKING is goal-directed toward specific reward with forward locomotion and sniffing/investigating quality; PLAY is joyful competitive social interaction with bouncy lightness and laughter-like quality; mania is overactivity without clear goal or social frame. Intervention depends on correct identification.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Channel Seeking Drive",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Posture-Affect Integration Rule",
+      "rule_category": "cross_module",
+      "if_condition": "IF client presents with collapsed/flexed posture that could be PANIC/GRIEF (sorrowful despairing postures from social separation) OR simple fatigue OR chronic structural problem",
+      "then_directive": "THEN differentiate by assessing context and accompanying signs: PANIC/GRIEF linked to social separation distress with flat voice, crying, or disconnection from self/others/world; fatigue without affective component shows normal social engagement when rested; structural problem consistent across contexts without affective markers. If PANIC/GRIEF identified, intervention is co-regulation through CARE system NOT structural bodywork.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Soothe Grief Before Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Ascending Transition Support Green-Bound",
+      "rule_category": "state_transition",
+      "if_condition": "IF client showing signs of returning from sympathetic toward ventral (reduction in high shoulders, breath holding, jaw clenching; return of spontaneous breath; beginning of eye contact; first signs of prosody)",
+      "then_directive": "THEN continue Settle track interventions while supporting emerging ventral regulation. RAGE: continue calming up to organize energy, use sigh of frustration as vagal brake engages. FEAR: maintain welcoming environment, continue building neuroception of safety. Shift to Explore track when social engagement system fully online.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Ascending Transition Support from Dorsal",
+      "rule_category": "state_transition",
+      "if_condition": "IF client showing signs of returning from dorsal (imagining movement activates motor cortex, gentle movement possible, any shift from flat voice toward vocal modulation, return of sensation to numb foggy state)",
+      "then_directive": "THEN support gentle mobilization through sympathetic energy toward ventral. Use three-breath protocol (exhale longer than inhale) to signal nervous system safety. Continue scaffolded approach: imagine movement before actual movement, self-touch to restore body awareness, remember-imagine-enact connection. If PANIC/GRIEF: maintain CARE system engagement as secure base throughout transition.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Descending Transition Arrest Ventral-to-Amber",
+      "rule_category": "state_transition",
+      "if_condition": "IF client showing early signs of descending from ventral toward sympathetic (sense of unease, vagal brake begins to relax, feeling of building anger or anxiety, breath pattern changes from spontaneous to irregular)",
+      "then_directive": "THEN notice early warning signs immediately. Use discernment question: 'In this moment, in this place, with this person or people, is this level of response necessary?' Engage vagal brake through sigh of contentment. Reduce challenge intensity before dissolution continues.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "Descending Transition Arrest Amber-to-Red",
+      "rule_category": "state_transition",
+      "if_condition": "IF client showing signs of descending from sympathetic toward dorsal (feeling depleted physically and emotionally, subtle feeling of not being present, image of taking a step back or floating away)",
+      "then_directive": "THEN immediately arrest sympathetic cascade before dorsal collapse. If RAGE-driven: use rant to release, calm up from flood to flow, provide safe release of sympathetic energy. If FEAR-driven: establish welcoming environment, shift safety/danger equation, reduce threat perception. Do not proceed with treatment plan - dissolution in progress.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M9"
+    },
+    {
+      "rule_name": "SEEKING Dominant Green Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in ventral state with SEEKING dominant (energetic forward locomotion, excited anticipation toward specific goal, vigorous exploration, sniffing/investigating quality)",
+      "then_directive": "THEN channel SEEKING drive toward therapeutic goals in Explore track. Provide goal-directed challenge that matches client's energetic forward movement. Support excited anticipation and exploratory behavior. Monitor for obsessive territory or frustration triggering RAGE.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Channel Seeking Drive",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "PLAY Dominant Green Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in ventral state with PLAY dominant (bouncy bounding movement, chasing/wrestling quality, laughter-like sounds, joyful competitive edge)",
+      "then_directive": "THEN maintain joyful competitive social framing in Explore track. Support bouncy bounding movement quality. Allow laughter-like sounds and ludic exploration. Keep challenge within playful range - neither boring nor threatening. Use social engagement system co-regulation to contain sympathetic mobilization energy within safe play container.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Assess Resilience via Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "CARE Dominant Green Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in ventral state with CARE dominant (gentle caresses, hovering, deliberate nurturant movements, nest building quality)",
+      "then_directive": "THEN prioritize Build track, leveraging the co-regulatory state for therapeutic alliance. Offer nurturing touch context. Engage CARE system to establish secure neurochemical base that can inhibit PANIC/GRIEF if triggered.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Leverage Nurturance to Soothe Grief",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "RAGE Dominant Amber Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in sympathetic state with RAGE dominant (body tensely arched, hissing/growling, lashing out, frustration at constraints)",
+      "then_directive": "THEN route to Settle track. Use invitations not commands ('Would you be willing to...' not 'I need you to...'). Calm up to organize sympathetic energy from flood to flow. Offer rant to release for safe energy discharge. Engage vagal brake through sigh of frustration. Do not attempt SEEKING or PLAY until RAGE de-escalated and social engagement system returns.",
+      "override_level": "recommended",
+      "interacts_with_rule": "De-escalate Rage",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "FEAR Dominant Amber Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in sympathetic state with FEAR dominant (freezing response, precipitous flight, jumpiness, excessive vigilance, darting eyes)",
+      "then_directive": "THEN route to Settle track. Establish welcoming environment with reduced threat cues. Move slowly and predictably. Offer explicit choice and control. Use scaffolded approach to build neuroception of safety. Substitute 'does this hurt?' with 'does this feel safe or like negotiation'. Clinician's regulated nervous system provides external vagal brake.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Settle Fear Before Play",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "PANIC/GRIEF Dominant Red Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in dorsal state with PANIC/GRIEF dominant (distress vocalizations, crying, sorrowful despairing postures, context of social separation/loss)",
+      "then_directive": "THEN route to Settle track with CARE system engagement. Clinician provides consistent regulated presence as secure neurochemical base. Use gentle nurturing touch appropriate to context. Activate oxytocin and prolactin pathways through co-regulation. Acknowledge social pain and loss explicitly. Protocol: imagine movement to activate motor cortex, gentle actual movement, self-touch to restore sensation, remember-imagine-enact connection.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Nurturance Soothes Grief",
+      "source_module": "both"
+    },
+    {
+      "rule_name": "Extreme FEAR Freeze Red Routing",
+      "rule_category": "session_routing",
+      "if_condition": "IF client in dorsal state with extreme FEAR freeze (immobilization freeze with loss of muscle activation, context of life threat not social loss)",
+      "then_directive": "THEN route to Settle track. Reduce threat perception through massive increase in safety cues. Use benzodiazepine-like GABAergic calming through environmental management and clinician's regulated presence. Protocol: imagine movement to activate motor cortex, gentle actual movement, self-touch to restore sensation, scaffolded safety-building. Must safely traverse sympathetic mobilizing energy to return to ventral - cannot skip hierarchy.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Settle Fear Before Play",
+      "source_module": "both"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_state_detection": [
+      {
+        "observation": "Client enters with spontaneous breath, melodic voice, eye contact, warm expressive face",
+        "if_check": "Social engagement system online: prosodic vocalizations present, positive facial expressions, gaze invites connection, head gestures convey invitation",
+        "probable_state": "Ventral Vagal (Green)",
+        "confirmation_markers": "Resourced and resourceful presentation, flexible responses to instruction, ability to acknowledge distress and explore options, respiratory sinus arrhythmia indicates vagal brake functioning",
+        "then_routing": "Explore track - assess which affective system dominant (SEEKING: energetic forward locomotion; PLAY: bouncy bounding movement; CARE: gentle nurturing quality; LUST: courting patterns if contextually appropriate) and frame intervention accordingly",
+        "escalation_trigger": "If client holds breath, clenches jaw, or curls toes during movement THEN stop activity immediately - vagal brake has released and system shifting to sympathetic"
+      },
+      {
+        "observation": "Client enters with high shoulders, rapid speech, darting eyes, breath holding, jaw clenching",
+        "if_check": "Assess whether sympathetic activation is RAGE-driven (body tensely arched, lashing out potential, frustration at constraints, hissing/growling vocalizations) OR FEAR-driven (freezing response, precipitous flight, jumpiness, excessive vigilance, anxiety about movement)",
+        "probable_state": "Sympathetic (Amber)",
+        "confirmation_markers": "Sacrifice of social engagement system for survival - prosody absent, commands register as threats, misreading cues during tasks, pain functions as threat signal amplifying danger neuroception",
+        "then_routing": "Settle track - RAGE: use invitations not commands, calm up to organize sympathetic energy from flood to flow, rant to release, sigh of frustration. FEAR: establish welcoming environment, reduce threat cues, scaffolded approach to build neuroception of safety, shift from pain-as-threat to 'does this feel safe or like negotiation'",
+        "escalation_trigger": "If sympathetic mobilization cannot meet challenge and client begins to feel depleted physically and emotionally, subtle feeling of not being present, image of taking a step back THEN dissolution toward dorsal in progress - must arrest sympathetic cascade before dorsal collapse"
+      },
+      {
+        "observation": "Client enters with slumped posture, flat voice, 'I've tried everything', numb/foggy presentation, going through motions without awareness",
+        "if_check": "Assess whether PANIC/GRIEF dominant (separation distress, crying, sorrowful despairing postures, context of social loss or abandonment) OR extreme FEAR freeze (immobilization freeze with loss of muscle activation, context of life threat not social loss)",
+        "probable_state": "Dorsal Vagal (Red)",
+        "confirmation_markers": "Disconnect from self, others, world - social engagement system offline. Zone out, shut down, dissociate. Body in conservation mode with collapsed posture and overall decreased muscle tone. Interoceptive awareness compromised - severely underreports pain or completely disconnected from pain signals",
+        "then_routing": "Settle track - PANIC/GRIEF: prioritize co-regulation through CARE system engagement (nurturance, social contact to inhibit separation distress, activate oxytocin/prolactin pathways), clinician becomes secure neurochemical base. Protocol: imagine movement before actual movement to activate motor cortex, use self-touch to restore sensation, remember-imagine-enact connection. Place belly on floor for grounding if appropriate",
+        "escalation_trigger": "Biomechanical assessment completely invalid in dorsal state - defer all structural assessment and tissue palpation until minimal mobilizing energy restored. Do not proceed with movement testing while client numb and disconnected. Must safely move through some sympathetic mobilizing energy to return to ventral - cannot skip hierarchy"
+      },
+      {
+        "observation": "Client shows energetic forward locomotion with excited anticipation toward specific goal",
+        "if_check": "Differentiate SEEKING (goal-directed exploration with forward locomotion and investigating quality) from PLAY (joyful competitive social interaction with bouncy lightness) from mania (overactivity without clear goal or social frame)",
+        "probable_state": "Ventral Vagal with SEEKING dominant",
+        "confirmation_markers": "Social engagement system online with vigorous exploration, sniffing/investigating quality, goal-directed behavior toward specific reward",
+        "then_routing": "Explore track - channel SEEKING drive toward therapeutic goals, provide goal-directed challenge. Note: if client on psychostimulants, SEEKING facilitated but PLAY reduced",
+        "escalation_trigger": "If SEEKING pushed into obsessive territory or if constraints trigger frustration, RAGE may emerge and suppress SEEKING drive - must down-regulate RAGE before SEEKING accessible again"
+      },
+      {
+        "observation": "Client shows collapsed/flexed posture that could be affective or structural",
+        "if_check": "Assess context and accompanying signs: PANIC/GRIEF linked to social separation with flat voice, crying, disconnection vs. simple fatigue with normal social engagement when rested vs. structural problem consistent across contexts without affective markers",
+        "probable_state": "Differentiation required",
+        "confirmation_markers": "PANIC/GRIEF: separation distress context, sorrowful despairing bodily postures, affect-driven collapse. Structural: consistent presentation across contexts, social engagement intact, no affective component",
+        "then_routing": "If PANIC/GRIEF: Settle track with co-regulation through CARE system NOT structural bodywork - treating biomechanically will fail as posture is affect-driven. If structural: proceed with biomechanical assessment in Explore track",
+        "escalation_trigger": "Misidentification leads to intervention failure - slumped posture from PANIC/GRIEF will not respond to structural intervention and may worsen with standard bodywork approaches"
+      }
+    ],
+    "Phase5_state_transition": [
+      {
+        "current_state": "Green (Ventral)",
+        "transition_direction": "descending_toward_amber",
+        "early_signs": "Sense of unease, vagal brake begins to relax, feeling the building of anger (fight) or anxiety (flight), breath pattern changes from spontaneous to irregular",
+        "clinician_response": "Notice early warning signs immediately. Use discernment question: 'In this moment, in this place, with this person or people, is this level of response necessary?' Engage vagal brake through sigh of contentment. Reduce challenge intensity before dissolution continues",
+        "if_transition_completes": "Route to Settle track - assess RAGE vs FEAR driver and apply appropriate sympathetic de-escalation intervention",
+        "if_transition_reverses": "Maintain Explore track but monitor closely for repeat dissolution triggers - identify what overwhelmed ventral capacity"
+      },
+      {
+        "current_state": "Amber (Sympathetic)",
+        "transition_direction": "descending_toward_red",
+        "early_signs": "Sympathetic nervous system cannot meet the challenge, client begins to feel depleted physically and emotionally, subtle feeling of not being present or just going through the motions, image of taking a step back or floating away",
+        "clinician_response": "Immediately arrest sympathetic cascade before dorsal collapse. If RAGE-driven: use rant to release, calm up from flood to flow, provide safe release of sympathetic energy. If FEAR-driven: establish welcoming environment, shift safety/danger equation, reduce threat perception. Do not proceed with treatment plan - dissolution in progress",
+        "if_transition_completes": "Route to Settle track dorsal protocol - coming back to life through scaffolded movement (imagine then gentle actual), self-touch to restore sensation, reach out with scaffolding. Must safely traverse back through sympathetic mobilizing energy to return to ventral",
+        "if_transition_reverses": "Remain in Settle track until social engagement system markers return (prosody, eye contact, facial expression modulation) indicating restoration to ventral"
+      },
+      {
+        "current_state": "Red (Dorsal)",
+        "transition_direction": "ascending_toward_green",
+        "early_signs": "Imagining movement activates motor cortex and begins energy return, gentle movement with small energy requirement, remembering moment of connection, any shift from flat voice toward vocal modulation, return of any sensation to numb foggy state",
+        "clinician_response": "Support gentle mobilization through sympathetic energy toward ventral. Use three-breath protocol (exhale longer than inhale) to signal nervous system safety. Continue scaffolded approach: imagine movement before actual movement, self-touch to restore body awareness, remember-imagine-enact connection. If PANIC/GRIEF: maintain CARE system engagement as secure base throughout transition",
+        "if_transition_completes": "Gradually shift from Settle to Explore track as social engagement system comes fully online - assess which affective system now accessible and frame accordingly",
+        "if_transition_reverses": "Return to dorsal-specific Settle interventions. Do not rush transition - attempting to skip hierarchy from dorsal to ventral without traversing sympathetic will fail"
+      },
+      {
+        "current_state": "Amber (Sympathetic)",
+        "transition_direction": "ascending_toward_green",
+        "early_signs": "Reduction in high shoulders, breath holding, jaw clenching (if RAGE) or reduction in freezing/flight responses, return of spontaneous breath (if FEAR). Shift from rapid speech to more modulated voice. Beginning of eye contact. Social engagement system starts coming online - first signs of prosody, facial expression modulation",
+        "clinician_response": "Continue Settle track interventions while supporting emerging ventral regulation. RAGE: continue calming up to organize energy, use sigh of frustration as vagal brake engages. FEAR: maintain welcoming environment, continue building neuroception of safety through scaffolded approach. Watch for ability to use discernment rather than automatic survival response",
+        "if_transition_completes": "Shift to Explore track when social engagement system fully online - resourced and resourceful presentation, flexible responses, ability to acknowledge distress and explore options",
+        "if_transition_reverses": "Return to sympathetic-specific Settle interventions - identify what triggered return to mobilization (new threat cue, insufficient safety cues, challenge presented too soon)"
+      },
+      {
+        "current_state": "Green (Ventral)",
+        "transition_direction": "descending_toward_red",
+        "early_signs": "Challenge overwhelms ventral vagal capacity triggering phylogenetic dissolution sequence - first drop to sympathetic (vagal brake releases, HPA axis engaged) then if sympathetic cannot meet challenge, progressive depletion and disconnection toward dorsal",
+        "clinician_response": "Recognize dissolution sequence in progress. Pause all biomechanical work immediately. Implement state-appropriate co-regulation to reverse dissolution. Address what triggered drop: if RAGE/FEAR drove sympathetic, reduce threat/frustration cues; if continuing to dorsal, engage CARE system for secure base. Cannot skip hierarchy in return",
+        "if_transition_completes": "Route to Settle track dorsal protocol if dissolution reaches collapse. Must safely traverse sympathetic mobilizing energy on return path to ventral",
+        "if_transition_reverses": "If arrest at sympathetic level before dorsal collapse, route to Settle track sympathetic protocol. Once stabilized back to ventral, identify capacity limit that was exceeded to prevent repeat dissolution"
+      }
+    ],
+    "Phase5_differentiation": [
+      {
+        "looks_like": "Energetic non-stationary behavior with vigorous activity",
+        "could_be_A": "SEEKING system activation - goal-directed exploration with forward locomotion toward specific reward, excited anticipation, investigating quality",
+        "could_be_B": "PLAY system activation - joyful competitive social interaction with bouncy bounding movement, laughter-like sounds OR mania - overactivity without clear goal or social frame",
+        "how_to_tell": "SEEKING is goal-directed with sniffing/investigating quality moving toward specific outcome. PLAY is joyful with social engagement system fully online, bouncy lightness, competitive edge within safe container. Mania lacks clear goal or social frame and shows disorganized energy. All three require social engagement markers present (prosody, eye contact, facial expression) to confirm ventral state - if absent, actually sympathetic mobilization"
+      },
+      {
+        "looks_like": "High muscle tone, tense body posture, restricted movement",
+        "could_be_A": "RAGE - sympathetic activation with body tensely arched, offensive defense moving toward threat, hissing/growling vocalizations, lashing out potential, frustration at constraints",
+        "could_be_B": "FEAR - sympathetic activation with freezing response or precipitous flight, avoidance defense moving away from threat, jumpiness, excessive vigilance OR structural restriction/muscle spasm from biomechanical dysfunction",
+        "how_to_tell": "RAGE shows offensive quality moving toward constraint/threat with aggressive edge. FEAR shows avoidance quality with either frozen immobility or erratic flight movements, darting eyes. Both sacrifice social engagement system. Structural dysfunction maintains social engagement markers (prosody, eye contact, warm face) and presentation consistent across contexts without affective component. If social engagement absent and presentation fluctuates with perceived threat level, autonomic not structural"
+      },
+      {
+        "looks_like": "Collapsed posture, slumped presentation, decreased muscle tone",
+        "could_be_A": "PANIC/GRIEF - dorsal vagal activation from social separation distress with sorrowful despairing bodily postures, flat voice, crying, disconnection from self/others/world",
+        "could_be_B": "Simple fatigue without affective component OR chronic structural postural problem (thoracic kyphosis, hip flexor tightness) OR extreme FEAR freeze with immobilization",
+        "how_to_tell": "PANIC/GRIEF linked to context of social loss or abandonment with separation distress vocalizations, affective quality of despair. Fatigue shows normal social engagement when rested. Structural problem consistent across contexts without affective markers. FEAR freeze linked to context of life threat not social loss, with immobilization response. Assess context and whether social engagement system present - if absent with separation context, PANIC/GRIEF; if absent with threat context, FEAR; if present, likely structural or fatigue"
+      },
+      {
+        "looks_like": "Client appears to follow instructions but lacks engagement",
+        "could_be_A": "Dorsal vagal disconnection - going through motions without awareness, zone out during movement, dissociative quality, motor cortex activation absent",
+        "could_be_B": "Sympathetic freeze (FEAR) - appears compliant but in freeze response without genuine engagement, internally mobilized but externally immobilized OR simple lack of understanding of instructions",
+        "how_to_tell": "Dorsal presents with numb foggy quality, flat voice, slumped posture, complete disconnection from sensation and body awareness - cannot accurately detect or report internal state. Sympathetic freeze shows high shoulders, breath holding, darting eyes, hypervigilance despite external stillness - internally activated. Simple misunderstanding shows social engagement system online with ability to ask clarifying questions. Dorsal cannot comply even when trying; sympathetic freeze shows tension beneath compliance; misunderstanding resolves with clarification"
+      },
+      {
+        "looks_like": "Pain report or severe guarding during movement",
+        "could_be_A": "Pain as sympathetic threat signal - amplifying danger neuroception, increasing fight-or-flight mobilization, hypervigilance to sensation as potential threat",
+        "could_be_B": "Pain as dorsal shutdown trigger - contributing to numb foggy state, severe underreporting due to compromised interoceptive awareness OR genuine nociceptive input from tissue damage requiring biomechanical intervention",
+        "how_to_tell": "Sympathetic threat: pain increases with perceived danger cues, high shoulders and breath holding accompany report, client hypervigilant and anxious about sensation, responds to 'does this feel safe or like negotiation' shift in framing. Dorsal shutdown: client numb and disconnected from pain signals, may severely underreport or show no response to palpation, flat voice and slumped posture. Nociceptive: pain report consistent and localized, social engagement system remains online, client can explore sensation with curiosity rather than threat response, responds to biomechanical intervention. Autonomic pain fluctuates with state; nociceptive pain consistent across states"
+      },
+      {
+        "looks_like": "Client resists or refuses suggested movement or intervention",
+        "could_be_A": "RAGE - active resistance to perceived constraints on freedom, commands register as threats, frustration at being controlled, may lash out",
+        "could_be_B": "FEAR - avoidance of perceived threat, movement triggers anxiety, genuine concern about safety OR appropriate boundary-setting from ventral state with social engagement intact",
+        "how_to_tell": "RAGE shows frustration-driven resistance with body tensely arched, aggressive quality, responds to commands but not invitations ('Would you be willing to...'). FEAR shows anxiety-driven avoidance, may freeze or show precipitous flight, responds to safety cues and welcoming environment. Ventral boundary-setting maintains prosody, eye contact, warm facial expression while clearly stating limits - can acknowledge distress and explore options. RAGE and FEAR sacrifice social engagement; ventral maintains connection while setting boundary"
+      }
+    ],
+    "Phase5_co_regulation": [
+      {
+        "client_state": "Green (Ventral)",
+        "clinician_action": "Maintain co-regulation through social engagement system: prosodic voice, warm facial expression, inviting eye contact, head gestures. Use savoring to deepen glimmers, touchstones to ground in ventral, sigh of contentment or relief to engage vagal brake",
+        "expected_response_if_working": "Client maintains spontaneous breath, melodic voice, resourced and resourceful presentation. Flexible responses to instruction. Ability to acknowledge distress and explore options. Social engagement reciprocal and fluid",
+        "expected_response_if_not_working": "Client begins showing early dissolution signs: sense of unease, breath pattern changes, vagal brake relaxing, building of anger or anxiety. Social engagement markers begin to fade",
+        "fallback_action": "Reduce challenge intensity immediately. Use discernment question to bring awareness to present moment. Assess what is overwhelming ventral capacity (SEEKING drive pushed too far, PLAY becoming RAGE, challenge too great, hidden threat cue in environment). Adjust intervention to match actual capacity",
+        "time_to_assess": "Continuously monitor - early dissolution signs appear within 30-60 seconds of ventral capacity being exceeded. Stop activity immediately if client holds breath, clenches jaw, or curls toes"
+      },
+      {
+        "client_state": "Amber (Sympathetic) - RAGE dominant",
+        "clinician_action": "Use invitations not commands ('Would you be willing to...' not 'I need you to...'). Calm up to organize sympathetic energy from flood to flow. Offer rant to release for safe energy discharge. Engage vagal brake through sigh of frustration. Acknowledge frustration at constraints explicitly. Shift focus from pain-as-threat to 'does this feel safe or like negotiation'",
+        "expected_response_if_working": "Reduction in body tension - tensely arched body begins to soften, jaw unclenches. Shift from rapid speech to more modulated voice. Ability to use discernment question rather than automatic aggressive response. First signs of social engagement returning: slight prosody emerging, brief eye contact, facial expression beginning to modulate",
+        "expected_response_if_not_working": "Continued or escalating tension, body remains tensely arched. Commands/constraints trigger increased resistance or lashing out. Frustration builds. No return of social engagement markers. May begin dissolution toward dorsal if sympathetic cannot meet challenge",
+        "fallback_action": "Increase autonomy cues - offer more explicit choices, reduce all directive language, acknowledge need for control. Provide larger safe container for energy release if rant to release insufficient. Assess whether environment contains hidden constraint cues. If dissolution toward dorsal beginning (depletion, disconnection), shift immediately to dorsal protocol - cannot hold in sympathetic if system depleting",
+        "time_to_assess": "2-3 minutes for initial shift in tension. 5-7 minutes for social engagement markers to begin returning. If no reduction in body tension within 3 minutes or signs of depletion emerging, change approach"
+      },
+      {
+        "client_state": "Amber (Sympathetic) - FEAR dominant",
+        "clinician_action": "Establish welcoming environment with reduced threat cues. Move slowly and predictably. Offer explicit choice and control. Shift safety/danger equation through environmental cues of welcome. Use scaffolded approach to build neuroception of safety. Substitute 'does this hurt?' with 'does this feel safe or like negotiation'. Clinician's regulated nervous system provides external vagal brake through consistent calm presence",
+        "expected_response_if_working": "Reduction in freezing or flight responses. Return of spontaneous breath - shift from breath holding to rhythmic breathing. Decrease in jumpiness and hypervigilance - darting eyes begin to settle. Shift from avoidance to cautious approach. Beginning of eye contact - may be brief at first. First prosodic qualities emerging in voice",
+        "expected_response_if_not_working": "Continued freezing, jumpiness, avoidance. Breath remains held or rapid and irregular. Hypervigilance persists or increases. No eye contact. Commands or unexpected movements trigger startle or flight. May begin dissolution toward dorsal if anxiety overwhelming",
+        "fallback_action": "Increase environmental safety cues - adjust lighting, reduce noise, increase predictability. Slow pace further. Offer more explicit control over session (can leave room, can stop any time, can direct pace). Use smaller scaffolded steps - break approach into tinier increments. If dissolution toward dorsal beginning, shift to dorsal protocol immediately",
+        "time_to_assess": "3-5 minutes for anxiety reduction signs. 7-10 minutes for social engagement markers to emerge. If hypervigilance persists beyond 5 minutes without reduction or signs of depletion emerging, reassess safety cues in environment"
+      },
+      {
+        "client_state": "Red (Dorsal) - PANIC/GRIEF dominant",
+        "clinician_action": "Engage CARE system through nurturance and social contact to inhibit separation distress. Clinician provides consistent regulated presence as secure neurochemical base. Use gentle nurturing touch appropriate to context. Activate oxytocin and prolactin pathways through co-regulation. Acknowledge social pain and loss explicitly. Protocol: start with imagining movement to activate motor cortex, then gentle actual movement with small energy requirement, self-touch to restore sensation, remember-imagine-enact connection",
+        "expected_response_if_working": "Shift from flat voice toward any vocal modulation - first sign of energy return. Imagining movement activates motor cortex - client able to engage with imagery. Gentle movement becomes possible with small energy requirement. Remembering moment of connection brings slight engagement. Distress vocalizations begin to reduce. Despairing postures begin to lift slightly. Any return of sensation to numb foggy state",
+        "expected_response_if_not_working": "Voice remains flat. Cannot engage with movement imagery - motor cortex activation absent. No sensation return - remains numb and disconnected. Remembering connection brings no response or increases despair. Posture remains collapsed. May show increasing disconnection or floating away quality",
+        "fallback_action": "Strengthen CARE system engagement - increase consistency of regulated presence, use more explicit nurturance cues, slow pace further. Start with even smaller scaffolded steps: can they imagine a finger movement before full body movement? Place belly on floor for grounding. Use self-touch before attempting connection reach-out. Extend time in each micro-step - do not rush hierarchy traversal. If no response after extended CARE engagement, assess for medical intervention need",
+        "time_to_assess": "5-10 minutes for first signs of energy return (vocal modulation, motor cortex activation). 10-15 minutes for gentle movement to become possible. 15-20 minutes for sensation to begin returning. Dorsal restoration is slower than sympathetic - cannot rush. If no signs of motor cortex activation after 10 minutes, adjust imagery or strengthen CARE base"
+      },
+      {
+        "client_state": "Red (Dorsal) - extreme FEAR freeze",
+        "clinician_action": "Reduce threat perception through massive increase in safety cues. Use benzodiazepine-like GABAergic calming through environmental management and clinician's regulated presence. Protocol: imagine movement to activate motor cortex, gentle actual movement with small energy requirement, self-touch to restore sensation, scaffolded safety-building. Must safely traverse sympathetic mobilizing energy to return to ventral - cannot skip hierarchy",
+        "expected_response_if_working": "Imagining movement activates motor cortex and begins energy return. Gentle movement becomes possible. Any shift from complete immobilization toward mobilization - even tiny movements. Return of spontaneous breath. Reduction in frozen quality. Beginning to traverse sympathetic mobilizing energy - may show brief anxiety increase as system mobilizes",
+        "expected_response_if_not_working": "Remains frozen and immobilized. Cannot engage with movement imagery. No breath return. Threat perception unchanged despite safety cues. May show increasing shutdown or collapse toward deeper dorsal",
+        "fallback_action": "Increase safety cues in environment further - adjust all sensory inputs for maximum safety. Slow pace even more. Use smaller scaffolded steps for movement restoration. Strengthen clinician's regulated presence as external safety signal. If traversing sympathetic energy triggers panic rather than mobilization, slow the ascent - need to build more safety base before ascending hierarchy. Place belly on floor for grounding if appropriate",
+        "time_to_assess": "5-10 minutes for motor cortex activation through imagery. 10-15 minutes for gentle movement to emerge. 15-20 minutes for breath to return and mobilizing energy to safely traverse. Monitor carefully during sympathetic traversal - brief anxiety increase expected but should not escalate to full sympathetic flood. If freeze persists beyond 15 minutes, reassess whether life threat context requires medical intervention"
+      },
+      {
+        "client_state": "Green with SEEKING dominant",
+        "clinician_action": "Channel SEEKING drive toward therapeutic goals. Provide goal-directed challenge that matches client's energetic forward movement. Support excited anticipation and exploratory behavior. Frame intervention as achievement pathway. Maintain social engagement system co-regulation throughout",
+        "expected_response_if_working": "Client shows vigorous exploration toward therapeutic goals. Energetic forward locomotion with investigating quality. Excited anticipation maintained. Goal-directed behavior effective. Social engagement system remains online with prosody, eye contact, warm facial expression",
+        "expected_response_if_not_working": "SEEKING becomes obsessive or manic quality. Frustration emerges if goal blocked - RAGE suppresses SEEKING. Overactivity without clear therapeutic direction. Social engagement markers begin to fade. May show psychostimulant-like push beyond capacity",
+        "fallback_action": "If obsessive: reduce goal pressure, offer multiple pathways to achievement, emphasize process over outcome. If RAGE emerging: shift to Settle track RAGE protocol - calm up, use invitations not commands, address frustration before returning to SEEKING. If manic quality: reduce stimulation, slow pace, assess whether client on psychostimulants affecting PLAY expression. Reframe to maintain goal-direction within ventral capacity",
+        "time_to_assess": "Monitor continuously for frustration signs (jaw clenching, body tension) or obsessive narrowing - both indicate SEEKING pushed beyond healthy range. Adjust within 1-2 minutes of early signs to prevent RAGE emergence or manic escalation"
+      },
+      {
+        "client_state": "Green with PLAY dominant",
+        "clinician_action": "Maintain joyful competitive social framing. Support bouncy bounding movement quality. Allow laughter-like sounds and ludic exploration. Keep challenge within playful range - neither boring nor threatening. Use social engagement system co-regulation to contain sympathetic mobilization energy within safe play container",
+        "expected_response_if_working": "Client maintains bouncy lightness of movement. Laughter-like sounds present. Joyful quality sustained. Competitive edge remains playful not aggressive. Social engagement system fully online. Movement has wrestling/chasing quality appropriate to context",
+        "expected_response_if_not_working": "PLAY shifts to RAGE if frustration emerges at constraints or losing. PLAY inhibited if FEAR triggered by perceived threat. Bouncy quality becomes tense. Laughter stops. Social engagement markers fade. Movement becomes aggressive or avoidant rather than playful",
+        "fallback_action": "If shifting to RAGE: immediately reduce competitive pressure, reframe as collaborative not win/lose, shift to Settle track if RAGE solidifies. If FEAR emerging: reduce challenge intensity, increase safety cues, ensure play container feels genuinely safe. If GRIEF present: cannot access PLAY until separation distress soothed through CARE system - shift to CARE engagement before attempting PLAY return. Note if client on psychostimulants - PLAY capacity reduced, may need to choose SEEKING-framed intervention instead",
+        "time_to_assess": "Monitor continuously for shift from joyful to frustrated or anxious quality. Adjust within 30-60 seconds of play becoming non-playful to prevent full transition to RAGE or FEAR. PLAY is fragile and requires consistent ventral state"
+      }
+    ]
+  },
+  "rule_count": 28,
+  "phase5_count": 23
+}

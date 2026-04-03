@@ -1,0 +1,926 @@
+{
+  "module": "m21",
+  "phase6_rules": [
+    {
+      "rule_name": "False_Self_Compliance_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client executes every exercise with mechanical precision but flat affect, no spontaneous questions or adaptations, seeks approval after each movement, shows 'good patient' presentation without genuine curiosity",
+      "then_directive": "Identify False_Self pattern. Movement lacks personal quality. Client says what therapist wants to hear. Absence of spontaneous gesture indicates True Self is protected. Route to Settle track.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Social Engagement Assessment Gate | Manager Detection Protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Holding_Broken_Hypervigilance_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client freezes before movement initiation, constantly checks visually with therapist for approval, cannot initiate any movement without explicit permission, frequent 'Is this correct?' requests",
+      "then_directive": "Identify Holding_Broken pattern. Client experiences environment as potentially retaliatory. Unable to rely on internal sense of correctness\u2014needs external validation to feel safe.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "FEAR Dominant Amber Routing",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Impingement_Active_Tactile_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client braces or flinches when therapist approaches for manual work, experiences 'screaming panic' quality, client feels like collection of parts rather than coherent unit",
+      "then_directive": "Identify Impingement_Active pattern. Psyche is momentarily absent from body. Loss of Personalization\u2014psyche-soma split. Skin sensitivity becomes pronounced.",
+      "override_level": "Required",
+      "interacts_with_rule": "Dorsal Assessment Invalidity | FEAR System Primary Detection",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "False_Self_Collapse_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Sudden withdrawal or flatness mid-session after a correction or instruction, emotional withdrawal after challenge, sudden increase in reassurance-seeking, regression in previously established abilities",
+      "then_directive": "Identify False_Self_Collapse pattern. Going-on-being was interrupted. Client experienced challenge as impingement rather than graduated failure.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Dissolution Sequence Recognition",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Impingement_Historical_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client cannot tolerate silence or pauses between exercises, fills gaps with anxious chatter, gives rote compliant answers when questioned, experiences questions as demands rather than invitations",
+      "then_directive": "Identify Impingement_Historical pattern. Client arrives pre-braced against external demands. Cannot experience continuity of being without forced reaction to verbal demands.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "intellectualization_detection",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "True_Self_Spontaneous_Gesture_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Spontaneous movement variation emerges unexpectedly during unstructured portion of session, movement arose from inner impulse rather than compliance, client shows curiosity about sensation",
+      "then_directive": "Identify True_Self emergence. Movement has quality of play rather than work. Client demonstrates creative apperception. Movement is rooted in body (psyche-soma).",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Channel Seeking Drive | SEEKING Dominant Green Routing",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Object_Usage_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client pushes back on therapist recommendation with their own reasoning, can tolerate disagreement without withdrawal, makes reparative gestures after disagreement",
+      "then_directive": "Identify Object_Usage pattern. Client perceives therapist as external phenomenon with independent existence. Client 'destroys' therapist in fantasy and therapist survives without retaliation.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Holding_Intact_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client reports feeling safe or held in specific session conditions, appears settled rather than reactive, initiates communication when ready rather than waiting for instruction, satisfactory muscle tone and grace in movement",
+      "then_directive": "Identify Holding_Intact pattern. Client can tolerate graduated novelty. Going-on-being is intact. Stability of routine allows client to accept and use the new.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Ventral State Detection",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Transitional_Object_Attachment_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client develops rigid attachment to specific exercise sequence or equipment, resists any variation, attachment has quality of first not-me possession, experiences distress if routine is altered without their initiation",
+      "then_directive": "Identify Transitional_Object pattern. Object functions as vital defense against depressive anxiety. Break in continuity if object is washed, removed, or altered without client initiation.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Object_Relating_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client relates to therapist as authority requiring compliance, cannot tolerate therapist having separate existence (vacation, illness) without significant distress, seeks to preserve therapist in area of omnipotent control",
+      "then_directive": "Identify Object_Relating pattern. Client treats therapist as subjective object\u2014a projection of their own needs. Client in earlier developmental stage requiring absolute reliability.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "PANIC/GRIEF Dominant Red Routing | Nurturance Soothes Grief Protocol",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Capacity_To_Be_Alone_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client demonstrates capacity to work independently while therapist is present but not directing, can be alone while therapist is present, has internalized sufficient holding to maintain integration",
+      "then_directive": "Identify Capacity_To_Be_Alone achieved. Client demonstrates interdependence rather than dependence. Internal 'ego-support' developed.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Over_Holding_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client waits for instruction before every movement, no spontaneous initiation, mechanical lifeless movement execution, loss of spontaneous gesture despite therapist intention to help",
+      "then_directive": "Identify Over_Holding pattern. Therapist has been too directive, removing client agency. Client has become passive and dependent.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Potential_Space_Activation_Detection",
+      "rule_category": "Detection",
+      "if_condition": "Client brings life material into movement work, uses exercise as metaphor for other challenges, session becomes shared play area where client 'creates' meaning they are simultaneously discovering",
+      "then_directive": "Identify Potential_Space activated. Session has become intermediate area between inner fantasy and shared reality. The root of creative communication and change.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "PLAY Dominant Green Routing",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "False_Self_Settle_Routing",
+      "rule_category": "Routing",
+      "if_condition": "False_Self pattern detected with mechanical compliance, absence of spontaneous gesture, 'phoney' or futile quality",
+      "then_directive": "Route to Settle track. Reduce exercise complexity, increase predictability, wait for spontaneous gesture before progressing. Acknowledge the compliance as a communication about safety needs.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_autonomic_amber_modified_protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Holding_Broken_Settle_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Holding_Broken pattern detected with hypervigilance, excessive reassurance-seeking, inability to self-assess",
+      "then_directive": "Route to Settle track. Explicitly communicate non-judgment. Reduce cueing precision to allow client agency. Emphasize process over performance. Re-establish predictability in session structure.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Fear Inhibits Play Gate | FEAR Dominant Amber Routing",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Impingement_Active_Hold_Space_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Impingement_Active detected through tactile flinching, panic, or psyche-soma split",
+      "then_directive": "Route to Hold_Space. Return to sensitive, empathic handling. Gather limbs together before moving. Provide tactile warning before any handling. Never lift or move client without first giving warning.",
+      "override_level": "Required",
+      "interacts_with_rule": "Dorsal Assessment Invalidity | ci_precaution_7_acute_distress_contraindication",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "True_Self_Hold_Space_Routing",
+      "rule_category": "Routing",
+      "if_condition": "True_Self emergence detected through spontaneous gesture, creative movement, internal sense of correctness",
+      "then_directive": "Route to Hold_Space. Therapist acts as witness rather than instructor. Do not pre-emptively correct anticipated errors. Allow client to discover consequences of movement choices.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Channel Seeking Drive | SEEKING Dominant Green Routing",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Object_Usage_Continue_Aware_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Object_Usage detected with client challenging, disagreeing, and making reparative gestures after",
+      "then_directive": "Route to Continue_Aware. Non-retaliatory confrontation when appropriate. Allow client to contribute to treatment planning. Graduated de-adaptation. Opportunity for reparation.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Transitional_Readiness_Continue_Aware_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Client begins to self-prescribe and modify exercises independently, no longer seeks reassurance about modifications, demonstrates interdependence",
+      "then_directive": "Route to Continue_Aware. Allow client to contribute to treatment planning. Client determines when and how to use Roadmap. Welcome client modifications as signs of object usage.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Potential_Space_Hold_Space_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Client brings life material into movement work, uses exercise as metaphor for other challenges, session becomes shared play area",
+      "then_directive": "Route to Hold_Space. Therapist acts as witness rather than instructor. Questions are invitations rather than demands. Interpretations are withheld to allow client's own meaning-making.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "PLAY Dominant Green Routing",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Object_Relating_Settle_Routing",
+      "rule_category": "Routing",
+      "if_condition": "Object_Relating detected with client unable to tolerate therapist separateness, excessive dependence, collapse during therapist absence",
+      "then_directive": "Route to Settle track. Increased predictability. Reduced challenge. Wait for spontaneous gesture. Survival without retaliation during any aggressive episodes. Environment must provide absolute reliability.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Nurturance Soothes Grief Protocol | CARE Inhibits PANIC/GRIEF",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Wait_For_Spontaneous_Gesture_Before_Progressing",
+      "rule_category": "Routing",
+      "if_condition": "Client compliant but without spontaneous variation or genuine curiosity",
+      "then_directive": "Wait for the client's spontaneous gesture before progressing. The False Self is not an enemy to be destroyed. Its mission is to keep the True Self 'in cold storage' until a safe environment is found. In therapy, the practitioner provides the holding that was missing, allowing the client to finally risk a spontaneous gesture.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_precaution_5_permission_before_depth",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Primitive_Agonies_Emergency_Override",
+      "rule_category": "Override",
+      "if_condition": "Client emotional flooding after correction with visible tears, trembling, shutdown OR experiences going to pieces, falling forever, complete isolation, no relation to body",
+      "then_directive": "OVERRIDE: Stop biomechanical work entirely. Absolute holding required. Going_On_Being protection is primary goal. Environmental holding only. Minimal verbal demand. Non-retaliation protocol.",
+      "override_level": "Emergency",
+      "interacts_with_rule": "Dorsal Assessment Invalidity | PANIC/GRIEF Dominant Red Routing | ci_precaution_7_acute_distress_contraindication | Exile Flooding Emergency Protocol",
+      "source_module": "M21_Winnicott+M9+M19"
+    },
+    {
+      "rule_name": "Sudden_Panic_During_Handling_Override",
+      "rule_category": "Override",
+      "if_condition": "Client experiences sudden panic during handling or physical adjustment, psyche momentarily absent from body, client feels like collection of parts",
+      "then_directive": "OVERRIDE: Stop loading immediately. Return to sensitive empathic handling. Gather limbs together. Protect from sensory insults. Allow client to re-establish sense of body as integrated unit.",
+      "override_level": "Emergency",
+      "interacts_with_rule": "Dorsal Assessment Invalidity | FEAR Active Movement Assessment Unreliable",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Aggression_Non_Retaliation_Override",
+      "rule_category": "Override",
+      "if_condition": "Client expresses anger or frustration toward therapist directly, 'destroys' object in unconscious fantasy",
+      "then_directive": "OVERRIDE: Primary duty is Non-Retaliation. Remain constant and 'survive' without anger, revenge, or moralistic blame. Confrontation without Vindictiveness. Object only felt to be real if it survives destruction.",
+      "override_level": "Required",
+      "interacts_with_rule": "RAGE Dominant Amber Routing | Command vs Invitation Protocol | sympathetic_rage_requires_invitation_only_ci",
+      "source_module": "M21_Winnicott+M9+M18"
+    },
+    {
+      "rule_name": "Arrival_Ritual_Session_Structure",
+      "rule_category": "Session_Structure",
+      "if_condition": "Session opening",
+      "then_directive": "First 2 minutes create holding through spatial consistency and predictable routine. Greet client in same location, same tone. Allow client to orient to room without immediate demands.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Verbal_Pacing_Match_Tempo",
+      "rule_category": "Session_Structure",
+      "if_condition": "Throughout session, especially Settle Phase",
+      "then_directive": "Speech rate and cueing density match client's current nervous system state. No rushing. Allow silence between instructions.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Threat Language Substitution",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Silence_As_Holding_Protocol",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in session AND therapist notices urge to fill silence with instruction",
+      "then_directive": "Silence is a form of holding. Do not fill every moment with instruction or conversation. Allow client to experience continuity of being without forced reaction to verbal demands. Stop questioning if client gives rote, compliant answers.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_precaution_5_permission_before_depth",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Exercise_Volume_By_Phase_Settle",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in Settle phase (Absolute Dependence)",
+      "then_directive": "1-2 simple, familiar exercises only. Only on a basis of monotony can a clinician profitably add richness. Establish predictable routine before introducing variety.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Exercise_Volume_By_Phase_Build",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in Build phase (Relative Dependence)",
+      "then_directive": "3-4 exercises maximum. Introduce novelty only within established holding frame. Reduce volume immediately if client appears scattered or fragmented.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Exercise_Volume_By_Phase_Explore",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in Explore phase (Towards Independence)",
+      "then_directive": "Client-directed volume. Therapist provides menu of options; client selects based on spontaneous gesture. Withdraw prescription control as client demonstrates self-regulation capacity.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Cueing_Density_Reduction",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client waits for instruction before every movement OR shows mechanical lifeless execution",
+      "then_directive": "Reduce verbal cueing to allow client agency. Wait for client's spontaneous gesture before intervening. Avoid cueing so precisely that client loses all initiative.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Command vs Invitation Protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Going_On_Being_Pacing",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client experiencing session as series of reactions rather than continuous flow",
+      "then_directive": "Reduce pace immediately. Session must be experienced as continuous experience (going-on-being) rather than series of reactions. Never force client to 'react' with immediate performance. Acknowledge when progression was too fast.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Dissolution Sequence Recognition",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Graduated_Challenge_Timing",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in Green state with Holding_Intact confirmed AND shows willingness to attempt novel movement",
+      "then_directive": "Only on a basis of monotony can clinician profitably add richness. Introduce novelty or increased difficulty only after predictable routine is established. Client experiences challenge as graduated failure rather than impingement.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Ventral SEEKING channels into Explore CI | SEEKING Dominant Green Routing",
+      "source_module": "M21_Winnicott+M18"
+    },
+    {
+      "rule_name": "Red_State_Session_Modification",
+      "rule_category": "Session_Structure",
+      "if_condition": "Client in Red (dorsal) state with Primitive_Agonies or Going_On_Being severely disrupted",
+      "then_directive": "Session may need to be shorter. Client may need to leave early without this being experienced as failure. The holding environment must survive the client's inability to participate fully without retaliation or disappointment. Mend the failure through reliability at next contact.",
+      "override_level": "Required",
+      "interacts_with_rule": "Dorsal Assessment Invalidity | PANIC/GRIEF Dominant Red Routing | ci_precaution_7_acute_distress_contraindication",
+      "source_module": "M21_Winnicott+M9+M19"
+    },
+    {
+      "rule_name": "Mend_Minor_Failures_Through_Reliability",
+      "rule_category": "Session_Structure",
+      "if_condition": "Minor failure in holding environment occurred (late start, interruption, miscommunication)",
+      "then_directive": "The environment must be 'good-enough,' which is communicated through the constant mending of minor failures in care. Acknowledge the failure explicitly. Re-establish predictability. The holding environment survives through repair not perfection.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "PT_Does_Not_Do_Psychotherapy",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "PT observes relational pattern suggesting childhood dynamics or deep psychological content",
+      "then_directive": "The PT does NOT do psychotherapy or interpret childhood dynamics. The PT observes relational patterns and adjusts the clinical environment. Creates conditions for True Self emergence through movement, not verbal processing.",
+      "override_level": "Required",
+      "interacts_with_rule": "ci_precaution_4_referral_for_trauma_disclosure",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Winnicott_Language_For_Clinician_Only",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "Clinician reasoning about client presentation",
+      "then_directive": "Winnicott language (True Self, False Self, Impingement, Holding Environment) is for clinician reasoning, NOT client-facing communication, unless client is Phase 5-6 (Towards Independence/Behavior Phase).",
+      "override_level": "Required",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "No_Roadmap_Compliance_Policing",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "Client modifies or ignores Habit Roadmap elements",
+      "then_directive": "Client determines when and how to use Roadmap\u2014therapist does not police compliance. Client must have opportunity to modify, adapt, or reject elements without therapist retaliation. Client personalization must be welcomed not corrected.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Aggression_Non_Retaliation_Override",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Possession_Protection_Policy",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "Client has attached to specific equipment, routine, or transitional object",
+      "then_directive": "Never wash, remove, or alter transitional objects without client initiation. Break in continuity if object is altered without client consent is psychologically catastrophic. Object must survive client's aggression without retaliating.",
+      "override_level": "Required",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Paradox_Preservation",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "Client using Habit Roadmap or transitional object in session",
+      "then_directive": "Never ask 'Did you create this, or was it given to you?' The paradox that the object is both created by the client and found in reality must be preserved. The clinician must never direct the play.",
+      "override_level": "Required",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Holding_Maps_To_Ventral_Safety",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing relationship between Winnicott Holding_Environment and Polyvagal state",
+      "then_directive": "Holding_Environment quality maps to ventral vagal safety. Intact holding correlates with Green state markers: spontaneous breath, melodic voice, eye contact. Holding failure triggers neuroception of danger and sympathetic or dorsal shift.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Ventral State Detection | Social Engagement Assessment Gate",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Impingement_Triggers_Danger_Neuroception",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Impingement detected (too many exercises, cueing too precisely, progressing too fast, environmental factors, insensitive handling)",
+      "then_directive": "Impingement triggers neuroception of danger. Expect shift from Green to Amber (sympathetic) or Red (dorsal). Apply both Winnicott repair (acknowledge rupture, return to predictability) and Polyvagal Settle protocols concurrently.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Stop the Rep Rule | Dissolution Sequence Recognition",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "False_Self_May_Be_Manager_Presentation",
+      "rule_category": "Cross_Agent",
+      "if_condition": "False_Self compliance detected with perfectionism, control, intellectualization, people-pleasing quality",
+      "then_directive": "False Self presentation may be Manager-driven per IFS. Manager using cognitive analysis to avoid emotional contact. Use CI Stone 7 to distinguish intellectual performance from authentic feeling. Do not force past Manager defense without permission.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Manager Detection Protocol | intellectualization_detection | ci_parts_manager_present",
+      "source_module": "M21_Winnicott+M16+M18"
+    },
+    {
+      "rule_name": "True_Self_Parallels_Self_Energy",
+      "rule_category": "Cross_Agent",
+      "if_condition": "True_Self emergence detected AND assessing IFS parallel",
+      "then_directive": "True Self emergence parallels Self-energy access per IFS. Client speaks with stronger, calmer voice, articulates with understanding and self-compassion. Full CI protocol available when Self-led. Use IFS Feel Towards test to confirm True Self vs Manager performing Self-like behavior.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate | ci_parts_self_present | Ventral CARE activates Self-compassion CI",
+      "source_module": "M21_Winnicott+M16+M18"
+    },
+    {
+      "rule_name": "Over_Holding_May_Activate_Caretaker_Exile",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Over_Holding detected with loss of spontaneous gesture, mechanical lifeless execution, excessive therapist direction",
+      "then_directive": "Over-holding may activate caretaker Exile or reinforce False Self. Reduce verbal cueing. Create space for client experimentation. Wait for client's spontaneous gesture before intervening. Polyvagal co-regulation provides external vagal brake through PRESENCE not through CONTROL.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott+M16"
+    },
+    {
+      "rule_name": "Going_On_Being_Requires_SEEKING_In_CARE_Context",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing Going_On_Being through Panksepp lens",
+      "then_directive": "Going-On-Being requires SEEKING system active within CARE context (safe SEEKING). Impingement activates FEAR or RAGE. False Self presentation may suppress PLAY system.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Channel Seeking Drive | Fear Inhibits Play Gate | Rage Suppresses Seeking Integration | CARE System Primary Detection",
+      "source_module": "M21_Winnicott+M19"
+    },
+    {
+      "rule_name": "Good_Enough_Therapist_Parallels_CI_Stance",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing therapist stance through both Winnicott and CI frameworks",
+      "then_directive": "Good_Enough_Therapist parallels CI therapeutic qualities. Provides 'good-enough' environment by being reliable and mending minor failures rather than striving for perfection. Waits for spontaneous gesture. Takes responsibility for what arises without taking it out on client. Cannot provide holding while blended with own parts.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "clinician_activation_management | Clinician Self-Energy as Co-Regulator",
+      "source_module": "M21_Winnicott+M18+M16"
+    },
+    {
+      "rule_name": "Impingement_Detection_Parallels_CI_Precautions",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Detecting potential impingement in session",
+      "then_directive": "Impingement detection parallels CI Precaution #7 (do not use CI with acute distress) and Precaution #5 (ask permission if sense resistance). Both frameworks prioritize safety over intervention. Questions are INVITATIONS when permission explicitly requested and client can say no without consequence.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_precaution_7_acute_distress_contraindication | ci_precaution_5_permission_before_depth",
+      "source_module": "M21_Winnicott+M18"
+    },
+    {
+      "rule_name": "Green_State_Winnicott_Interventions",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Green (Ventral Vagal) state",
+      "then_directive": "Full Holding_Environment available. Client can tolerate graduated failure of adaptation. Object_Usage mode. All Build Phase and Explore Phase interventions available. Graduated challenge, non-retaliatory confrontation, reduced holding with therapist withdrawal, Potential_Space activation permitted.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Ventral State Detection | ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Amber_State_Winnicott_Interventions",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Amber (Sympathetic) state",
+      "then_directive": "Holding_Environment priority. Client in Object_Relating mode\u2014therapist experienced as subjective object requiring absolute reliability. Challenge NOT permitted. Available: All Settle Phase interventions, increased predictability, reduced challenge, wait for spontaneous gesture, survival without retaliation, Transitional_Object emphasis, Good-enough feedback without excessive demand.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Sympathetic State Detection | ci_autonomic_amber_modified_protocol",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Red_State_Winnicott_Interventions",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Red (Dorsal Vagal) state",
+      "then_directive": "Absolute holding required. Going_On_Being protection is primary goal. Client may be experiencing Primitive_Agonies. Challenge NOT permitted. Available: Environmental holding only (spatial consistency, sensory protection), emotional poise and absolute reliability, minimal verbal demand, protection from unpredictable stimuli, tactile warning before any handling, non-retaliation protocol.",
+      "override_level": "Required",
+      "interacts_with_rule": "Dorsal State Detection | Dorsal Assessment Invalidity | ci_autonomic_red_contraindicated",
+      "source_module": "M21_Winnicott+M9"
+    },
+    {
+      "rule_name": "Holding_Environment_Prerequisite_For_IFS_Work",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing readiness for IFS-informed work",
+      "then_directive": "Holding Environment provides external conditions that allow parts to trust Self-leadership enough for Protectors to give permission and Exiles to unburden. IFS cannot proceed without Winnicott holding. If trust and safety have not developed, Protectors will not grant permission. Manager bracing may be response to broken holding, not intrinsic personality structure.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate | Protector Permission Mandate | ci_precaution_2_relational_container_required",
+      "source_module": "M21_Winnicott+M16+M18"
+    },
+    {
+      "rule_name": "Transitional_Space_Is_Parts_Unblending_Space",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing overlap between Transitional Space and IFS unblending",
+      "then_directive": "Transitional Space (intermediate area between inner fantasy and shared reality, area of illusion, creative play) IS the space where Self can witness parts without blending. Both frameworks describe same phenomenological territory where healing happens. Habit Roadmap functions as Transitional Object bridging inner and outer.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott+M16"
+    },
+    {
+      "rule_name": "Kylie_False_Self_Compliance_Recognition",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client shows 'good patient' presentation in scheduling interactions, excessive politeness without authentic engagement",
+      "then_directive": "Recognize potential False Self compliance in administrative communication. Do not require excessive reassurance or performance. Maintain consistent, predictable communication style.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Kylie_Holding_Environment_Extension",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Administrative communication with client",
+      "then_directive": "Administrative communication maintains or breaks the therapeutic frame. Consistency in scheduling, tone, and expectations extends the holding environment beyond session. Unpredictable administrative changes can trigger impingement.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Coach_False_Self_Health_Behavior",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client reports perfect compliance with health behaviors but flat affect or sense of futility",
+      "then_directive": "Recognize potential False Self in health behavior compliance. Compliance without engagement indicates movement goal is not client's spontaneous gesture. Wait for authentic interest before progressing recommendations.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Coach_Transitional_Phenomena",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client developing capacity to carry health practices independently",
+      "then_directive": "Support transitional phenomena. Client must experience health practices as their own creation even though coach provided structure. Client determines when and how to use recommendations. Modifications indicate healthy object usage.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Intake_First_Contact_Holding",
+      "rule_category": "Cross_Agent",
+      "if_condition": "First contact with potential client",
+      "then_directive": "Initial communication establishes or threatens the holding environment. Predictability, warmth, and lack of demand in first contact creates foundation for therapeutic relationship. Rushing, overwhelm, or excessive requirements can impinge before treatment begins.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Intake_False_Self_Detection",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Processing intake responses",
+      "then_directive": "Recognize over-compliance or performed wellness in intake responses as potential False Self. 'Good patient' presentation in intake may indicate client's fear about acceptance. Note but do not challenge\u2014create safety for authentic presentation to emerge.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Habit_Roadmap_Transitional_Object_Design",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Creating or modifying Habit Roadmap for client",
+      "then_directive": "The Habit Roadmap must be experienced by the client as their own creation, even though therapist provided the structure. The paradox must be preserved. The Roadmap bridges the gap between inner fantasy and outer reality. It must be a 'first not-me possession'\u2014recognizably provided by therapist but experienced as extension of self.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Roadmap_Must_Survive_Destruction",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client modifies, ignores, or challenges Habit Roadmap",
+      "then_directive": "The object must survive instinctual hating and pure aggression without changing or retaliating. A Roadmap becomes transitional when the client can 'destroy' it (modify, ignore, challenge) and it survives without the therapist retaliating. The client must have agency to personalize it.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Aggression_Non_Retaliation_Override",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Absolute_Dependence_Equals_Settle_Phase",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Absolute Dependence stage (entirely dependent, no distinction between me/not-me, requires near-perfect adaptation)",
+      "then_directive": "Map to Settle Phase. Client needs primary maternal preoccupation level of holding: predictability, protection from unpredictable events, sensitive handling. Settle Phase clients require: Arrival Ritual, Environmental Holding, Emotional Poise, Verbal Pacing, 1-2 simple familiar exercises maximum.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Dorsal Assessment Invalidity",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Relative_Dependence_Equals_Build_Phase",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Relative Dependence stage (begins distinguishing me/not-me, becomes aware of need for care, intellect accounts for failures)",
+      "then_directive": "Map to Build Phase. Client ready for graduated failure of adaptation, transitional phenomena, opportunity for object usage. Build Phase clients ready for: Graduated Challenge Within Holding Frame, Good-Enough Feedback, Tolerance of Client Frustration, 3-4 exercises maximum within established holding.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Sympathetic State Detection",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Towards_Independence_Equals_Explore_Phase",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Client in Towards Independence stage (develops internal resources, internalizes supportive environment, capacity to be alone)",
+      "then_directive": "Map to Explore Phase. Client demonstrates interdependence not dependence, can contribute to treatment planning, has internalized 'ego-support.' Explore Phase clients ready for: Reduced Holding, Permission to Fail, Potential_Space Activation, client-directed volume and session structure.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Ventral State Detection | ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott"
+    },
+    {
+      "rule_name": "Four_Layer_Check_Before_CI_Inquiry",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Before using CI Stepping Stones within movement work",
+      "then_directive": "Verify four layers: (1) Autonomic state (M9) - must be Green for full CI protocol, (2) Affective system (M19) - RAGE/FEAR/PANIC/GRIEF require modified approach, (3) Parts configuration (M16) - Self-presence required, Manager/Firefighter indicates modified approach, (4) Holding quality (M21) - intact holding prerequisite. Cannot accurately assess parts without first assessing holding.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Ventral State Detection | Self-Energy Prerequisite Gate | Holding_Intact_Detection | ci_autonomic_green_full_protocol",
+      "source_module": "M21_Winnicott+M9+M16+M18+M19"
+    },
+    {
+      "rule_name": "Capacity_To_Be_Alone_Marks_Discharge_Readiness",
+      "rule_category": "Cross_Agent",
+      "if_condition": "Assessing discharge readiness",
+      "then_directive": "Capacity to be Alone (can be alone while someone present, has internalized sufficient holding to maintain integration in solitude) marks readiness for discharge. Discharge criteria: Client demonstrates capacity to play and be unintegrated in presence of therapist without seeking reassurance, Client can identify with treatment without serious sacrifice of personal impulse, Client has internalized environment sufficiently to self-regulate.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M21_Winnicott"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_DecisionTree": [
+      {
+        "observation": "Client executes every exercise with mechanical precision but flat affect, no spontaneous questions or adaptations",
+        "if_check": "Check if client seeks approval after each movement. Check if client shows 'good patient' presentation without genuine curiosity.",
+        "probable_pattern": "False_Self",
+        "confirmation_markers": "Absence of spontaneous gesture. Client says what therapist wants to hear. Intellectual False Self activation\u2014asking 'correct' questions without genuine curiosity. Movement lacks personal quality.",
+        "then_routing": "Settle | Reduce exercise complexity, increase predictability, wait for spontaneous gesture before progressing. Acknowledge the compliance as a communication about safety needs.",
+        "escalation_trigger": "Client emotional withdrawal becomes complete flatness or dissociation. Client reports feeling 'phoney' or sense of futility."
+      },
+      {
+        "observation": "Client freezes before movement initiation, constantly checks visually with therapist for approval",
+        "if_check": "Check frequency of 'Is this correct?' requests. Check if client can initiate any movement without explicit permission.",
+        "probable_pattern": "Holding_Broken",
+        "confirmation_markers": "Client hypervigilance to 'doing it right' increases. Client cannot rely on internal sense of correctness\u2014needs external validation to feel safe. Client experiences environment as potentially retaliatory.",
+        "then_routing": "Settle | Explicitly communicate non-judgment. Reduce cueing precision to allow client agency. Emphasize process over performance. Re-establish predictability in session structure.",
+        "escalation_trigger": "Client unable to execute any movement without therapist instruction. Complete loss of spontaneous gesture."
+      },
+      {
+        "observation": "Client braces or flinches when therapist approaches for manual work",
+        "if_check": "Check if tactile warning was given before handling. Check if client feels like collection of parts rather than coherent unit.",
+        "probable_pattern": "Impingement_Active",
+        "confirmation_markers": "Client experiences 'screaming panic' because psyche is momentarily absent from body. Loss of Personalization\u2014psyche-soma split. Skin sensitivity becomes pronounced.",
+        "then_routing": "Hold_Space | Return to sensitive, empathic handling. Gather limbs together before moving. Provide tactile warning before any handling. Never lift or move client without first giving warning.",
+        "escalation_trigger": "Client experiences Primitive_Agonies (going to pieces, falling forever, complete isolation). Client cannot tolerate any physical contact."
+      },
+      {
+        "observation": "Sudden withdrawal or flatness mid-session after a correction or instruction",
+        "if_check": "Check if progression was too fast. Check if client experienced session as series of reactions rather than continuous experience.",
+        "probable_pattern": "False_Self_Collapse",
+        "confirmation_markers": "Client emotional withdrawal after challenge. Sudden increase in reassurance-seeking. Regression in previously established abilities. Going-on-being was interrupted.",
+        "then_routing": "Settle | Acknowledge the rupture explicitly. Return to previous level of difficulty. Re-establish holding before attempting progression. Allow client to set pace of challenge.",
+        "escalation_trigger": "Client becomes completely non-responsive. Client reports feeling unreal or disconnected from body."
+      },
+      {
+        "observation": "Client cannot tolerate silence or pauses between exercises, fills gaps with anxious chatter",
+        "if_check": "Check if client gives rote, compliant answers when questioned. Check if client experiences questions as demands rather than invitations.",
+        "probable_pattern": "Impingement_Historical",
+        "confirmation_markers": "Client arrives pre-braced against external demands. Client cannot experience continuity of being without forced reaction to verbal demands. Continuity of being is snapped by forced self-reflection.",
+        "then_routing": "Hold_Space | Silence is a form of holding. Do not fill every moment with instruction. Allow client to experience continuity of being. Stop questioning if client gives rote answers.",
+        "escalation_trigger": "Client experiences escalating panic during silence. Client cannot remain in room without constant verbal input."
+      },
+      {
+        "observation": "Client performs movement with eyes seeking therapist approval throughout execution",
+        "if_check": "Check if client can self-assess without constant therapist confirmation. Check if movement has spontaneous quality vs mechanical execution.",
+        "probable_pattern": "False_Self",
+        "confirmation_markers": "Client requires constant visual checking with therapist. Movement is performed for therapist rather than for self. Client waits for instruction before every movement.",
+        "then_routing": "Reduce_Structure | Reduce verbal cueing. Create space for client experimentation. Acknowledge when therapist has been too directive. Wait for client's spontaneous gesture.",
+        "escalation_trigger": "Client completely unable to initiate movement without explicit approval. Client asks 'Is this correct?' after every repetition."
+      },
+      {
+        "observation": "Client develops rigid attachment to specific exercise sequence, resists any variation",
+        "if_check": "Check if client can tolerate modifications without distress. Check if attachment has quality of first not-me possession.",
+        "probable_pattern": "Transitional_Object",
+        "confirmation_markers": "Client treats specific routine as bridge between therapy space and independent life. Client experiences distress if routine is altered without their initiation. Attachment has protective function against anxiety.",
+        "then_routing": "Continue_Aware | Preserve the paradox\u2014never ask if client created this or it was given. Client determines when and how to modify. Client personalization must be welcomed not corrected.",
+        "escalation_trigger": "Therapist modifies routine without client initiation causing complete loss of integration. Client experiences break in continuity."
+      },
+      {
+        "observation": "Spontaneous movement variation emerges unexpectedly during unstructured portion of session",
+        "if_check": "Check if movement arose from inner impulse rather than compliance. Check if client shows curiosity about sensation.",
+        "probable_pattern": "True_Self",
+        "confirmation_markers": "Movement has quality of play rather than work. Client demonstrates creative apperception. Client initiates novel movement variations without seeking permission. Movement is rooted in body (psyche-soma).",
+        "then_routing": "Hold_Space | Therapist acts as witness rather than instructor. Do not pre-emptively correct anticipated errors. Allow client to discover consequences of movement choices.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client self-corrects movement without prompting or external feedback",
+        "if_check": "Check if client demonstrates internal sense of correctness. Check if self-correction has exploratory quality.",
+        "probable_pattern": "True_Self",
+        "confirmation_markers": "Client can self-assess without constant therapist confirmation. Client experiences feeling of being real rather than compliant. Satisfactory muscle tone and grace in movement.",
+        "then_routing": "Continue_Aware | Reduce verbal cueing density. Increase intervals between check-ins. Allow client to set session structure within safe parameters.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client pushes back on therapist recommendation with their own reasoning",
+        "if_check": "Check if client can tolerate disagreement without withdrawal. Check if therapist can survive without retaliation.",
+        "probable_pattern": "Object_Usage",
+        "confirmation_markers": "Client perceives therapist as external phenomenon with independent existence. Client 'destroys' therapist in fantasy (challenge, disagree) and therapist survives without retaliation. Client makes reparative gestures after disagreement.",
+        "then_routing": "Continue_Aware | Non-retaliatory confrontation when appropriate. Allow client to contribute to treatment planning. Graduated de-adaptation. Opportunity for reparation.",
+        "escalation_trigger": "Therapist retaliates with anger, revenge, or moralistic blame causing client to remain trapped in persecutory anxiety."
+      },
+      {
+        "observation": "Client reports feeling safe or held in specific session conditions (same room, same time, same equipment)",
+        "if_check": "Check if stability of routine allows client to accept and use the new. Check if client can tolerate graduated novelty.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Client appears settled rather than reactive. Client initiates communication when ready rather than waiting for instruction. Satisfactory muscle tone and grace in movement. Capacity to play and be unintegrated.",
+        "then_routing": "Continue_Aware | Only on a basis of monotony can clinician profitably add richness. Introduce novelty within established holding frame. Maintain spatial consistency.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client movement quality changes dramatically between structured and unstructured portions of session",
+        "if_check": "Check if structured portion shows False Self compliance. Check if unstructured portion reveals True Self spontaneity.",
+        "probable_pattern": "False_Self",
+        "confirmation_markers": "Mechanical execution during instruction vs spontaneous quality during free movement. Client performs for therapist during structured time. Client shows genuine curiosity only when unobserved.",
+        "then_routing": "Reduce_Structure | Create more unstructured time. Wait for spontaneous gesture. Reduce cueing density. Therapist acts as witness rather than instructor.",
+        "escalation_trigger": "Client completely loses spontaneous quality. All movement becomes mechanical compliance regardless of structure."
+      },
+      {
+        "observation": "Client cannot transfer exercise performance to home context",
+        "if_check": "Check if client has developed transitional object function with home exercise program. Check if Roadmap is experienced as client's own creation.",
+        "probable_pattern": "Object_Relating",
+        "confirmation_markers": "Client treats therapist as authority requiring compliance. Client cannot tolerate therapist having separate existence. Client seeks to preserve therapist in area of omnipotent control. Client relates to program as external demand.",
+        "then_routing": "Settle | Transitional_Object emphasis\u2014Habit Roadmap as bridge. Client must have opportunity to modify without therapist retaliation. Roadmap must reflect client's spontaneous gesture not imposed agenda.",
+        "escalation_trigger": "Client cannot function without therapist presence. Complete dependence without movement toward independence."
+      },
+      {
+        "observation": "Client appears scattered or fragmented during session, unable to remember exercise sequence",
+        "if_check": "Check if too many exercises were prescribed. Check if client is experiencing overwhelm from volume.",
+        "probable_pattern": "Impingement_Active",
+        "confirmation_markers": "Loss of satisfactory muscle tone and grace. Unable to remember or execute home program. Increasing compliance without engagement. Client losing sense of body as coherent unit.",
+        "then_routing": "Settle | Reduce exercise volume immediately. Return to simple, predictable routine. Only 1-2 simple familiar exercises. Re-establish holding through consistency.",
+        "escalation_trigger": "Client experiences session as cramming or overwhelm. Continuity of being is broken completely."
+      },
+      {
+        "observation": "Client waits for instruction before every movement, no spontaneous initiation",
+        "if_check": "Check if cueing was too precise. Check if therapist removed client agency through over-direction.",
+        "probable_pattern": "Over_Holding",
+        "confirmation_markers": "Loss of spontaneous gesture. Mechanical lifeless movement execution. Client asks 'correct' questions without genuine curiosity. Client has become passive and dependent.",
+        "then_routing": "Reduce_Structure | Reduce verbal cueing to allow client agency. Create space for client experimentation. Wait for client's spontaneous gesture before intervening.",
+        "escalation_trigger": "Client completely unable to function without moment-by-moment instruction. Loss of all self-direction."
+      },
+      {
+        "observation": "Client startles or freezes with unexpected environmental stimuli (door opening, phone, noise)",
+        "if_check": "Check if environmental shielding is adequate. Check if client is being forced to 'react' rather than 'be'.",
+        "probable_pattern": "Impingement_Active",
+        "confirmation_markers": "Sudden loud noises force 'reaction' rather than 'being.' Loss of capacity to play/explore. Client cannot maintain 'being' state. Going-on-being interrupted by environmental factors.",
+        "then_routing": "Hold_Space | Protect client from unpredictable sensory intrusions. Maintain spatial consistency. Acknowledge the environmental failure. Re-establish continuity of being through predictability.",
+        "escalation_trigger": "Client unable to continue session after environmental disruption. Client experiences Primitive_Agonies."
+      },
+      {
+        "observation": "Client relates to therapist as expert whose every word must be followed exactly",
+        "if_check": "Check if client can tolerate therapist being a separate person with different ideas. Check if client can disagree.",
+        "probable_pattern": "Object_Relating",
+        "confirmation_markers": "Client treats therapist as subjective object\u2014a projection of their own needs. Client cannot tolerate therapist having separate existence (vacation, illness) without significant distress. Client seeks to preserve therapist in area of omnipotent control.",
+        "then_routing": "Settle | Increased predictability. Reduced challenge. Wait for spontaneous gesture. Survival without retaliation during any aggressive episodes. Environment must provide absolute reliability.",
+        "escalation_trigger": "Client experiences complete disintegration when therapist demonstrates separate existence or unavailability."
+      },
+      {
+        "observation": "Client experiments with movement variations and includes mistakes followed by self-correction",
+        "if_check": "Check if client shows curiosity about sensation. Check if mistakes are part of exploration vs anxiety.",
+        "probable_pattern": "True_Self",
+        "confirmation_markers": "Movement has personal quality not performed. Client can experiment and fail without catastrophic loss of integration. Client demonstrates problem-solving rather than helpless compliance. Satisfactory muscle tone and grace.",
+        "then_routing": "Continue_Aware | Permission to fail\u2014therapist non-anxiety. Do not pre-emptively correct. Allow client to discover consequences. Potential_Space activation for creative exploration.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client makes reparative gesture after expressing frustration or pushing back against therapist",
+        "if_check": "Check if therapist survived without retaliation. Check if client demonstrates Capacity for Concern.",
+        "probable_pattern": "Object_Usage",
+        "confirmation_markers": "Client 'destroys' therapist in fantasy and therapist survives. Client realizes therapist has existence of their own. Client demonstrates Capacity for Concern\u2014guilt mixed with love. Client moves from 'relating' to 'usage'.",
+        "then_routing": "Continue_Aware | Non-retaliatory confrontation when appropriate. Allow opportunity for reparation. Client is ready for challenge and graduated failure.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client demonstrates capacity to work independently while therapist is present but not directing",
+        "if_check": "Check if client can be alone while therapist is present. Check if client has internalized sufficient holding.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Capacity to be Alone\u2014being alone while someone else is present. Client has internalized sufficient holding to maintain integration. Client demonstrates interdependence rather than dependence. Internal 'ego-support' developed.",
+        "then_routing": "Continue_Aware | Reduce verbal cueing density. Therapist acts as witness. Allow client to set session structure. Explore Phase interventions appropriate.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client brings life material into movement work, uses exercise as metaphor for other challenges",
+        "if_check": "Check if session has become shared play area. Check if client 'creates' meaning they are simultaneously discovering.",
+        "probable_pattern": "Transitional_Space",
+        "confirmation_markers": "Session becomes intermediate area between inner fantasy and shared reality. Client 'creates' the world they are simultaneously discovering. Therapist does not direct the play. Creative communication emerges.",
+        "then_routing": "Hold_Space | Therapist acts as witness rather than instructor. Questions are invitations rather than demands. Interpretations are withheld to allow client's own meaning-making.",
+        "escalation_trigger": "Therapist interprets too early preventing or delaying deep change. Therapist breaks the paradox."
+      },
+      {
+        "observation": "Client begins to self-prescribe and modify exercises independently between sessions",
+        "if_check": "Check if modifications reflect client's spontaneous gesture. Check if client no longer seeks reassurance about modifications.",
+        "probable_pattern": "Transitional_Readiness",
+        "confirmation_markers": "Client achieves Capacity_To_Be_Alone\u2014can maintain integration without physical object present. Client has internalized holding sufficiently to self-regulate. Client demonstrates interdependence. Client no longer seeks reassurance about Roadmap use.",
+        "then_routing": "Continue_Aware | Allow client to contribute to treatment planning. Client determines when and how to use Roadmap. Welcome client modifications as signs of object usage.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client excessive requests for reassurance between and during sessions",
+        "if_check": "Check frequency and quality of reassurance-seeking. Check if client has internalized holding adequately.",
+        "probable_pattern": "Holding_Broken",
+        "confirmation_markers": "Client has not internalized holding adequately. Environment-mother function not yet experienced as reliable or surviving. Client cannot maintain integration without constant external support.",
+        "then_routing": "Settle | Provide consistent non-irritated responses to reassurance requests. Gradually introduce longer intervals between check-ins. Build object constancy through reliability over time.",
+        "escalation_trigger": "Reassurance-seeking escalates despite consistent responses. Client cannot tolerate any interval without therapist confirmation."
+      },
+      {
+        "observation": "Client experiencing session as series of disconnected reactions rather than continuous flow",
+        "if_check": "Check if pacing rules violated. Check if client forced to 'react' with immediate performance.",
+        "probable_pattern": "Impingement_Active",
+        "confirmation_markers": "Client experiencing session as cramming or overwhelm. Continuity of being is broken. Client forced to 'react' rather than 'exist'. Going-on-being interrupted.",
+        "then_routing": "Settle | Reduce pace immediately. Never force client to 'react' with immediate performance. Session must be experienced as continuous experience. Acknowledge when progression was too fast.",
+        "escalation_trigger": "Client loses all sense of continuity. Session becomes traumatic interruption rather than holding experience."
+      },
+      {
+        "observation": "Client shows satisfactory muscle tone and grace in movement, appears settled and integrated",
+        "if_check": "Check if client can tolerate graduated novelty. Check if client initiates movement variations.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Successful Personalization\u2014psyche dwelling in soma. Client experiences body as coherent unit. Client willingness to attempt novel movement. Stability of routine allows patient to accept and use the new.",
+        "then_routing": "Continue_Aware | Build Phase interventions available. Graduated challenge within holding frame. Only on a basis of monotony can clinician add richness.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client can play and be unintegrated in presence of therapist without seeking reassurance",
+        "if_check": "Check if client has internalized sufficient holding. Check if client demonstrates creative apperception.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Client has internalized sufficient holding to risk unintegration. Therapeutic frame functioning as reliable container. Client demonstrates Capacity_To_Be_Alone. Going-on-being is intact.",
+        "then_routing": "Continue_Aware | Explore Phase interventions available. Reduced holding with therapist withdrawal. Potential_Space activation. Client self-regulates.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client reports feeling 'phoney' or describes sense of futility despite 'good' exercise performance",
+        "if_check": "Check if performance is True Self or False Self driven. Check for mechanical lifeless execution.",
+        "probable_pattern": "False_Self",
+        "confirmation_markers": "False Self characterized by compliance leading to 'phoney' feeling and sense of futility. Client says what therapist wants to hear. Success masks lack of emotional viability. 'Good behavior' is defensive mask hiding futility.",
+        "then_routing": "Escalate_Yellow | Flag for Lance review. Possible chronic False Self presentation masking lack of progress. Wait for spontaneous gesture. Provide holding that was missing.",
+        "escalation_trigger": "Client reports complete lack of feeling real. False Self completely dominant with no True Self emergence despite prolonged treatment."
+      },
+      {
+        "observation": "Client cannot tolerate therapist absence (vacation, illness) without significant distress",
+        "if_check": "Check if client can hold therapist image when therapist is absent. Check developmental stage.",
+        "probable_pattern": "Object_Relating",
+        "confirmation_markers": "Client treats therapist as subjective object. Client cannot tolerate therapist having separate existence without significant distress. Client in Absolute Dependence mode\u2014environment and infant form single unit.",
+        "then_routing": "Settle | Increased predictability. Mend the failure through reliability at next contact. Holding environment must survive client's inability to participate fully without retaliation or disappointment.",
+        "escalation_trigger": "Complete decompensation during therapist absence. Client unable to function without therapist presence."
+      },
+      {
+        "observation": "Client movement has quality of play rather than work, shows spontaneous variation",
+        "if_check": "Check if session has become shared play area. Check if client experiences feeling of being real.",
+        "probable_pattern": "True_Self",
+        "confirmation_markers": "Movement has quality of play rather than work. Client experiences session as continuous experience (going-on-being). Spontaneous gesture present. Client demonstrates creative apperception.",
+        "then_routing": "Continue_Aware | Potential_Space activation. Therapist acts as witness. Allow client's own meaning-making. Challenge permitted in Green state.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client expresses anger or frustration toward therapist directly",
+        "if_check": "Check if therapist can survive without retaliation. Check if client expects punishment.",
+        "probable_pattern": "Object_Usage",
+        "confirmation_markers": "Client 'destroys' object in unconscious fantasy. Aggression is 'sign of hope' and expression of 'life force'. Client testing if object survives destruction without retaliating.",
+        "then_routing": "Hold_Space | Primary duty is Non-Retaliation. Remain constant and 'survive' without anger, revenge, or moralistic blame. Confrontation without Vindictiveness. Object only felt to be real if it survives destruction.",
+        "escalation_trigger": "Therapist retaliates causing client to remain trapped in persecutory anxiety. Correction is retaliatory and reinforces failure."
+      },
+      {
+        "observation": "Client regains spontaneous movement rhythm after disruption or correction",
+        "if_check": "Check if going-on-being has resumed. Check if client can tolerate future disruptions.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Client regains continuity of being after minor failure. Holding environment communicated through constant mending of minor failures. Client experiences graduated failure rather than impingement.",
+        "then_routing": "Continue_Aware | Minor failure successfully mended. Continue at current level. Note resilience in holding frame.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client experiences sudden panic during handling or physical adjustment",
+        "if_check": "Check if psyche was momentarily absent from body. Check if client felt like collection of parts.",
+        "probable_pattern": "Impingement_Active",
+        "confirmation_markers": "Client experiences 'screaming panic' because psyche momentarily absent from body. Client feels like collection of parts rather than coherent unit. Loss of Personalization\u2014psyche-soma split.",
+        "then_routing": "Escalate_Red | Stop loading immediately. Return to sensitive empathic handling. Gather limbs together. Protect from sensory insults. Allow client to re-establish sense of body as integrated unit.",
+        "escalation_trigger": "Primitive Agonies activated (going to pieces, falling forever, complete isolation). Client cannot re-establish integration."
+      },
+      {
+        "observation": "Client demonstrates rigid attachment to specific equipment that must not be modified",
+        "if_check": "Check if attachment has characteristics of first not-me possession. Check if object bridges inner fantasy and outer world.",
+        "probable_pattern": "Transitional_Object",
+        "confirmation_markers": "Object functions as vital defense against depressive anxiety. Must survive instinctual hating without changing. Break in continuity if object is washed, removed, or altered without client initiation.",
+        "then_routing": "Continue_Aware | Possession Protection Policy\u2014never wash, remove, or alter without client initiation. Preserve the sacred paradox. Object must survive client's aggression without retaliating.",
+        "escalation_trigger": "Therapist modifies object without client consent causing psychologically catastrophic break in continuity."
+      },
+      {
+        "observation": "Client movement becomes hollow and technically correct but without genuine engagement",
+        "if_check": "Check if client mirrors therapist expectations. Check for over-effort to do it right.",
+        "probable_pattern": "False_Self",
+        "confirmation_markers": "Compliant movement without spontaneous variation. Socially performed wellness. Client mirrors therapist expectations. Technical correctness without personal quality. Over-effort to do it right.",
+        "then_routing": "Settle | Acknowledge compliance as communication about safety needs. Reduce exercise complexity. Wait for spontaneous gesture. Allow client to experience their own satisfaction rather than seeking approval.",
+        "escalation_trigger": "Complete loss of genuine engagement. Client reports feeling unreal despite perfect performance."
+      },
+      {
+        "observation": "Client arrives appearing pre-braced, hypervigilant about doing it right",
+        "if_check": "Check if historical impingement pattern is present. Check if client was forced to 'react' rather than 'exist' in past.",
+        "probable_pattern": "Impingement_Historical",
+        "confirmation_markers": "Client arrives pre-braced against external demands. Cannot tolerate silence or unstructured time. Hypervigilance about doing it right. Pattern of being forced to react rather than exist.",
+        "then_routing": "Settle | Arrival Ritual\u2014predictable opening sequence. Allow client to orient without immediate demands. Client initiates when ready rather than waiting for instruction. Create holding through spatial consistency.",
+        "escalation_trigger": "Client cannot settle despite consistent holding. Hypervigilance persists across multiple sessions without reduction."
+      },
+      {
+        "observation": "Client appears to be reaching state of readiness to carry therapeutic gains beyond session",
+        "if_check": "Check if client demonstrates interdependence rather than dependence. Check if client can contribute to treatment planning.",
+        "probable_pattern": "Transitional_Readiness",
+        "confirmation_markers": "Client moves from Object_Relating to Object_Usage\u2014Roadmap as tool with independent existence. Client develops internal 'ego-support'. Client can identify with treatment without serious sacrifice of personal impulse. True autonomy emerging.",
+        "then_routing": "Continue_Aware | Allow for contribution to treatment planning. Confrontation without vindictiveness appropriate. Supportive social framework. Client internalizing the environment.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client emotional flooding after correction or adjustment\u2014visible tears, trembling, shutdown",
+        "if_check": "Check if Primitive Agonies activated. Check for going to pieces, falling forever, complete isolation.",
+        "probable_pattern": "Holding_Broken",
+        "confirmation_markers": "Primitive Agonies form root of psychological trauma when environment fails. Going to pieces. Falling forever. Having no relation to body. Complete isolation. Environment failed to protect.",
+        "then_routing": "Escalate_Red | Stop biomechanical work entirely. Absolute holding required. Going_On_Being protection is primary goal. Environmental holding only. Minimal verbal demand. Non-retaliation protocol.",
+        "escalation_trigger": "Client unable to re-integrate. Session must be shortened. Client may need to leave early without this being experienced as failure."
+      },
+      {
+        "observation": "Client shows willingness to attempt novel movement without excessive hesitation",
+        "if_check": "Check if client feels safe enough in holding environment. Check if going-on-being is intact.",
+        "probable_pattern": "Holding_Intact",
+        "confirmation_markers": "Client feels safe enough to extend beyond familiar patterns. Stability of routine allows client to accept and use the new. Going-on-being is intact. Graduated novelty tolerated.",
+        "then_routing": "Continue_Aware | Build Phase interventions available. Introduce novelty only within established holding frame. Graduated challenge within holding.",
+        "escalation_trigger": "NOT IN SOURCE"
+      },
+      {
+        "observation": "Client initiates movement variations without seeking permission",
+        "if_check": "Check if variations arise from spontaneous gesture. Check if client demonstrates creative apperception.",
+        "probable_pattern": "True_Self",
+        "confirmation_markers": "Client initiates novel movement variations without seeking permission. Client experiences feeling of being real rather than compliant. Creative apperception present. Spontaneous gesture from inner impulse.",
+        "then_routing": "Continue_Aware | Permission to fail\u2014therapist non-anxiety. Do not pre-emptively correct. Potential_Space activation. Client demonstrates readiness for Explore Phase.",
+        "escalation_trigger": "NOT IN SOURCE"
+      }
+    ]
+  },
+  "rule_count": 67,
+  "phase5_count": 39
+}

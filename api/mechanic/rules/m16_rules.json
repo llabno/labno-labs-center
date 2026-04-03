@@ -1,0 +1,794 @@
+{
+  "module": "m16",
+  "phase6_rules": [
+    {
+      "rule_name": "Self-Energy Gate Primary Assessment",
+      "rule_category": "Self-Energy Gate",
+      "if_condition": "IF client is asked 'How do you feel toward that part?' and response includes any of the 8 Cs (Calmness, Curiosity, Compassion, Confidence, Clarity, Creativity, Courage, Connectedness)",
+      "then_directive": "THEN Self-energy is present and sufficient for parts work to proceed. Continue with current intervention.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Self-Energy Gate Failure Response",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Self-Energy Gate Failure Response",
+      "rule_category": "Self-Energy Gate",
+      "if_condition": "IF client is asked 'How do you feel toward that part?' and response includes judgment, fear, anger, frustration, annoyance, or any non-8C quality",
+      "then_directive": "THEN a Concerned Part is blended with Self. Do NOT proceed to target part. Make the Concerned Part the new target part or ask it to step aside.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "Concerned Part Protocol",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Self-Energy Ventral Vagal Confirmation",
+      "rule_category": "Self-Energy Gate",
+      "if_condition": "IF client reports Self-energy qualities (8 Cs) verbally BUT shows absence of ventral vagal markers (no spontaneous breath, no prosody, flat voice, no eye contact modulation)",
+      "then_directive": "THEN a Manager or Self-like part may be mimicking Self. Do NOT proceed with Exile work. Use additional differentiation: check if other parts respond to this 'Self' with softening and trust. If not, address the Self-like part.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Self-like Part Detection",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Self-Energy Absence Requires Settle Track",
+      "rule_category": "Self-Energy Gate",
+      "if_condition": "IF Feel Towards test fails repeatedly AND client cannot access any of the 8 Cs toward any part",
+      "then_directive": "THEN route to Settle track for co-regulation. Self-energy cannot be accessed from Amber (sympathetic) or Red (dorsal) autonomic states. Establish ventral vagal safety before attempting further parts work.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Manager Detection via Proactive Control Patterns",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client demonstrates chronic bracing, perfectionism, control, intellectualization, people-pleasing, or harsh self-criticism AND these patterns are proactive (running day-to-day life, not reactive to emergency)",
+      "then_directive": "THEN identify as Manager part. Use 6 Fs to befriend. Do NOT attempt to release the pattern without first understanding its protective function and gaining permission.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "Manager Permission Protocol",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Firefighter Detection via Reactive Emergency Response",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client shows sudden shift from controlled to impulsive behavior, flat or numbed affect, dissociation, rage outbreak, or addictive impulse AND this occurs when emotional pain breaks through",
+      "then_directive": "THEN identify as Firefighter part. Do NOT judge or try to stop the behavior directly. Focus on establishing safety and gaining permission to help the underlying Exile whose pain triggered the Firefighter.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "Firefighter Permission Protocol",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Exile Detection via Voice Quality and Regression",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client's voice quality shifts to childlike pitch/tone/cadence, uses present tense about past trauma, shows overwhelming emotion, or loses adult perspective",
+      "then_directive": "THEN Exile is speaking or flooding. Immediately assess whether Self is still present to witness. If Self is absent (client is reliving not witnessing), ask Exile to contain feelings and step back.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Exile Flooding Protocol",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Blending Severity Level 1-2 Proceed with Adjustment",
+      "rule_category": "Blending Intervention",
+      "if_condition": "IF client shows part activation but can access Self with prompting, uses parts language with guidance, and can shift to observing the part when asked",
+      "then_directive": "THEN proceed with adjusted pacing. Use frequent Feel Towards checks. Increase unblending support. Client can work with Managers and some Firefighters with careful negotiation.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Blending Severity Level 3 Unblend Before Proceeding",
+      "rule_category": "Blending Intervention",
+      "if_condition": "IF client is heavily identified with part's perspective, speaks AS the part rather than about it, cannot access Self-qualities even with prompting, shows intense autonomic activation",
+      "then_directive": "THEN stop all parts work. Focus entirely on unblending. Use gentle invitations: 'Would this part be willing to step back just a little so we can talk?' If Direct Access needed, request permission first.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Blending Severity Level 4 Stop and Stabilize",
+      "rule_category": "Blending Intervention",
+      "if_condition": "IF client shows complete part takeover with no Self access: either flooding (intense emotional dysregulation, reliving trauma, panic) OR shutdown (profound dissociation, catatonic quality, unreachable)",
+      "then_directive": "THEN stop all clinical work immediately. This is emergency stabilization territory. For flooding: interrupt with grounding ('Feel your feet on the floor. Look at me. Tell me three things you see.'). For shutdown: gentle verbal orientation only, do not touch without permission. Create safety plan before session ends.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Protector Permission Mandate",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF clinician intends to access an Exile",
+      "then_directive": "THEN explicit permission must be obtained from all protectors who might object. Never work with an Exile until permission is granted. Bypassing protectors risks backlash (pain flares, Firefighter activation, dorsal vagal shutdown, therapy dropout).",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Manager Permission Protocol",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF a Manager part is identified as blocking access to deeper work",
+      "then_directive": "THEN use 6 Fs to befriend: Find, Focus, Flesh out its fears, Feel toward it with curiosity, beFriend by appreciating its protective efforts, then ask what it Fears about allowing access. Address all fears before requesting permission.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Firefighter Permission Protocol",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF a Firefighter part is using extreme protective behavior (addiction, rage, dissociation, self-harm)",
+      "then_directive": "THEN do NOT fight the behavior directly. Recognize it as emergency response to unbearable pain. Validate its protective intent: 'I understand you are trying to help by numbing/releasing the pain.' Negotiate for permission to help the underlying Exile. Focus on harm reduction, not behavior elimination.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Qualified Permission Is Not Permission",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF protector says 'I guess so' or 'okay but...' or shows hesitation, tension, or body language contradiction when granting permission",
+      "then_directive": "THEN permission is NOT granted. Almost yes is still NO. Address the protector's remaining concerns. Ask what it would need to feel fully safe granting permission.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Suicidal Firefighter Protocol",
+      "rule_category": "Escalation Safety",
+      "if_condition": "IF client presents with suicidal ideation, flat hopeless affect, profound dorsal collapse, or statements about death as relief from pain",
+      "then_directive": "THEN recognize as extreme Firefighter offering death as escape from unbearable Exile pain. Do NOT challenge directly or argue against suicide. Use Direct Access: 'I understand you want to end the pain. Would you give me some time to help the part that is in so much pain?' Establish safety plan immediately. Differentiate proactive/soothing type from reactive/dangerous type.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Exile Flooding Protocol",
+      "rule_category": "Escalation Safety",
+      "if_condition": "IF Exile overwhelms client with emotion, client loses adult perspective, relives trauma rather than witnesses it, shows childlike regression, or cannot contain feelings",
+      "then_directive": "THEN interrupt flooding immediately. Ask Exile to step back and contain: 'I know you need to share this, but I need you to step back so [client] can be here. We will come back to your story.' Re-establish Self presence through grounding. Do NOT continue unburdening work in this session.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Therapeutic Rupture Detection",
+      "rule_category": "Escalation Safety",
+      "if_condition": "IF client becomes more guarded, withdrawn, or compliant after clinician intervention AND therapeutic progress stalls AND client's parts express distrust of clinician",
+      "then_directive": "THEN therapeutic rupture has occurred. Stop current work. Acknowledge rupture with client's parts: 'It seems like something I said or did activated a protective part. Can we check in with that part?' Repair relationship before resuming clinical work.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Never Bypass Protectors",
+      "rule_category": "Escalation Safety",
+      "if_condition": "IF clinician is tempted to proceed to Exile work despite protector resistance, hesitation, or lack of explicit permission",
+      "then_directive": "THEN do NOT proceed. Bypassing protectors violates the permission-based principle and triggers backlash: pain flares, symptom escalation, Firefighter activation, dorsal collapse, or therapy termination. Protector permission is the inviolable gate.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "NS State Governs Clinical Ceiling",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client presents in Amber (sympathetic) or Red (dorsal) autonomic state",
+      "then_directive": "THEN autonomic state sets the ceiling for clinical work. No Exile access in Amber or Red. Parts work limited to befriending accessible protectors at most. Route to Settle track to restore ventral vagal regulation before deeper work.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Parts Override When Protector Active Despite Green State",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client shows ventral vagal markers (spontaneous breath, prosody, eye contact) BUT Feel Towards test reveals judgment, fear, or anger toward a target part",
+      "then_directive": "THEN Parts layer overrides NS layer. A Concerned Part or Manager is active despite apparent physiological safety. Must address the blocking part before proceeding, even though autonomic state appears green.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "PANIC/GRIEF Requires CARE Before Parts Work",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client presents with PANIC/GRIEF markers (separation distress, crying, sorrowful postures, context of social loss) in dorsal vagal state",
+      "then_directive": "THEN engage CARE system through clinician's consistent regulated presence as secure neurochemical base before any parts work. CARE powerfully inhibits PANIC/GRIEF through opioid/oxytocin pathways. Compassionate Listening only until regulation improves.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "RAGE Requires Invitation-Only Protocol",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client shows RAGE markers (body tensely arched, hissing/growling quality, lashing out potential, frustration at constraints)",
+      "then_directive": "THEN use invitations not commands. Commands amplify RAGE by replicating constraints on freedom. Frame all guidance as choices: 'Would you be willing to...' rather than 'I need you to...' Offer rant-to-release for safe discharge. Do NOT attempt Exile access until RAGE de-escalates.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "FEAR Requires Safety-Building Before Challenge",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client shows FEAR markers (freezing response, jumpiness, excessive vigilance, darting eyes, anxiety about movement)",
+      "then_directive": "THEN prioritize GABAergic-like calming through neuroception of safety. Reduce threat cues. Move slowly and predictably. Offer explicit choice and control. Use scaffolded smallest steps. Substitute 'Does this hurt?' with 'Does this feel safe?' FEAR inhibits PLAY, so playful interventions contraindicated.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "CI Stone 7 for Manager Intellectualization",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client uses 'I feel that...' followed by analysis or interpretation rather than sensation, OR uses cognitive-state words (confused, rejected) as feelings",
+      "then_directive": "THEN use CI Stone 7 distinction: 'That's an interpretation. What do you actually FEEL in your body right now?' Guide to sensation not cognition. This indicates Manager intellectualization blocking access to felt experience.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "CI Precaution 1 Readiness Gate",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client lacks capacity to witness, to ground, or to be aware of body and breath",
+      "then_directive": "THEN do NOT use CI micro-interventions (Stones 8-17). Use Compassionate Listening only. This parallels Self-energy absence\u2014client cannot do awareness work without witness capacity.",
+      "override_level": "4=constitutional",
+      "interacts_with_rule": "Self-Energy Gate Failure Response",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "M22 Feel Towards Gate Active",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF assessing capacity for meditation, bare attention, or contemplative work",
+      "then_directive": "THEN use Feel Towards test (M16) to confirm Self-energy presence before proceeding. Client could show ventral markers while a capable Manager uses meditation as control strategy. Feel Towards test required before confirming bare attention capacity.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Self-Energy Gate Primary Assessment",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "M25 Non-Forcing Principle for Protector Negotiation",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF protector is resisting, blocking, or showing reluctance to grant permission",
+      "then_directive": "THEN apply Backwards Law: increased pressure creates increased resistance. Do NOT try harder to convince protector. Instead, get curious about its fears with genuine interest. Create conditions for permission rather than demanding it. Wu wei in protector work means effortless negotiation through curiosity, not forceful persuasion.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Concerned Part Protocol",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF Feel Towards test reveals a Concerned Part (judgment, fear, or anger toward target part)",
+      "then_directive": "THEN ask Concerned Part to step aside: 'Would you be willing to let the Self get to know this part?' If it refuses, ask about its fears. If it still refuses, make the Concerned Part the new target part and work with it first.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Self-Energy Gate Failure Response",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Self-like Part Detection",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client says 'right' Self-like things but other parts do not respond with softening or trust, OR other parts remain guarded despite apparent compassion from 'Self'",
+      "then_directive": "THEN recognize Self-like part (Manager mimicking Self). Ask: 'What are you afraid would happen if you stepped aside and let the true Self lead?' Do NOT proceed with Exile work while Self-like part is in charge\u2014it lacks the genuine healing capacity.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "Self-Energy Ventral Vagal Confirmation",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Inner Critic as Manager",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client shows harsh self-judgment, criticism, pushing, doubting, or attacks toward self or other parts",
+      "then_directive": "THEN recognize Inner Critic as Manager type protecting underlying Exile from external criticism by criticizing first. Do NOT argue with the criticism. Ask: 'What are you afraid would happen if you stopped criticizing?' Address the Critic's fear before accessing the Exile it attacks.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Exiled Protector Dual Nature",
+      "rule_category": "Part Detection",
+      "if_condition": "IF a part appears both protective (aggressive, rebellious, angry) AND wounded (carries pain of being shunned, other parts fear or disdain it)",
+      "then_directive": "THEN recognize Exiled Protector\u2014a protector that was shunned by other protectors. Approach with caution and compassion. Address both its original protective intent AND its pain of being exiled. May require mediating between this part and the parts that shunned it.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Polarization Detection and Management",
+      "rule_category": "Part Detection",
+      "if_condition": "IF client describes two parts in conflict, shows behavioral swings between extremes, or reports feeling 'torn' between contradictory impulses",
+      "then_directive": "THEN recognize Polarization (protector-protector conflict). Do NOT take sides. Convene parts meeting with Self as mediator. Help both parts see they share protective purpose but disagree on method. Negotiate truce before accessing the Exile both protect.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Body-Based Trailhead Protocol",
+      "rule_category": "Part Detection",
+      "if_condition": "IF chronic pain or tension does not follow expected biomechanical patterns, does not respond to structural interventions, or correlates with emotional states rather than physical activity",
+      "then_directive": "THEN treat as body-based trailhead to access part. Use body scanning (Find, Focus, Flesh out): locate sensation, give it shape/color/age. Ask: 'What is this part protecting you from by creating this tension/pain?' Do NOT attempt to eliminate pain directly\u2014befriend the part's communication first.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Stop the Rep Rule with Parts Assessment",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF client holds breath, clenches jaw, or curls toes during movement",
+      "then_directive": "THEN stop activity immediately. State 'The rep doesn't count.' Assess: 'A part of you just got scared or frustrated. What are you noticing in your body right now?' Determine if sympathetic activation is Manager-driven (control, perfectionism) or Firefighter-driven (fear, avoidance). Address part before resuming movement.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Downshift Protocol with Parts Integration",
+      "rule_category": "Cross-Module Integration",
+      "if_condition": "IF manual work has created new space in tissue",
+      "then_directive": "THEN before client gets up: find floor with heels, take three breaths (exhale longer than inhale), tell nervous system it is safe to keep new space. Add: 'Thank the parts of you that have been holding this tension. Let them know you can maintain safety now without their extreme effort.' This prevents Manager from immediately reinstating protective bracing.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "integrated"
+    },
+    {
+      "rule_name": "Unburdening Sequence Enforcement",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF Exile has been accessed with protector permission and witnessing has occurred",
+      "then_directive": "THEN follow 5-step sequence in order: (1) Witnessing, (2) Reparenting/Corrective Experience, (3) Retrieval from past, (4) Unburdening to element, (5) Inviting new qualities. Do NOT skip steps. After unburdening, check in with protectors to update them and invite role transformation.",
+      "override_level": "3=mandatory",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    },
+    {
+      "rule_name": "Legacy Burden Protocol",
+      "rule_category": "Protector Permission",
+      "if_condition": "IF part carries burden of hyperresponsibility for caretaker figure, shows guilt when prioritizing self, and reports 'I've always been responsible for them'",
+      "then_directive": "THEN recognize Parentified Part carrying Legacy Burden (inherited through family, not from personal experience). This part will block other Exile work until addressed. May require including caretaker's 'higher Self' in work to return responsibility to its proper place. Use legacy unburdening protocol.",
+      "override_level": "2=standard",
+      "interacts_with_rule": "null",
+      "source_module": "M16"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_part_detection": [
+      {
+        "observation": "Client demonstrates chronic shoulder bracing that persists despite tissue healing and intensifies when discussing performance situations or being observed during movement",
+        "if_check": "Body scanning reveals distinct location, form, or quality that can be related to as a 'part.' Client uses parts language ('the tension won't let me,' 'it's protecting me'). Tension does not follow expected biomechanical patterns or respond to structural interventions.",
+        "probable_part": "Perfectionist Manager or Performance-anxiety Manager using bracing as proactive control strategy to prevent failure or criticism",
+        "confirmation_markers": "Tension increases specifically during performance contexts. Client shows anxiety when observed. Breath holding during effortful movements. Client expresses fear of making mistakes or being judged. Tension releases when client accesses curiosity toward the part.",
+        "then_routing": "Stop structural interventions. Use body-based trailhead protocol: 'Notice the tension in your shoulders. Can you locate exactly where it is? If it had a shape or color, what would it be?' Then 'Feel Towards' test. If curiosity present, befriend: 'Ask the part what it is protecting you from by holding this tension.' Gain protector permission before challenging bracing pattern. Route to Settle track if FEAR-driven anxiety is high (Amber state with darting eyes, excessive vigilance).",
+        "escalation_trigger": "If attempting to release tension triggers panic attack, rage outbreak, or client reports feeling 'unsafe' without the bracing, recognize Controlling Manager or trauma-related protector is active. Stop immediately and address protector's terror of vulnerability before proceeding."
+      },
+      {
+        "observation": "Client's harsh self-judgment is audible during movement assessment with visible jaw clenching, furrowed brow, and statements like 'I'm so stupid' or 'I can't do anything right'",
+        "if_check": "Feel Towards' test toward the critical voice. If client cannot access curiosity or compassion and instead identifies with the criticism ('I AM inadequate'), Inner Critic Manager is blended.",
+        "probable_part": "Inner Critic Manager using harsh judgment to prevent external criticism by attacking first, protecting underlying Exile carrying burden of worthlessness or inadequacy",
+        "confirmation_markers": "Jaw tension or clenching. Collapsed chest or shame posture when criticism intensifies. Pain or limitation fluctuates with self-criticism rather than mechanical load. Client cannot receive corrective feedback without shame spiral. Postural collapse follows self-attack.",
+        "then_routing": "Use 6 Fs to unblend: 'I notice a part of you is being very critical. How do you (Self) feel toward that critical part?' Do not argue with criticism or try to 'correct' negative thinking. Ask: 'What is this part afraid would happen if it stopped criticizing?' If Amber/FEAR or RAGE is driving the attacks, route to Settle track first. Once Critic grants permission and underlying Exile's fear of inadequacy is accessed, can proceed with unburdening protocol.",
+        "escalation_trigger": "If criticism triggers complete collapse into Red (dorsal shutdown with flat voice, hopelessness, 'I'm worthless' as truth not part), recognize Exile is flooding. Stop all parts work. Use compassionate listening only and CARE system co-regulation. If suicidal ideation emerges, implement safety protocol immediately."
+      },
+      {
+        "observation": "Client refuses to lie supine or perform floor-based exercises, showing visible tension spike and defensive body language when therapist suggests vulnerable positioning",
+        "if_check": "Ask: 'I notice a part of you doesn't want to do this position. Can we get to know that part?' Controlling Manager or trauma-related protector is blocking access to vulnerable positioning due to FEAR of powerlessness or past violation.",
+        "probable_part": "Controlling Manager refusing to surrender control, or Firefighter protecting Exile carrying trauma burden related to powerlessness or violation (especially if supine positioning triggers specific fear response)",
+        "confirmation_markers": "Global bracing that does not correspond to tissue pathology. Chronic hypervigilance. Inability to surrender body weight to support surfaces. Client expresses fear of 'losing control' or 'being trapped.' History of trauma (abuse, medical trauma, assault) may be present. If FEAR system markers appear (freezing response, jumpiness when position suggested), confirms FEAR-driven protection.",
+        "then_routing": "Do NOT force position. Use explicit negotiation: 'What does this part fear would happen if you weren't in charge of your position?' Offer maximum choice and predictability. Scaffold tiny releases of control in safest context possible (e.g., 'Would you be willing to try reclining just 10 degrees with your hand on the armrest so you can push up anytime?'). If RAGE activates when control is threatened (body tensely arched, aggressive tone), shift to Settle track immediately with invitations not commands.",
+        "escalation_trigger": "If client suddenly freezes during positioning with wide eyes, loss of speech, and immobilization despite having structural capacity to move, recognize EXTREME FEAR freeze or body-held trauma memory accessed. STOP IMMEDIATELY. Do not touch. Use gentle verbal orientation: 'You are safe. Can you feel your feet?' This requires trauma-specialized referral."
+      },
+      {
+        "observation": "Client minimizes pain reporting during session with 'I'm fine' and agreeable compliance, but body language shows visible discomfort and client reports severe flare 24-48 hours later",
+        "if_check": "Client's verbal agreement contradicts body language. Shows hypervigilance about therapist's reactions. Cannot express preferences. Apologizes excessively. Automatic 'yes' to all interventions despite visible tension.",
+        "probable_part": "People-Pleasing Manager using fawn response (sympathetic activation with collapsed boundaries) to prevent rejection or abandonment, or Caretaking Manager deflecting to others' needs",
+        "confirmation_markers": "Overly accommodating posture. Deferential language. Tension increases when asked for preferences. Cannot identify own goals for therapy because focused on what therapist wants. Deflects to checking on therapist's comfort. If underlying FEAR of abandonment/rejection is driving pattern, client may show anxiety when disagreement arises.",
+        "then_routing": "Explicitly invite disagreement: 'If any part of you doesn't like this exercise or thinks it's wrong for your body, I need to know. Disagreeing helps me help you better.' Model that assertion does not lead to rejection by remaining non-reactive to client's 'no.' Use CI Stone 2 permission checks before every intervention. Ask: 'What would this part fear about saying no to me or expressing your actual needs?' If FEAR is driving fawn response, establish neuroception of safety through welcoming environment, reduced threat cues.",
+        "escalation_trigger": "If client cannot access authentic needs even with explicit permission and continues to report post-session severe flares from suppressed pain, recognize this part will block all genuine informed consent. Cannot proceed with treatment plan that client is only agreeing to from fear. May need to pause structural work entirely until People-Pleaser unblends enough for authentic participation."
+      },
+      {
+        "observation": "Client speaks about pain in detached, clinical terms ('my L4-L5 disc is dysfunctional') with emotional flatness, cannot describe sensations beyond intellectual concepts, and appears disconnected from body awareness during assessment",
+        "if_check": "Ask client to describe what they feel in their body during movement. If response is intellectual analysis ('my glutes aren't firing') rather than sensation report ('I feel tightness/pulling/pressure'), Intellectualizer Manager is using logic to avoid emotion.",
+        "probable_part": "Intellectualizer Manager using analysis and dissociation from body sensation to prevent Exile's overwhelming emotions from flooding the system",
+        "confirmation_markers": "Shallow breathing. Tension in head/face from chronic thinking. Third-person references to body ('the shoulder,' 'it'). Cannot locate sensations in body or access pain quality. Movement looks mechanical rather than organic. When asked about emotions related to pain, client deflects to biomechanical explanations. If FEAR of emotional overwhelm is driving pattern, client shows anxiety when prompted to 'just notice what you feel.'",
+        "then_routing": "Do not proceed with body-based interventions when client is dissociated from sensation. Use Stone 7 repeatedly: 'That's an interpretation. What do you actually FEEL in your body?' Very slow reconnection: imagine movement, then gentle actual movement, then simple location of sensation without emotional content. Ask: 'What does this part fear would happen if you felt the emotions in your body?' If underlying Exile's overwhelming emotions are beneath defense, establish safety first before attempting to access feelings.",
+        "escalation_trigger": "If intellectual defense is bypassed suddenly (e.g., therapist touches trauma-associated body region without warning), Exile may flood system uncontained. Client may shift rapidly from flat Amber to Red with overwhelming emotion, crying, or dissociative collapse. Stop immediately, help Exile step back ('Can that part hold the feelings so you can be curious about it?'), and use CARE system co-regulation to re-establish safety."
+      },
+      {
+        "observation": "Client demonstrates chronic exhaustion with inability to rest, driven movement quality, anxiety when therapist suggests reducing intensity, and reports 'I should be doing more' despite visible depletion",
+        "if_check": "Client cannot tolerate rest or 'easy' modifications without anxiety. Pushes through pain and fatigue. Over-efforts in all movements. Reports exercise 'should' be harder. Shows early signs of descent toward Red (feeling depleted, subtle disconnection).",
+        "probable_part": "Taskmaster Manager (Inner Critic subtype) using relentless pushing to prevent underlying Exile's fear of failure or worthlessness from emerging. Driving toward burnout.",
+        "confirmation_markers": "Chronic muscle tension from overwork. Breath holding during effort. Visible exhaustion combined with inability to stop. Harsh self-criticism about effort ('I'm not working hard enough'). If FEAR of worthlessness is driving pattern, client shows panic when asked to rest ('If I stop, it means I'm lazy'). May show collapse into Red if pushing cannot be sustained.",
+        "then_routing": "Do NOT prescribe exercise program without addressing this part \u2014 client will perform until injury. Ask: 'What would this part fear about resting or backing off intensity?' Introduce 'minimum effective dose' and recovery as essential to adaptation, not laziness. If Amber state with driven quality, arrest descent before dorsal collapse by stopping productivity-framed work immediately. Use CI Stone 12 to reframe: 'Your system has been working so hard to keep you safe. Let's help it find a less exhausting way.' Once underlying Exile's terror of worthlessness/failure is unburdened, client can develop Ease Capacity.",
+        "escalation_trigger": "If client is already showing signs of dissolution toward Red (feeling depleted emotionally, subtle not-present quality, worthlessness feelings emerging), recognize Exile is breaking through Taskmaster's defenses. Stop all treatment. Use compassionate listening and CARE system co-regulation. This is backlash territory \u2014 Taskmaster pushed beyond sustainable limits. If PANIC/GRIEF emerges with despair ('I'll never be enough'), route to dorsal protocol with safety plan before ending session."
+      },
+      {
+        "observation": "Client appears emotionally flat or 'checked out' during hands-on treatment, reports feeling 'far away' or 'not really there,' tolerates intervention intensity that should be uncomfortable without reaction, then shows severe flare 24-48 hours later",
+        "if_check": "Client cannot provide reliable pain or sensation feedback. Reports absence of sensation in body or feeling 'numb.' May suddenly 'leave' during assessment with glazed look and no verbal response. Dissociative quality observable.",
+        "probable_part": "Dissociative/Numbing Firefighter using shutdown to manage unbearable Exile pain. Client is in dorsal vagal collapse (Red state) with flat affect and disconnection from body.",
+        "confirmation_markers": "Flat or numbed affect. Absence of pain response during assessment that should be uncomfortable. Client tolerates high-intensity intervention without discomfort report but shows delayed severe flare. Cannot participate in body scanning. Glazed appearance or reports 'floating away.' If FEAR of overwhelm is driving numbing, client may have history of using dissociation to escape unbearable pain.",
+        "then_routing": "DO NOT continue treatment when client is dissociated \u2014 they cannot consent or provide feedback on tissue tolerance. Stop intervention. Use gentle reorientation: 'I notice you seem far away. Can you feel your feet on the floor? Tell me three things you see.' If dorsal collapse is profound, use protocol: imagine movement to activate motor cortex, gentle actual movement, self-touch to restore sensation. Ask: 'What part of you stepped away? What was it protecting you from?' If client can begin to stay present when some Self emerges, use CARE system co-regulation as secure base.",
+        "escalation_trigger": "If dissociation is so profound client cannot be reoriented, if client reports suicidal ideation while dissociated, or if attempts to restore presence trigger panic or rage, recognize system is in extreme Red collapse. End session with safety plan. Manual therapy when client is dissociated is contraindicated \u2014 risk of re-traumatization and tissue overload without conscious modulation. May require psychiatric or trauma-specialized referral."
+      },
+      {
+        "observation": "Client shows sudden explosive or disproportionate reaction to intervention (slamming hand, raising voice, aggressive tone) with visible muscle tension that spikes unpredictably, particularly when boundaries feel crossed or vulnerability is increased",
+        "if_check": "High sympathetic activation with body tensely arched, clenched fists or jaw, hissing/growling quality. Context suggests Rage is protecting against unbearable powerlessness or enforcing boundaries. May have history of trauma.",
+        "probable_part": "Rage Firefighter using RAGE system (high sympathetic fight activation) to protect Exile from terror of powerlessness or violation, or to enforce boundaries when they are being crossed. May be 'exiled protector' (shunned by other parts for being 'too dangerous').",
+        "confirmation_markers": "Explosive reactions to intervention that are disproportionate to stimulus. Cannot tolerate vulnerability-inducing positions or passive movements. Refusal to continue assessment or abrupt session termination. Global muscle tension with reactive spikes that don't match tissue pathology. If RAGE is protective, client may report feeling 'attacked' or 'violated' by specific interventions (especially touch or positioning that accesses trauma-associated body regions).",
+        "then_routing": "DO NOT engage rage, suppress it, or try to control client \u2014 this replicates powerlessness and amplifies RAGE. STOP intervention immediately. Use Direct Access if appropriate: 'I understand a part of you is very powerful and protecting you. Can we talk about what just felt threatening?' Respect ALL boundaries Rage sets. Use invitations never commands. If Amber/RAGE active, route to Settle track: offer rant-to-release for safe discharge, calm up from flood to flow. Once rage de-escalated enough for minimal Self-presence, explore what pain Rage is protecting (usually Exile's powerlessness/violation).",
+        "escalation_trigger": "If rage escalates despite de-escalation attempts, if client becomes physically aggressive toward therapist or environment, or if client's own safety is at risk (self-harm impulse during rage episode), implement crisis protocol. End session, ensure safety, refer to appropriate crisis resources. Manual therapy and vulnerable positioning are absolutely contraindicated until underlying Exile's violation/powerlessness wound is unburdened through trauma-informed protocol."
+      },
+      {
+        "observation": "Client demonstrates visible distress or tears during assessment requiring body exposure (gait analysis, posture evaluation), uses hands to shield body areas, shows collapsed posture (rounded shoulders, head forward) that presents as structural but feels protective",
+        "if_check": "Client refuses or shows extreme anxiety about assessments requiring observation. Cannot tolerate being watched during movement. Collapsed posture that feels like protective folding rather than structural restriction. May dissociate during palpation of shame-associated body regions (abdomen, hips, thighs).",
+        "probable_part": "Body Shame Exile carrying burden 'my body makes me unlovable/wrong/disgusting,' protected by Manager using postural collapse to hide body from judgment",
+        "confirmation_markers": "Extreme distress about body exposure. Clothing choices maximize coverage even when inappropriate for assessment. Cannot receive feedback about movement or posture without shame spiral. Pain in shame-associated body areas may be somatic expression of burden rather than tissue pathology. History of teasing, abuse, weight stigma, or cultural body shame messages may be present.",
+        "then_routing": "DO NOT proceed with exposure-based assessment without explicit permission. STOP immediately if client shows shame activation (tears, collapse, dissociation). Ask: 'I notice a part of you has a strong reaction to being observed. Can we talk to that part about what it needs to feel safe?' Offer maximum privacy and control (client chooses clothing, positioning, whether curtain is closed). Use CI Stones 10-11 if appropriate: imagine child who believes their body is wrong, who would you want them to talk to? This activates CARE system compassion for the Exile. Postural re-education fails until shame burden is unburdened.",
+        "escalation_trigger": "If shame Exile floods during assessment (overwhelming emotion, childlike voice, collapse, client speaks as the young part 'I'm disgusting'), STOP all assessment work immediately. Use compassionate listening only. Help Exile step back enough for Self to witness. This requires full IFS unburdening protocol with witnessing of shame origin, reparenting ('it was not your fault,' 'you are lovable as you are'), retrieval from past, and unburdening of 'body is wrong' belief. May require trauma-informed approach if shame linked to abuse or violation."
+      },
+      {
+        "observation": "Client shows flat or hopeless affect with expressions of profound despair, detachment from future planning, minimal life force or animation, and statements suggesting death as relief from pain",
+        "if_check": "Profound dorsal vagal collapse (Red state) with flat voice, slumped posture, numbness. Client may state 'there's no point,' 'it will never get better,' or reference death/suicide as way out. Assess whether 'proactive/soothing' type (chronic hopelessness, calm about death as option) or 'reactive/dangerous' type (acute crisis, 'now is the time').",
+        "probable_part": "Suicidal Firefighter offering death as ultimate escape from Exile's unbearable pain. Extreme Firefighter using profound dorsal collapse as protection when all other strategies have failed.",
+        "confirmation_markers": "Complete detachment from life. Absence of future-oriented language. May have calm resignation about death or acute crisis quality. Suicidal ideation present. Red state with loss of all life force. If PANIC/GRIEF is underlying pain, client may reference unbearable loneliness, abandonment, or separation distress. If extreme FEAR, client may reference unbearable terror or overwhelm that 'will never end.'",
+        "then_routing": "HIGH RISK. DO NOT challenge directly or argue that life is worth living. Use Direct Access: 'I understand a part of you wants to end the pain. I am not here to argue. I am asking if you would give me some time to help the part that is in so much pain. If I cannot help, you can always come back. Would you be willing to give me that time?' Establish safety plan immediately. Differentiate proactive vs. reactive type. Provide CARE system co-regulation as secure neurochemical base (PANIC/GRIEF powerfully inhibited by social contact). Negotiate for time to help underlying Exile.",
+        "escalation_trigger": "If client is actively planning suicide, has means and intent, or is in acute 'reactive/dangerous' crisis mode ('now is the time to die'), this is IMMEDIATE safety escalation. Stop all parts work. Do not leave client alone. Implement crisis protocol: contact emergency services if necessary, involve support system with client permission, refer to psychiatric crisis resources. Cannot proceed with therapy until safety is established. This Firefighter will only relax if underlying Exile's unbearable pain is addressed, but that work cannot happen in acute crisis."
+      },
+      {
+        "observation": "During movement assessment, client suddenly freezes with wide eyes, loss of ability to respond verbally, body becomes rigid and unresponsive to cues despite having demonstrated movement capacity moments before",
+        "if_check": "Immobilization freeze with loss of muscle activation in context of specific movement or position that may be associated with trauma (hip flexion for sexual trauma, supine for medical trauma, cervical touch for assault). Client cannot follow cues or move voluntarily. May show terror in eyes. Sympathetic activation (racing heart) combined with dorsal immobility.",
+        "probable_part": "Extreme FEAR Firefighter using freeze response to protect from perceived life threat, OR Exile's body-held trauma memory accessed by specific movement. This is involuntary protective immobilization, not volitional avoidance.",
+        "confirmation_markers": "Sudden onset of inability to move during specific assessment procedure. Client was demonstrating capacity moments before. Wide eyes with terror expression. Complete loss of speech. Body held in rigid freeze. Context of life threat not social loss. History of trauma (abuse, assault, medical trauma) with freeze occurring during movement related to that trauma.",
+        "then_routing": "STOP ALL INTERVENTION IMMEDIATELY. This is trauma response. Do not touch client. Do not continue movement. Use very gentle verbal orientation: 'You are safe. You are in [location]. I am [name]. Can you feel your feet on the floor?' Wait for freeze to release \u2014 do not rush. Once client can respond, ask what movement or position triggered freeze. That movement accesses body-held trauma memory. DO NOT reattempt that movement without extensive preparation and protector permission. After freeze releases, use dorsal protocol: imagine movement to restore motor cortex, self-touch to restore sensation. If client reports trauma history and freeze related to trauma, confirm parts-driven freeze protecting Exile.",
+        "escalation_trigger": "If freeze does not release after several minutes, if client shows signs of respiratory distress during freeze, or if repeated freeze episodes occur during session, this requires immediate trauma-specialized referral. Cannot proceed with standard PT protocols. Movement that triggers freeze is absolutely contraindicated until underlying trauma Exile is properly witnessed, retrieved, and unburdened through trauma-informed IFS protocol with therapist trained in trauma work. This is beyond scope of movement-based intervention until trauma is addressed."
+      },
+      {
+        "observation": "Client uses deflecting humor, changes subject, or becomes 'foggy' and confused when therapist approaches emotionally charged topics or painful body areas during assessment",
+        "if_check": "Client shows pattern of deflection using humor or subject changes specifically when painful material is approached. OR shows confusion, foggy quality, disorganized thinking that feels defensive rather than cognitive. Stone 7 reveals perception not feeling when asked about pain.",
+        "probable_part": "Humor/Deflection Firefighter using distraction to avoid painful or shameful topics, OR 'Foggy' Firefighter using confusion as FEAR-driven defense against painful clarity",
+        "confirmation_markers": "Deflection pattern is consistent and timing-specific (occurs when approaching certain topics or body regions). Client may show skill in redirecting conversation. If 'Foggy' type, client reports 'I don't know' frequently or cannot track which parts are present despite being able to think clearly about other topics. If FEAR of shame exposure is driving humor, client may show anxiety beneath the laughter. If FEAR of overwhelm is driving fog, client may shift between clarity and confusion as Exile material approaches.",
+        "then_routing": "Gently notice pattern without shaming: 'I notice when we get close to [topic], a part of you uses humor/changes subject/gets confused. Can we talk to that part?' Ask: 'What is this part protecting you from by deflecting/creating fog?' Do not insist on staying with painful topic without addressing protector's fear. If Foggy type with Red state markers (flat voice, disconnection), use grounding and co-regulation to reduce numbing before attempting clarity. Use CI Stone 7 to distinguish feeling from perception if relevant. Once part grants permission and reveals what it's protecting (usually shame or overwhelming Exile emotion), can proceed with contained exploration.",
+        "escalation_trigger": "If deflection or fog intensifies when therapist persists with painful topic, or if client suddenly shifts from humor/fog into rage, crying, or complete shutdown, recognize protector's boundary was crossed. Stop immediately. This indicates underlying Exile or trauma material that protector is actively defending against. Cannot bypass protector to force access to painful material \u2014 this triggers backlash. Return to befriending the deflecting/foggy part and addressing its fears before attempting to access what it protects."
+      },
+      {
+        "observation": "Client reports chronic pain pattern that does not respond to structural interventions, fluctuates with emotional states or relational dynamics rather than physical activity, or intensifies specifically during therapy discussions of vulnerability, performance, or situations that could trigger underlying wounds",
+        "if_check": "Pain does not follow expected biomechanical patterns. Intensity correlates with emotional states, self-criticism, relationship stress, or protector activation rather than tissue loading. Client uses parts language about pain ('it won't let me,' 'it's protecting me'). Body scanning reveals distinct part associated with pain location.",
+        "probable_part": "Pain is somatic communication from a part: Manager using pain as bracing strategy to control behavior, Firefighter using pain as numbing mechanism, or Exile expressing emotional pain through physical sensation",
+        "confirmation_markers": "Pain flares during therapy when protectors are activated. Pain intensity changes with parts work (may increase when protector is challenged, or decrease when part feels heard). Pain has symbolic meaning related to client's history (shoulder 'carrying burden,' throat 'can't speak truth,' low back 'unsupported'). If Manager-driven, pain maintains control and prevents vulnerability. If Firefighter-driven, pain distracts from emotional pain. If Exile-driven, pain is direct somatic expression of trauma burden.",
+        "then_routing": "Treat pain as 'body-based trailhead.' Use body scanning: 'Notice the pain. If it had a shape, color, or age, what would it be?' Ask: 'What is this part protecting you from by creating pain?' or 'What is this part trying to tell you through the pain?' Do NOT attempt to eliminate pain directly \u2014 this bypasses part's protective function and risks backlash. Befriend part's communication through pain. Gain trust and permission. If Manager is using pain as control, address fear of vulnerability. If Firefighter is using pain as distraction, address unbearable Exile emotion beneath. If Exile is expressing through pain, witness the trauma story the pain is holding.",
+        "escalation_trigger": "If pain suddenly intensifies or shifts location during parts work, this may indicate either Exile flooding (pain as somatic flashback) or protector backlash (pain as punishment for approaching forbidden territory). Stop progression. Ask: 'What just happened? What part is creating this pain right now and what does it need?' If pain becomes unbearable or client dissociates, recognize system overwhelm. Use CARE co-regulation and help parts step back. Pain as somatic communication requires full IFS protocol \u2014 cannot be 'fixed' with biomechanical interventions until underlying part's burden is unburdened."
+      },
+      {
+        "observation": "Client demonstrates hyperresponsibility for family member's well-being with anxiety about caretaker figure, chronic tension from self-sacrifice, guilt when prioritizing own needs in therapy, and reports 'I've always been responsible for them' suggesting generational pattern",
+        "if_check": "Client cannot focus on own pain or needs because attention is on caretaker's welfare. Shows anxiety when caretaker's well-being is threatened. Reports feeling responsible for caretaker's emotional state or survival. Pattern traces to childhood ('I had to take care of mom/dad'). This is legacy burden (inherited responsibility) not personal burden.",
+        "probable_part": "Parentified Manager carrying legacy burden of guilt and hyperresponsibility for caretaker figure, using self-sacrifice to prevent feared bad outcome for caretaker. This part will block all other Exile work until its own burden is addressed.",
+        "confirmation_markers": "Chronic tension from hypervigilance about caretaker. Inability to rest or attend to own needs. Extreme guilt when prioritizing self. FEAR system markers (anxiety, sympathetic activation) when caretaker is mentioned or when client attempts to release responsibility. Client reports family expectations or cultural patterns of self-sacrifice. If asked 'What would happen if you stopped taking care of them?' client expresses terror of caretaker's collapse or catastrophic outcome.",
+        "then_routing": "Recognize this part will interfere with unburdening other Exiles until addressed. Use CI Stones 10-11 if appropriate to access compassion for child who had to sacrifice. Ask: 'What would happen if you stopped taking care of [caretaker figure]?' to reveal feared outcome. This is LEGACY BURDEN requiring specific protocol: may need to include caretaker's 'higher Self' in work to return responsibility to its proper place, or connect with ancestors to return burden to family line. Use CARE system engagement to demonstrate client's own needs can be met. Cannot develop Self-Care Capacity until legacy burden is released.",
+        "escalation_trigger": "If client shows intense panic, collapse, or reports suicidal ideation when exploring releasing responsibility for caretaker, recognize the legacy burden is extremely deep and may be intergenerational trauma. This may require specialized legacy burden work beyond standard IFS protocol. If client cannot tolerate even discussing releasing responsibility, this part must be worked with very slowly with extensive protector negotiation. Forcing release of parentified role without proper unburdening can trigger severe backlash including breakdown of client's identity or family system crisis."
+      },
+      {
+        "observation": "Client appears to be in Self during session (8 Cs observable, says compassionate things to parts) but other parts do not respond, remain guarded, or show no healing progress despite 'Self's' presence. Client may insist 'I am [client name]' when questioned.",
+        "if_check": "Other parts in the system are unmoved by the 'compassion' being offered. Parts do not soften, trust, or begin to heal. 'Self' has subtle controlling or condescending quality beneath compassionate words. Client cannot acknowledge this might be a part standing in for Self.",
+        "probable_part": "Self-like part \u2014 a Manager mimicking Self qualities to maintain control, standing in for true Self because it fears what would happen if true Self led (system collapse, vulnerability, overwhelm)",
+        "confirmation_markers": "Says 'right' Self-like things but without genuine resonance. Other parts express distrust or say 'that's not really you.' Subtle tension remains despite apparent Self-presence. Controlled Amber state with appearance of regulation but lacks authentic ventral qualities (no spontaneous breath shifts, performed prosody). If challenged, part may become defensive or insist it IS the Self. If FEAR is driving mimicry, part fears loss of control or system falling apart.",
+        "then_routing": "Gently recognize this is not true Self: 'I notice the other parts aren't responding to this compassion. Can we check if this is really the Self or if a part is standing in?' Ask Self-like part: 'What are you afraid would happen if you stepped aside and let the true Self lead?' Common fears: 'system will fall apart,' 'Exiles will overwhelm us,' 'no one will protect vulnerable parts.' Address these fears with reassurance about Self's capacity. Once Self-like part feels safe enough to step back, true Self emerges \u2014 other parts will immediately respond with softening, trust, healing. The difference is palpable.",
+        "escalation_trigger": "If Self-like part refuses to acknowledge it is a part and becomes increasingly defensive or controlling when questioned, or if attempting to access true Self triggers other protectors to activate in alarm, recognize the system has strong investment in keeping Self-like part in charge. This suggests either profound distrust of Self or history where Self was not present/protective during trauma. Cannot force Self-like part to step aside. May require extensive protector work to build trust that true Self can lead safely before Self-like part will relinquish control."
+      }
+    ],
+    "Phase5_self_vs_manager_diff": [
+      {
+        "presentation": "Client appears calm and grounded, with steady speech and relaxed posture. Reports feeling 'okay' about approaching difficult material. Body language suggests ventral vagal state.",
+        "self_indicators": "Spontaneous breath with natural rhythm; genuine prosody in voice; open, receptive body language without bracing; can maintain calm even when discussing activating topics; other parts in system visibly soften in this presence; physiological markers of ventral vagal activation (warm hands, digestive sounds, color in face)",
+        "manager_indicators": "Breath is controlled or held rather than spontaneous; voice has rehearsed or performed quality; subtle tension remains in jaw, shoulders, or hands despite 'calm' appearance; calm breaks suddenly when unexpected material arises; other parts remain guarded or don't trust this 'calm'; client reports feeling 'fine' but body shows defensive readiness",
+        "differentiation_test": "Ask: 'If we went toward [specific vulnerable part or memory] right now, what happens in your body?' Genuine Self maintains grounded presence with perhaps slight activation but no bracing. Manager-performed calm shows sudden tension spike, breath holding, or micro-expressions of fear/control. Alternative test: Notice if other parts respond to this presence with softening (Self) or remain vigilant (Manager mimicking calm to maintain control).",
+        "why_it_matters": "If Manager's suppression is mistaken for Self-calm and therapist proceeds to Exile work, the Manager's composure will break when Exile pain emerges, triggering either Exile flooding (client overwhelmed, loses adult perspective) or Firefighter backlash (dissociation, rage, shutdown). This confirms protectors' fears that no one can handle the pain.",
+        "clinical_response": "IF confirmed Self: Proceed with accessing vulnerable material with appropriate pacing. IF confirmed Manager: Do not proceed to Exile territory. Ask Manager directly: 'What are you afraid would happen if you weren't maintaining this calm right now?' Befriend the Manager's protective strategy. Only proceed once genuine Self-energy emerges and Manager grants permission."
+      },
+      {
+        "presentation": "Client expresses interest in exploring a part's history, asks thoughtful questions about the part's role, uses language like 'I'm curious why it does that.'",
+        "self_indicators": "Questions are open-ended and non-judgmental; tone conveys genuine not-knowing and willingness to discover; can tolerate not having answers; curiosity remains even when part's protective strategy seems 'irrational'; facial expression shows interest rather than analysis; body remains open and receptive",
+        "manager_indicators": "Questions are leading or analytical ('Is this part trying to make me fail?'); tone is investigative/diagnostic rather than wondering; needs to understand intellectually before proceeding; curiosity disappears if part's answer challenges client's preferred narrative; facial expression shows concentration/problem-solving rather than openness; asking questions from head not heart",
+        "differentiation_test": "Give the part's answer to client's question and notice the response. Genuine Self receives the answer with continued openness, perhaps asking 'Tell me more.' Intellectualizer Manager immediately analyzes the answer, offers interpretations, or shifts to 'why' questions that seek causation rather than understanding. Alternative: Ask 'How do you feel toward this part right now?' \u2014 if curiosity is genuine Self, other C-qualities (compassion, calm) are also accessible.",
+        "why_it_matters": "If Intellectualizer's analysis is mistaken for Self-curiosity, the work remains in the head rather than creating relationship with the part. The part won't reveal vulnerable material to an analyzing presence, protectors won't grant permission because they sense the lack of genuine care, and Exile healing cannot occur because witnessing requires felt compassion not intellectual understanding.",
+        "clinical_response": "IF confirmed Self: Continue with 6 Fs, deepening relationship with part through genuine wondering. IF confirmed Manager: Use Stone 7 distinction \u2014 'That's an interpretation/analysis. What do you actually FEEL toward this part?' Help client differentiate between intellectual curiosity (Manager defending against emotion) and embodied curiosity (Self's genuine openness). Ask Intellectualizer what it fears about feeling rather than thinking."
+      },
+      {
+        "presentation": "Client speaks warmly to a part, uses nurturing language, says things like 'I see how hard this has been for you' with what sounds like genuine care.",
+        "self_indicators": "Voice tone has organic warmth that matches words; other parts in system respond by softening, opening, or showing emotion; client's body language is congruent with compassionate words (open posture, soft face); compassion extends even to parts client finds most difficult; can hold compassion even when part's pain is intense; physiological markers of CARE system activation (gentle movements, hovering quality)",
+        "manager_indicators": "Words are compassionate but voice tone is flat, mechanical, or has subtle condescending edge; other parts remain unmoved or actively distrust the 'compassion'; body language contradicts words (closed posture, tension while speaking kindly); compassion is conditional ('I care about you IF you change'); compassion disappears when part's pain becomes too intense; performing compassion to 'do it right' rather than genuine feeling",
+        "differentiation_test": "Notice how other parts respond to the compassionate words. Genuine Self's compassion creates visible shifts \u2014 Exiles begin to open, Protectors soften, healing movement starts. Caretaker Manager's performed compassion leaves parts unchanged or more defended. Alternative: Ask the compassionate part 'What do you want for this [target part]?' \u2014 Self wants the part's healing and freedom; Caretaker Manager wants the part to stop being a problem.",
+        "why_it_matters": "If Caretaker Manager's performance is mistaken for Self-compassion and therapist facilitates witnessing or reparenting, the Exile senses the inauthenticity and either won't share its story or will flood trying to prove its pain is real. The false compassion re-traumatizes by replicating experiences of conditional care. Other protectors escalate because their fears about fake caring are confirmed.",
+        "clinical_response": "IF confirmed Self: Proceed with witnessing, reparenting, and deeper Exile work as the authentic compassion creates the healing field. IF confirmed Manager: Stop. Name the observation gently: 'I notice the other parts aren't responding to this compassion. Can we check if a part is standing in for the Self here?' Ask what this Caretaker part fears about the true Self relating to the vulnerable part. Work with the Caretaker until it can step aside and genuine Self-compassion emerges."
+      },
+      {
+        "presentation": "Client states 'I can handle this' or 'I'm ready to go there' when therapist asks about approaching difficult material. Posture appears steady and grounded.",
+        "self_indicators": "Statement comes with relaxed body \u2014 no bracing, jaw unclenched, shoulders down; breath remains deep and regular when saying 'I can handle this'; voice is steady without forced quality; other parts feel reassured by this confidence; can acknowledge uncertainty while maintaining groundedness ('I don't know what will come up, but I trust I can be with it'); physiological state shows ventral vagal capacity",
+        "manager_indicators": "Statement accompanied by visible bracing \u2014 shoulders rise, jaw clenches, hands grip; breath becomes shallow or held; voice has forced/pressured quality; other parts express doubt or fear despite the confident words ('That's what it always says before we get overwhelmed'); confidence is rigid rather than flexible; cannot acknowledge any uncertainty; proving competence rather than embodying it",
+        "differentiation_test": "Say 'Let's pause and check with all parts. Are there any parts that have concerns about going toward this right now?' Genuine Self-confidence coexists with parts having concerns and can hold both. Achiever/Perfectionist Manager's performed confidence cannot tolerate parts expressing doubt without defensive reaction ('See, we're fine, let's just do this'). Watch for micro-expressions of fear beneath confident facade.",
+        "why_it_matters": "If Achiever/Perfectionist's performance is mistaken for Self-confidence and therapist proceeds with deep work, the Manager's facade breaks when intensity exceeds its capacity. This triggers either Exile flooding (overwhelming pain because Self wasn't actually present to contain it) or Firefighter emergency response (dissociation, rage) to manage the overwhelm. Protectors' fears about the system's fragility are confirmed.",
+        "clinical_response": "IF confirmed Self: Proceed with challenging work while maintaining attunement to system capacity. IF confirmed Manager: Do not proceed. Say 'I notice a part that feels confident, but I'm also sensing some tension/concern. Can we check with the part that's working to project confidence?' Ask what it fears would happen if it acknowledged uncertainty or limitation. Build genuine Self-confidence through smaller successful interactions before attempting deep work."
+      },
+      {
+        "presentation": "Client provides clear description of parts' dynamics, uses precise language, maps relationships between parts coherently. Appears to have clarity about the internal system.",
+        "self_indicators": "Clarity is accompanied by curiosity and compassion for parts; can track parts without getting lost in their stories; uses unblended language naturally ('a part of me feels X while another part wants Y'); can observe parts' conflicts without taking sides; clarity serves relationship-building with parts; can shift fluidly between observing system and being present with individual parts",
+        "manager_indicators": "Clarity is intellectual map without emotional connection; describes parts as objects to manage rather than beings to relate with; gets stuck in analysis of parts' dynamics rather than being with parts; uses clarity as distance ('understanding' parts but not feeling them); clarity serves control rather than relationship; cannot shift from observing to being present \u2014 stays in analytical stance",
+        "differentiation_test": "After client describes parts' dynamics clearly, ask 'How do you feel toward the part we've been discussing?' Genuine Self's clarity accompanies compassion and other C-qualities. Rationalizer Manager's clarity is unaccompanied by feeling \u2014 may answer 'I understand its function' rather than expressing actual feeling. Alternative: Notice if client's clarity helps parts feel seen (Self) or makes parts feel like case studies (Manager).",
+        "why_it_matters": "If Rationalizer's intellectual mapping is mistaken for Self-clarity, the work remains conceptual rather than relational. Parts don't heal through being understood theoretically \u2014 they heal through being felt and witnessed. The clear understanding without genuine presence means protectors won't grant permission, Exiles won't share their stories, and the intellectual clarity becomes a sophisticated defense against actual healing.",
+        "clinical_response": "IF confirmed Self: Use the clarity to navigate complex system dynamics while maintaining relational presence with parts. IF confirmed Manager: Use Stone 7 distinction: 'That's a clear map of the parts. What do you FEEL toward them?' Help client distinguish between intellectual clarity (Rationalizer's defense) and relational clarity (Self's understanding while being present). Ask what Rationalizer fears about feeling rather than mapping."
+      },
+      {
+        "presentation": "Client says 'I'm open to whatever comes up' or agrees readily to therapist suggestions. Appears receptive and willing.",
+        "self_indicators": "Openness is grounded rather than compliant; can set boundaries while remaining open ('I'm willing to explore this, but I need to go slowly'); other parts feel safe in this openness; receptivity includes receptivity to own needs and limits; no anxiety accompanies the openness; can say 'no' or 'not yet' without losing connection; body language shows genuine receptivity not accommodation",
+        "manager_indicators": "Agreement is automatic rather than considered; cannot express disagreement or preferences without anxiety; openness disappears if therapist seems disappointed; receptivity is hypervigilant scanning of what therapist wants; anxiety or tension accompanies the 'yes'; cannot set boundaries or say 'no' without fear of rejection; body language shows fawn response \u2014 accommodating posture with collapsed boundaries",
+        "differentiation_test": "Intentionally suggest something slightly off or not quite right for the moment and notice response. Genuine Self's openness includes discernment \u2014 can disagree or redirect while remaining connected ('I appreciate that suggestion, but I'm noticing I need something different right now'). People-pleaser Manager cannot disagree \u2014 either forces compliance despite internal resistance or shows visible tension while agreeing. Alternative: Ask 'What do your parts think about this direction?' \u2014 Self can access parts' genuine responses; Pleaser reports what it thinks therapist wants to hear.",
+        "why_it_matters": "If People-pleaser's compliance is mistaken for Self-openness and therapist interprets 'yes' as genuine permission, the work violates actual internal consent. The client does what therapist suggests despite parts' terror or resistance, triggering backlash (post-session flares, missed appointments, symptom escalation) as protectors punish the system for betrayal. The false permission confirms protectors' beliefs about external authorities being unsafe.",
+        "clinical_response": "IF confirmed Self: Proceed with collaborative exploration, trusting client's genuine openness and capacity to redirect if needed. IF confirmed Manager: Do not accept agreement as genuine. Say 'I notice you said yes, but I want to make sure all your parts agree. Let's check \u2014 are there any parts that have concerns or would prefer something different?' Explicitly invite disagreement. Model that authentic 'no' strengthens rather than threatens relationship. Work with People-pleaser's fear of rejection before proceeding."
+      },
+      {
+        "presentation": "Client states 'It doesn't really bother me anymore' or 'I've made peace with that' when discussing painful history. Appears emotionally neutral about trauma or loss.",
+        "self_indicators": "Equanimity is warm rather than flat; can access emotion if invited but isn't overwhelmed by it; other parts feel genuinely at peace with the memory; body is relaxed without numbing \u2014 present and alive rather than shut down; can tell the story with both clarity and feeling; peace coexists with appropriate sadness or anger about what happened; physiological markers of integration present",
+        "manager_indicators": "Equanimity is flat affect; cannot access emotion even when invited \u2014 reports numbness or distance; other parts express that pain is still there but being suppressed; body shows dorsal shutdown markers (disconnection, low energy, absence of sensation); tells story in detached third-person or intellectualized manner; 'peace' is actually resignation or dissociation; no appropriate feeling about objectively painful events",
+        "differentiation_test": "Gently invite emotion: 'If you let yourself feel the sadness/anger about what happened, what shows up?' Genuine Self's peace can access feeling without being destabilized \u2014 may tear up while remaining grounded. Numbing Manager cannot access feeling or accesses it with immediate overwhelm/shutdown. Alternative: Ask 'How do the parts that lived through that event feel about it now?' \u2014 if they're at peace, it's likely Self; if they're still in pain but being overridden, it's Manager suppression.",
+        "why_it_matters": "If numbing Manager's dissociation is mistaken for Self-acceptance and therapist assumes healing is complete, underlying Exile pain remains unaddressed. The numbness prevents genuine processing. When life stress reactivates the Exile, the system has no resources because the pain was never actually metabolized \u2014 only suppressed. This leads to sudden decompensation that appears to come from nowhere.",
+        "clinical_response": "IF confirmed Self: Trust the integration and move forward with other work as needed. IF confirmed Manager: Gently challenge the 'peace': 'I notice when we talk about this, your voice goes flat and you seem far away. Can we check if a part is helping you not feel this right now?' Recognize numbing/dissociation as Firefighter protection. Don't force feeling, but explore what the numbing part fears about letting the pain be felt. Build capacity for Self to witness before attempting to access the suppressed Exile pain."
+      },
+      {
+        "presentation": "Client expresses enthusiasm about beginning deep trauma work, says 'Yes, let's do this' when therapist mentions accessing painful material. Appears eager and ready.",
+        "self_indicators": "Readiness is accompanied by groundedness; can articulate what makes them ready now versus before; protectors have been consulted and granted permission; other parts feel safe proceeding; readiness includes awareness that it may be difficult but confidence in capacity; no pressured quality to the eagerness; can identify resources and support for integration; physiological state shows ventral vagal capacity",
+        "manager_indicators": "Readiness is pressured or manic quality; cannot articulate why now versus before; other parts express fear or doubt despite the 'ready' statement; eagerness is about pleasing therapist or 'getting it over with' rather than genuine capacity; rushed quality \u2014 trying to push through before losing momentum; cannot identify integration resources; 'ready' part is trying to prove something or live up to expectation; physiological state shows sympathetic activation not ventral safety",
+        "differentiation_test": "Say 'I appreciate your readiness, and I want to make sure we're not moving too fast. Let's check with all parts \u2014 are there any parts that have concerns or would prefer we prepare more first?' Genuine Self's readiness can hold parts' concerns alongside the readiness. Manager saying 'yes' to please clinician gets defensive or dismissive when parts' concerns are raised ('No, we're fine, let's just do this now'). Notice if 'ready' client becomes suddenly unavailable or cancels at the last minute before scheduled deep work session.",
+        "why_it_matters": "If Manager's premature 'yes' is mistaken for Self-readiness and deep work proceeds without genuine protector permission, the system isn't actually prepared for what emerges. This leads to Exile flooding (client overwhelmed, dissociates, or becomes suicidal as pain exceeds capacity), traumatic reenactment (therapist unwittingly replicates boundary violation by pushing forward despite internal resistance), or severe backlash (protectors shut down all therapy, client drops out). The rushed work confirms protectors' fears that therapist can't be trusted with their timing.",
+        "clinical_response": "IF confirmed Self: Proceed with deep work while maintaining attunement to system capacity throughout the process. IF confirmed Manager: Do not proceed with deep work. Say 'I'm noticing eagerness to move forward, and I also sense some parts may need more time. Let's slow down and make sure everyone is on board.' Work with the part that's pushing for rapid progress \u2014 what does it fear about going slowly? Ensure all protectors have been consulted and have genuine permission before approaching Exiles."
+      },
+      {
+        "presentation": "Client describes feeling sad or angry about a past event, tears up while sharing, appears to be emotionally processing the memory.",
+        "self_indicators": "Emotion is present AND client can witness it; tears come with continued adult perspective ('I feel so sad for that little girl'); can describe what the emotion is about; feeling moves through rather than getting stuck; other parts of the story can be accessed alongside the emotion; body remains relatively grounded while feeling; can modulate intensity \u2014 neither suppressed nor flooded; Self can provide comfort to the part feeling the emotion",
+        "manager_indicators": "Emotion is described but not felt \u2014 narrative about emotion without connection to it; tears may come but feel performed or 'should'; cannot say what emotion is about beyond surface description; emotion is stuck on repeat without movement; only emotional part of story accessible \u2014 cannot access context or other parts' perspectives; body becomes rigid or collapses while emoting; cannot modulate \u2014 either suppressed or overwhelming; narrating emotion for therapist's benefit rather than being with the part",
+        "differentiation_test": "Ask 'As you feel this sadness/anger, can you sense the part that's feeling it? What does that part need from you right now?' Genuine Self is in relationship with the feeling part \u2014 can witness, provide comfort, ask what it needs. Manager narrating emotion cannot access the part \u2014 reports 'I don't know what it needs' or gives intellectual answer. Alternative: Notice if processing moves the work forward (Self witnessing creates healing) or stays stuck in emotional expression without resolution (Manager performing emotion).",
+        "why_it_matters": "If Manager's narration is mistaken for Self's witnessing, the emotional expression doesn't create healing because Self isn't actually present to the part. The client is either intellectually describing emotion they think they should feel, or is blended with the Exile (reliving not witnessing). Either way, the part isn't being seen by Self. This creates cycles of emotional venting without integration, confirms protectors' beliefs that 'talking about it doesn't help,' and may retraumatize through uncontained emotional flooding.",
+        "clinical_response": "IF confirmed Self: Continue with witnessing protocol, supporting Self's relationship with the feeling part through reparenting and eventual unburdening. IF confirmed Manager: Stop the emotional narration. Ask 'Can you step back from the emotion enough to see the part that's feeling it?' Help client unblend. If blended with Exile, ask Exile to contain feelings so Self can witness. If intellectualizing emotion, use Stone 7: 'You're describing emotion. Can you actually FEEL it in your body right now?' Build capacity for Self to be present WITH parts' emotions rather than narrating about them."
+      },
+      {
+        "presentation": "Client reports being able to sense body sensations, describes where they feel things physically, appears connected to somatic experience during session.",
+        "self_indicators": "Body awareness is curious exploration; can locate sensations without interpretation; descriptions are specific and concrete ('tight band across my chest'); awareness serves relationship with parts not diagnosis; can stay with sensation without needing to fix or change it; reports authentic experience not expected response; shifts in sensation are noticed organically; body awareness includes both pleasant and difficult sensations",
+        "manager_indicators": "Body reports are what client thinks therapist wants to hear ('I feel it in my core' when therapist mentioned core); descriptions are vague or change to match therapist's suggestions; awareness is filtered through diagnosis ('my SI joint is inflamed'); reports sensations that 'should' be there rather than what is; cannot stay with sensation without immediate fixing/interpreting; only reports sensations that fit therapeutic narrative; body awareness is intellectual exercise not embodied connection",
+        "differentiation_test": "Intentionally give a slightly incorrect reflection: 'So you're feeling tightness in your upper back?' when client said lower back. Genuine Self-led body awareness corrects while staying connected: 'Actually it's more in my lower back, right here.' Manager reporting what it thinks clinician wants either agrees with the incorrect reflection or shows confusion/doubt about own experience. Alternative: Ask 'What does that sensation want you to know?' \u2014 Self can access parts' communication through sensation; Manager doesn't have access to meaning, only location.",
+        "why_it_matters": "If Manager's reporting is mistaken for Self's interoception, the body-based work is built on false data. The client is providing expected responses rather than authentic experience. This means body-based interventions target what the Manager thinks should be addressed rather than what actually needs attention. Parts using somatic communication aren't being heard. The disconnect between intellectual body reports and actual somatic experience prevents genuine somatic integration and confirms parts' beliefs that their physical signals don't matter.",
+        "clinical_response": "IF confirmed Self: Trust the body awareness and use it to deepen connection with parts, tracking somatic shifts as indicators of parts' responses. IF confirmed Manager: Gently challenge the reporting: 'I notice your description changed when I asked about it. What are you actually sensing right now versus what you think you should sense?' Use Stone 7 distinction to separate interpretation from direct experience. Help client differentiate between intellectually locating sensation (Manager's map) and actually feeling it (Self's embodied presence). Build genuine interoception before using body-based protocols."
+      }
+    ],
+    "Phase5_protector_permission": [
+      {
+        "protector_state": "Protector cooperating \u2014 cautiously allowing access to Exile material",
+        "clinician_action": "Acknowledge the protector's cooperation explicitly: 'I appreciate that you're allowing us to approach this. I want you to know we'll go slowly, and you can stop us anytime.' Use pacing that matches the protector's caution \u2014 no rushing. Maintain running consent checks: 'Is it still okay to continue?' Keep Self-energy present (8 Cs) to reassure the protector that the system is in capable hands. Use language that honors the protector's ongoing role: 'You're still here, still protecting, and that's important.'",
+        "expected_response_if_working": "Protector maintains permission without escalating defensive strategies. Exile can share story without flooding the system. Client demonstrates unblending \u2014 can witness Exile's pain from Self without being overwhelmed. Physiological markers of regulation remain present (spontaneous breath, grounded posture). Protector may provide guidance about pacing ('That's enough for today' or 'We can go a little further').",
+        "expected_response_if_not_working": "Protector withdraws permission \u2014 client reports sudden anxiety, tension spike, or 'something doesn't feel right.' New concerned parts emerge with objections. Exile begins to flood (overwhelming emotion, loss of adult perspective, childlike voice). Client becomes blended with Exile or a blocking protector. Physiological dysregulation appears (breath holding, bracing, dissociation). Protector's caution shifts to active blocking.",
+        "fallback_action": "Stop Exile access immediately. Return to protector negotiation: 'I notice something changed. What does this part need right now?' Ask if protector's fears were confirmed or if new concerns emerged. Repair any rupture: 'I moved too fast. Let's slow down and make sure everyone feels safe.' Re-establish protector permission before any further Exile work. May need to work with the protector for several sessions before it trusts enough to allow deeper access.",
+        "never_do": "Never proceed to deeper Exile territory when cautious cooperation shifts to hesitation. Never dismiss the protector's pacing guidance as 'resistance.' Never interpret the protector's caution as pathology. Never promise the protector that nothing bad will happen \u2014 this is false reassurance the protector won't believe. Never bypass the protector to 'get to the real work' with the Exile."
+      },
+      {
+        "protector_state": "Protector resistant \u2014 politely blocking, saying 'not yet' or 'I don't think we should go there'",
+        "clinician_action": "Honor the boundary immediately: 'I hear you. We won't go there.' Do not try to persuade or argue. Instead, become curious about the resistance: 'Can you help me understand what you're concerned about?' Use the 6 Fs to befriend the protector's protective function. Ask about its fears: 'What are you afraid would happen if we did go there?' Validate every concern without dismissing: 'That makes complete sense. Given what happened, of course you'd want to prevent that.' Explore what the protector needs in order to feel safe: 'What would need to be in place for you to consider allowing access?'",
+        "expected_response_if_working": "Protector begins to articulate its specific fears rather than just blocking. Trust builds between Self and protector as concerns are validated. Protector may share its history or protective strategy: 'I've been preventing this since [event] because [consequence].' Client can access curiosity and compassion toward the resistant protector (Feel Towards test passes). Protector may shift from absolute 'no' to conditional 'maybe if X is in place.'",
+        "expected_response_if_not_working": "Protector becomes more defensive or shuts down conversation entirely. Resistance intensifies rather than softening. New protectors emerge to reinforce the block. Client becomes blended with the resistant protector and cannot access Self-energy. Protector gives vague or intellectual answers rather than revealing fears. Client reports feeling 'stuck' or 'like hitting a wall.' Session ends without any forward movement.",
+        "fallback_action": "If protector won't articulate fears, ask if it would allow you to speak to it directly using Direct Access: 'Would it be okay if I speak to this part directly about the client?' If yes, address protector about client in third person: 'What are you most afraid would happen to [client name] if we went toward that Exile?' If protector still won't engage, recognize this may be a protector alliance (multiple protectors coordinated in blocking). Ask: 'Are there other parts who have concerns about this work?' Convene a parts meeting to address all protectors' fears collectively. Build trust through smaller, less threatening parts work before returning to this Exile.",
+        "never_do": "Never try to convince the protector that its fears are unfounded. Never suggest the protector is 'overreacting' or 'being irrational.' Never proceed to Exile work despite the polite blocking \u2014 this violates consent and triggers backlash. Never interpret resistance as the client being 'not ready' for therapy \u2014 the resistance is the protector doing its job. Never abandon the session in frustration \u2014 staying present despite the block builds trust."
+      },
+      {
+        "protector_state": "Protector actively blocking \u2014 intensifying strategies like dissociation, distraction, or somatic symptoms to prevent Exile access",
+        "clinician_action": "Stop all movement toward Exile immediately. Do not fight the blocking strategy or try to overcome it. Acknowledge the protector's escalation: 'I notice a part is working very hard right now to prevent us from going forward. I respect that.' Use Direct Access if client is blended: 'Can I speak to the part that's creating [dissociation/pain/distraction] right now?' If granted permission, address the protector directly: 'I understand you're trying to protect [client]. What are you most afraid will happen if we go toward that pain?' Validate the protector's power and effectiveness: 'You're clearly very skilled at this job. You've kept [client] safe for a long time.'",
+        "expected_response_if_working": "Blocking strategy reduces in intensity as protector feels heard and understood. Protector articulates its specific protective function and what it's preventing. Client can begin to unblend from the protector and access some Self-energy. Protector shifts from active attack (blocking at all costs) to defensive watchfulness (monitoring but not escalating). Somatic symptoms (if present) decrease when protector feels respected. Protector may reveal the specific trauma or pain it's guarding against.",
+        "expected_response_if_not_working": "Blocking intensifies despite acknowledgment. New blocking strategies emerge (if dissociation didn't work, now somatic pain spikes). Client becomes more blended with protector or shifts to a different protector (Firefighter rage or shutdown may replace Manager blocking). Protector gives no response or minimal response to Direct Access. Session deteriorates toward crisis (client reports feeling overwhelmed, unsafe, or wants to leave). Post-session backlash is likely (symptom flare, missed next appointment).",
+        "fallback_action": "If blocking continues to intensify, recognize this as a protector alliance or that the system does not yet trust the therapeutic relationship. End pursuit of this Exile entirely for now. Say: 'I hear your parts loud and clear. We're not going there. Your protectors' message is being received.' Shift focus to building relationship with the blocking protector itself as the 'target part' for several sessions. Ask: 'Can we get to know the part that's blocking? Not to get past it, but to understand it better.' Use CI Stone 12 to reframe: 'Your system is doing an incredible job keeping you safe. That protection matters.' Build protector trust before any future Exile access attempts.",
+        "never_do": "Never push harder when blocking intensifies \u2014 this confirms the protector's belief that no one respects its boundaries. Never label the blocking as 'sabotage' or 'not wanting to get better.' Never attempt to 'trick' the protector by approaching the Exile from a different angle. Never use hypnosis or other techniques to bypass the conscious protector's block. Never continue the session past the point where the blocking has created crisis-level escalation."
+      },
+      {
+        "protector_state": "Protector polarized with another part \u2014 two protectors fighting, blocking from both sides, creating internal gridlock",
+        "clinician_action": "Recognize this as a protector-protector conflict, not client ambivalence. Do not take sides with either part. Name the polarization explicitly: 'I notice two parts here with very different strategies, and they seem to be in conflict about how to protect you.' Convene a 'parts meeting' with Self as mediator: 'Can the Self invite both parts to be present so we can hear from each?' Use the 6 Fs with both parts to understand each one's protective intent and fears. Help them see they share the same goal (protecting the system/Exile) but disagree on method. Ask each part what it fears about the other part's strategy.",
+        "expected_response_if_working": "Both parts can articulate their protective strategies without attacking each other when Self is mediating. Each part acknowledges the other's positive intent even if it disagrees with the method. Polarization intensity decreases as both parts feel heard. Parts shift from fighting each other to recognizing shared protective purpose. Client can hold both parts with curiosity and compassion simultaneously. Parts may negotiate a truce: 'I'll step back if this other part agrees to X.'",
+        "expected_response_if_not_working": "Polarization intensifies during the meeting \u2014 parts attack each other more forcefully. Client becomes blended with one part against the other (Self is no longer mediating). New parts join the conflict, escalating the internal war. One or both parts refuse to participate in the meeting or shut down. Client reports feeling 'torn apart' or 'more confused than before.' Behavioral manifestation of polarization worsens (e.g., binge-restrict cycle intensifies, procrastination vs. over-work swings become more extreme).",
+        "fallback_action": "If parts meeting escalates conflict, end the meeting and work with each part individually in separate sessions. Ask the part that is most defensive: 'What do you need in order to feel safe enough to hear from the other part?' Build relationship and trust with each protector separately before attempting joint mediation. Identify if one part is a Manager and the other is a Firefighter (common in Manager-Firefighter polarizations like Inner Critic vs. Rebel) \u2014 if so, recognize the Firefighter is reacting to the Manager's harsh methods. The work focuses on softening the Manager's strategy, which reduces the Firefighter's need to react. Polarization often requires accessing the Exile both parts protect before it can fully resolve.",
+        "never_do": "Never take sides with one part against the other ('The responsible part is right'). Never suggest one part should win the conflict. Never interpret the polarization as 'mixed feelings' \u2014 these are distinct parts with distinct fears. Never proceed to Exile work while protectors are actively fighting \u2014 this leaves the Exile unprotected and vulnerable. Never rush the mediation process by pushing for resolution before both parts have been fully heard and validated."
+      },
+      {
+        "protector_state": "Protector flooded \u2014 the protector itself is overwhelmed, showing signs of distress or dysregulation",
+        "clinician_action": "Recognize this is not the Exile flooding but the protector in crisis. Do not push for protector permission or proceed with any agenda. Provide Self-to-part compassion for the protector itself: 'I see how overwhelmed this part is. This is really hard.' Use Direct Access to speak to the flooded protector if client is blended: 'Can I talk to the part that's so overwhelmed right now?' Offer the protector what it needs: acknowledgment of how hard it's been working, validation of the burden it carries, appreciation for its efforts. Ask: 'What does this part need right now to feel less overwhelmed?' Provide CARE system co-regulation through consistent, calm, grounded presence.",
+        "expected_response_if_working": "Protector begins to regulate as it feels seen and cared for. Client can unblend from the flooded protector enough to access some Self-energy. Protector articulates the burden it's been carrying ('I've been holding this for so long, and I'm so tired'). Protector may reveal it has been working without support or relief. Protector softens into vulnerability, allowing Self to provide what it needs. Physiological regulation returns (breath deepens, tension reduces, grounding increases).",
+        "expected_response_if_not_working": "Protector remains overwhelmed despite compassion. Flooding intensifies or client shuts down entirely (shift from overwhelmed protector to Firefighter shutdown). New protectors emerge to contain the flooded protector. Client cannot access Self-energy to provide care for the flooded part. Session feels chaotic or stuck in crisis. Protector's flooding triggers Exile flooding, creating system-wide overwhelm.",
+        "fallback_action": "If protector remains flooded, recognize it may be carrying a burden that needs unburdening before it can function effectively. The flooded protector may need its own healing sequence: witnessing the burden it carries ('I have to be perfect or everything falls apart'), validation that the burden is not its true nature, and potential unburdening of extreme beliefs. Alternatively, the protector may be flooded because it's trying to do too much alone \u2014 explore if other protectors can share the protective duties. If flooding doesn't reduce, this protector may need multiple sessions of care before any Exile work can proceed. Use CI Stone 12 to honor its efforts: 'You've been carrying so much for so long. Let's help you find a less exhausting way to protect.'",
+        "never_do": "Never dismiss the flooded protector as 'dramatic' or 'overreacting.' Never push the flooded protector to 'pull itself together' so you can get to the Exile. Never interpret the protector's flooding as manipulation or resistance. Never proceed with Exile work while a protector is flooded \u2014 the system is already overwhelmed. Never suggest the protector should 'let go' of its job \u2014 it's flooded because it's trying desperately to do its job, not because it should abandon it."
+      },
+      {
+        "protector_state": "Protector threatening \u2014 producing somatic threat signals: pain spike, rage outbreak, or physiological shutdown warnings",
+        "clinician_action": "Treat the threat signal as critical communication, not as attack or sabotage. Stop all forward movement immediately. Acknowledge the protector's power and seriousness: 'I hear you loud and clear. You're showing me this is absolutely not safe to proceed.' Do not interpret the threat as pathology. Use Direct Access to address the protector: 'Can I speak to the part that's creating [pain/rage/shutdown] right now?' If granted, say: 'I understand you're using [symptom] to stop us. That's working \u2014 we're stopping. What do you need me to understand about why this is so dangerous?' Validate the protector's assessment of threat: 'You clearly know something I don't about what would happen if we continued. Can you help me understand?'",
+        "expected_response_if_working": "Threat signal reduces immediately when movement stops and protector feels heard. Protector articulates what specific danger it's preventing: 'If you go there, [client] will want to die' or 'That memory will break [client]' or 'The Exile will flood the system and we'll never come back.' Client can begin to unblend from the threatening protector. Protector shifts from threatening to explaining its protective function. Trust begins to build between Self and protector as boundaries are respected.",
+        "expected_response_if_not_working": "Threat signal intensifies even after stopping (pain becomes unbearable, rage escalates toward violence, shutdown deepens toward complete dissociation). New threat signals emerge (if pain didn't work, now rage appears). Protector gives no explanation or remains silent despite Direct Access attempts. Client becomes fully blended with the threatening part and cannot access Self. Session approaches crisis territory with safety concerns (suicidal ideation, self-harm urges, uncontrollable rage, complete catatonic shutdown).",
+        "fallback_action": "If threat signals intensify despite stopping and acknowledgment, recognize this protector does not trust the therapeutic relationship at all. The threat is a boundary enforcement, and the boundary has been violated repeatedly (possibly in past therapy or by current pacing that was too fast). End this session and potentially the current phase of therapy. Say: 'Your protectors are making it very clear this work is not safe right now, and I respect that. We need to build more trust before we can go anywhere near this material.' Shift entire focus to protector relationship-building with no Exile access for extended period (weeks or months). Work only with protectors on surface-level issues to demonstrate that boundaries will be honored. Consider whether client needs different therapeutic approach or therapist. If threatening escalates to safety crisis, implement crisis protocol: assess for imminent danger, create safety plan, involve support system as appropriate, refer to crisis services if necessary.",
+        "never_do": "Never proceed despite threat signals hoping they will subside. Never interpret somatic threats as 'just anxiety' or 'the body releasing trauma.' Never suggest the protector is 'overreacting' to the therapeutic work. Never use the threat as evidence that 'we must be getting close to important material' and push harder. Never ignore escalating threat signals until client is in medical or psychiatric crisis. Never continue session when protector is threatening system shutdown, rage violence, or suicidal action."
+      },
+      {
+        "protector_state": "Protector requesting acknowledgment \u2014 needs to be seen, appreciated, or validated before it will step back",
+        "clinician_action": "Provide the acknowledgment explicitly and genuinely. Do not rush past this need to 'get to the real work.' Say: 'I see how hard you've been working to keep [client] safe. You've been doing this job for [length of time], and that takes incredible strength.' Ask the protector to share its story: 'Can you tell me about how you came to have this job? What was happening when you first stepped into this role?' Use the 6 Fs to befriend: find the part, focus on it, flesh out its history, feel toward it with curiosity and compassion, let it know you appreciate its efforts (beFriend), then learn what it fears. Validate every aspect of its protective function: 'Given what you were facing, this strategy makes complete sense. You did what you had to do.'",
+        "expected_response_if_working": "Protector shares its history and burden in detail. Protector expresses feeling truly seen and understood for the first time. Client can access genuine appreciation for the protector's efforts (compassion in Feel Towards test). Protector softens and may express exhaustion: 'I've been carrying this so long. I'm tired.' Protector becomes willing to consider stepping back once it feels acknowledged: 'If you really understand what I've been doing, maybe I could let you help with this differently.' Physiological markers of regulation appear (sigh, tears of relief, softening of defensive posture).",
+        "expected_response_if_not_working": "Protector does not share its story or shares minimally without depth. Protector continues to block despite acknowledgment ('That's nice, but we still can't go there'). Client cannot access appreciation \u2014 feels judgment or impatience toward the protector instead. Protector tests the acknowledgment by escalating to see if clinician will stay appreciative under pressure. New protectors emerge to verify whether the acknowledgment is genuine. Protector remains defensive and mistrustful.",
+        "fallback_action": "If protector doesn't respond to acknowledgment, the appreciation may not feel genuine or specific enough. Ask the protector directly: 'What does this part need to hear that it's not hearing yet?' or 'What does this part need me to understand about its job that I haven't understood?' Slow down and spend multiple sessions with this protector, allowing it to share every detail of its protective history. Use CI Stone 11: ask the protector who it would want to acknowledge its efforts \u2014 sometimes a protector needs acknowledgment from a specific person (e.g., a parent who never saw the child's struggle) and Self needs to provide that in reparenting role. If protector remains unmoved by multiple sessions of acknowledgment, it may be a Self-like part or have concerns about what acknowledgment means for its continued role ('If you appreciate me, does that mean I'm not needed anymore?'). Clarify that acknowledgment doesn't mean elimination \u2014 its role matters and will transform, not disappear.",
+        "never_do": "Never provide perfunctory or rushed acknowledgment ('Yeah, you did a great job, now can we move on?'). Never acknowledge the protector while subtly conveying it's a problem ('I appreciate your protection, BUT...'). Never skip acknowledgment to 'save time' and get to Exile work. Never suggest the protector's strategy was wrong or maladaptive even while appreciating its intent. Never promise the protector it can retire or won't be needed \u2014 this terrifies parts whose identity is built on their protective role."
+      },
+      {
+        "protector_state": "Protector testing the clinician \u2014 checking whether it's safe to allow access through provocative behavior or sudden emotional shifts",
+        "clinician_action": "Recognize the testing behavior as protective assessment, not manipulation. Pass the test by remaining non-reactive, grounded in Self, and continuing to provide the 8 Cs regardless of the protector's provocations. If protector becomes hostile or attacking, do not become defensive or withdraw: 'I notice a part is seeing what I'll do under pressure. That makes sense \u2014 you need to know if I can handle what you're protecting.' If protector shifts suddenly between cooperation and resistance, stay steady: 'I see you checking to see if I'll stay present even when this is confusing or difficult. I'm still here.' Name the testing directly if appropriate: 'It seems like a part is testing whether this relationship is safe. What does this part need to see in order to trust?'",
+        "expected_response_if_working": "Testing behavior decreases as protector observes clinician's consistent, non-reactive presence. Protector may acknowledge the testing: 'I needed to see if you'd stay calm' or 'I wanted to see if you'd get frustrated like everyone else.' Trust begins to build between protector and clinician. Protector shifts from testing to revealing: starts sharing actual fears and concerns rather than provocations. Client can access appreciation for the protector's caution and thoroughness. Protector moves toward granting permission once it determines the relationship is safe.",
+        "expected_response_if_not_working": "Testing intensifies rather than decreasing \u2014 provocations become more extreme. Clinician fails test by becoming defensive, frustrated, or withdrawing presence. New protectors join the testing to verify clinician's response. Client reports feeling 'like too much' or 'like the therapist doesn't really want to work with me.' Protector concludes relationship is unsafe based on test results and shuts down access entirely. Session deteriorates or client terminates therapy.",
+        "fallback_action": "If testing continues to intensify despite passing multiple tests, the protector may have experienced such profound betrayal that no amount of testing will provide reassurance \u2014 trust was too deeply broken. Acknowledge this directly: 'I understand a part has very good reasons not to trust, based on past experiences. I'm not asking for trust right now. I'm just asking if this part is willing to watch and see what I do over time.' Shift from trying to earn trust to simply demonstrating trustworthiness consistently over extended period with no expectation of permission. Focus on protector relationship-building with no Exile agenda. The testing may continue for months \u2014 if so, the protector's caution is exactly the protection the system needs, and honoring that timeline builds the deepest trust. Alternatively, ask if the protector has specific criteria for what would constitute 'safe': 'What would this part need to see from me over time to consider allowing access?' Create explicit behavioral contract if that helps protector feel more secure.",
+        "never_do": "Never interpret testing as 'borderline behavior' or 'manipulation.' Never retaliate for provocations by withdrawing care or setting punitive boundaries. Never rush the testing period or express frustration that 'we're not making progress.' Never fail tests by becoming defensive, angry, or giving up. Never promise you'll never make mistakes \u2014 this is false and the protector knows it. Never take testing personally \u2014 it's not about you, it's about the protector's history and its job to keep the system safe."
+      }
+    ],
+    "Phase5_blending_intervention": [
+      {
+        "blending_severity": "Level 1",
+        "autonomic_state": "Green",
+        "affective_driver": "SEEKING",
+        "unblending_technique": "Noticing/naming: 'I notice a part of you that is very focused on achieving this goal. Can we pause and get curious about what this part is working toward?'",
+        "expected_response": "Client can observe the goal-directed drive with curiosity. Uses parts language naturally ('a part of me really wants to get this done'). Maintains grounded presence while discussing the part's agenda. Social engagement system remains online.",
+        "time_to_assess": "1-2 minutes",
+        "contraindicated": "Do not attempt to suppress or redirect the SEEKING drive without understanding its protective function\u2014this risks frustration triggering RAGE or the part feeling unheard, which blocks Self-access."
+      },
+      {
+        "blending_severity": "Level 1",
+        "autonomic_state": "Green",
+        "affective_driver": "CARE",
+        "unblending_technique": "Appreciation with boundary: 'I see how much this part cares about [others/the work]. That care is valuable. Can we also check in with what you (Self) need right now?'",
+        "expected_response": "Client can observe the caretaking impulse with compassion toward the part. Can acknowledge own needs without guilt. Maintains warm, connected presence while exploring the part's protective motivation.",
+        "time_to_assess": "1-2 minutes",
+        "contraindicated": "Do not suggest the CARE-driven part is 'wrong' to care\u2014this activates shame. Do not bypass the part to force self-focus, which confirms its fear that no one will care for others if it steps back."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Green",
+        "affective_driver": "PLAY",
+        "unblending_technique": "Gentle curiosity about shift: 'I notice the playful energy just shifted. What happened for you? Can we be curious about the part that just stepped in?'",
+        "expected_response": "Client can identify when PLAY energy disappeared and a part took over. Can describe what the part is concerned about. Some Self-energy returns with prompting, allowing exploration of the blocking part.",
+        "time_to_assess": "2-3 minutes",
+        "contraindicated": "Do not try to force return to playfulness\u2014PLAY cannot be commanded. Do not interpret loss of PLAY as client 'not trying'\u2014it indicates a protector activated due to perceived threat."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Amber",
+        "affective_driver": "FEAR",
+        "unblending_technique": "Space creation with explicit safety: 'I notice a part that's worried about [this movement/topic]. Can we slow down and give that part some space? What does it need to feel safer?'",
+        "expected_response": "Client can name the anxious part with some distance ('a part of me is really scared about this'). FEAR markers reduce slightly (less freezing, breath deepens). Can articulate what the part fears with Self's curiosity present.",
+        "time_to_assess": "3-5 minutes",
+        "contraindicated": "Do not challenge the FEAR directly or try to prove it's unfounded\u2014this amplifies threat perception. Do not proceed with the feared activity before the part grants permission, risking backlash."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Amber",
+        "affective_driver": "RAGE",
+        "unblending_technique": "Invitation not command, with respect for power: 'I understand a part is really frustrated right now. Would you be willing to help me understand what's making this part angry?'",
+        "expected_response": "RAGE indicators reduce (body tension decreases, hissing/growling quality softens). Client can begin to observe the angry part rather than being it. Can articulate what constraint or powerlessness is triggering the RAGE.",
+        "time_to_assess": "3-5 minutes",
+        "contraindicated": "Do not command or try to control the RAGE part\u2014this amplifies anger by replicating the constraint it's fighting. Do not dismiss the anger as 'overreaction'\u2014RAGE is always protecting against something."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Amber",
+        "affective_driver": "mixed",
+        "unblending_technique": "Noticing polarization: 'I notice two parts seem to be in conflict\u2014one wants [X] and another wants [Y]. Can the Self be curious about both parts' concerns?'",
+        "expected_response": "Client can identify the conflicting parts with some clarity. Can hold curiosity toward both without taking sides. Self-energy emerges enough to mediate between the polarized protectors.",
+        "time_to_assess": "3-5 minutes",
+        "contraindicated": "Do not take sides with one part against the other\u2014this reinforces the internal war. Do not proceed to Exile work while protectors are fighting\u2014leaves system unprotected."
+      },
+      {
+        "blending_severity": "Level 3",
+        "autonomic_state": "Amber",
+        "affective_driver": "FEAR",
+        "unblending_technique": "Direct grounding with neuroception shift: Stop intervention. 'Let's pause. Can you feel your feet on the floor? Tell me three things you see in this room. Does this feel safe, or does it feel like a negotiation?'",
+        "expected_response": "Client can orient to present environment with prompting. Breath begins to deepen. FEAR markers reduce slightly (less freezing/darting eyes). Some minimal Self-presence emerges allowing client to name the scared part.",
+        "time_to_assess": "5-7 minutes",
+        "contraindicated": "Do not proceed with the activity that triggered FEAR escalation. Do not use cognitive reframing ('there's nothing to be afraid of')\u2014client is in sympathetic state where logic is offline."
+      },
+      {
+        "blending_severity": "Level 3",
+        "autonomic_state": "Amber",
+        "affective_driver": "RAGE",
+        "unblending_technique": "STOP protocol with direct address: Stop all intervention. 'I understand a very powerful part is here right now protecting you. I respect that. Can I speak to this part about what it needs [client name] to be safe?'",
+        "expected_response": "Explosive quality reduces when boundary is respected. Part may articulate what it's protecting against (powerlessness, violation). Client can access minimal Self-energy to hear the part's protective function.",
+        "time_to_assess": "5-10 minutes, may require ending session",
+        "contraindicated": "Do not engage the rage or try to suppress it\u2014this replicates powerlessness. Do not continue session if RAGE escalates toward violence. Do not interpret RAGE as pathology\u2014it's boundary enforcement."
+      },
+      {
+        "blending_severity": "Level 3",
+        "autonomic_state": "Red",
+        "affective_driver": "PANIC_GRIEF",
+        "unblending_technique": "Compassionate witnessing only, with CARE co-regulation: Stop all protocol work. Provide consistent regulated presence as secure neurochemical base. 'I'm here with you. This pain matters. You're not alone.'",
+        "expected_response": "Intensity of separation distress may remain high, but client can sense clinician's presence as anchor. Slight return of connection to self/other/world. May express feeling 'held' even while in pain.",
+        "time_to_assess": "10-15 minutes, may require multiple sessions",
+        "contraindicated": "Do not attempt to stop the crying or 'cheer up' the client\u2014PANIC/GRIEF needs to be witnessed, not fixed. Do not proceed with Exile unburdening work\u2014client is already flooded and cannot witness from Self."
+      },
+      {
+        "blending_severity": "Level 3",
+        "autonomic_state": "Red",
+        "affective_driver": "FEAR",
+        "unblending_technique": "Dorsal protocol with safety anchoring: 'You are safe. I'm [name]. You're in [location]. Can you imagine moving your hand? Now can you move it gently? Can you touch your arm and feel that?'",
+        "expected_response": "Motor cortex activation begins (can imagine then perform small movements). Some sensation returns to numb/foggy state. Flat voice may show slight modulation. Minimal mobilizing energy restores.",
+        "time_to_assess": "10-15 minutes",
+        "contraindicated": "Do not proceed with structural assessment or Exile work when in dorsal collapse. Do not force movement or engagement\u2014client is in shutdown. Do not leave client alone if freeze is profound."
+      },
+      {
+        "blending_severity": "Level 4",
+        "autonomic_state": "Amber",
+        "affective_driver": "RAGE",
+        "unblending_technique": "Emergency de-escalation, session pause: 'I'm stopping everything right now. Your safety and mine matter. We need to pause and figure out what's needed. Can we talk about what just happened once things are calmer?'",
+        "expected_response": "IF working: Explosive energy discharges safely through clinician's grounded non-reactive presence. RAGE part hears that boundary is respected. Client can access minimal awareness that 'a part took over.' IF not working: Escalation continues, client is consumed by RAGE, may be unsafe to continue session.",
+        "time_to_assess": "Immediate safety assessment required; may need to end session",
+        "contraindicated": "Do not attempt any unblending technique while RAGE is at crisis level\u2014safety is the only priority. Do not physically restrain unless imminent danger. Do not re-engage in session until explicit safety plan established."
+      },
+      {
+        "blending_severity": "Level 4",
+        "autonomic_state": "Red",
+        "affective_driver": "PANIC_GRIEF",
+        "unblending_technique": "Compassionate listening only, safety net: 'I see how much pain you're in. I'm not leaving. When you're ready, we'll figure this out together. Right now, you're not alone.' Assess for crisis (suicidal ideation). Create safety plan if needed.",
+        "expected_response": "IF working: Client can sense clinician's presence as lifeline even while flooded. Separation distress remains intense but client is not alone in it. No Self-access yet\u2014goal is prevent further decompensation. IF not working: Client cannot sense presence, reports feeling 'no one can help,' may express suicidal ideation.",
+        "time_to_assess": "Immediate crisis assessment; remainder of session is compassionate presence only",
+        "contraindicated": "Do not proceed with any IFS protocol\u2014client is fully flooded. Do not leave client alone if suicidal ideation present. Do not attempt to access Exiles or do unburdening work. Do not dismiss intensity as 'dramatic'\u2014PANIC/GRIEF flooding is genuine crisis."
+      },
+      {
+        "blending_severity": "Level 4",
+        "autonomic_state": "Red",
+        "affective_driver": "FEAR",
+        "unblending_technique": "Trauma-informed freeze response: Do not touch client. Do not move them. Gentle verbal orientation: 'You are safe. This is [year]. You are in [location]. I am [name], and I'm not going to hurt you. When you're ready, see if you can feel your feet.'",
+        "expected_response": "IF working: Freeze response begins to release (may take several minutes). Client shows slight return of voluntary movement. Can begin to respond verbally. Extreme terror reduces to manageable fear. IF not working: Freeze persists or client shifts to panic/rage when freeze releases. Client cannot respond or orient.",
+        "time_to_assess": "Wait for freeze to release naturally\u2014do not rush; may take 5-15 minutes",
+        "contraindicated": "Do not proceed with any intervention while client is frozen\u2014this is involuntary immobilization. Do not touch client without explicit permission after freeze releases. Do not reattempt the movement/position that triggered freeze. Do not continue session if freeze does not release\u2014refer for trauma-specialized care."
+      },
+      {
+        "blending_severity": "Level 4",
+        "autonomic_state": "Red",
+        "affective_driver": "mixed",
+        "unblending_technique": "Session termination with safety protocol: 'We need to stop here today. Something very protective just happened, and we need to honor that. Before you leave, let's make sure you have support. Who can you contact? What will help you feel safe tonight?'",
+        "expected_response": "Client can engage minimally in safety planning even if still blended. Can identify at least one support person or resource. Protectors may communicate that boundary was crossed and session needed to end.",
+        "time_to_assess": "Remaining session time focused on safety planning only",
+        "contraindicated": "Do not attempt to 'finish the work' or push through to resolution. Do not minimize the severity of the flooding. Do not send client home without safety plan if suicidal ideation or severe dysregulation present. Do not schedule next session without processing what led to Level 4 flooding and establishing prevention strategy."
+      },
+      {
+        "blending_severity": "Level 1",
+        "autonomic_state": "Green",
+        "affective_driver": "PLAY",
+        "unblending_technique": "Noticing shift with lightness: 'I notice the playful energy just changed. What's happening? Can we be curious about what shifted?'",
+        "expected_response": "Client can observe when PLAY disappeared and identify the part that stepped in. Maintains connection and curiosity. Can explore the protective concern without losing access to Self.",
+        "time_to_assess": "1-2 minutes",
+        "contraindicated": "Do not force return to PLAY\u2014it requires safety and cannot be commanded. Do not interpret loss of PLAY as lack of effort."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Green",
+        "affective_driver": "SEEKING",
+        "unblending_technique": "Redirecting with appreciation: 'I see how motivated this part is. That drive is valuable. Can we pause and ask what this part is seeking\u2014what reward is it anticipating?'",
+        "expected_response": "Client can articulate the goal the part is pursuing. Can observe the driven quality with curiosity. SEEKING energy moderates as Self becomes present alongside the part's agenda.",
+        "time_to_assess": "2-3 minutes",
+        "contraindicated": "Do not block the SEEKING drive entirely\u2014this risks frustration \u2192 RAGE escalation. Do not pathologize goal-directed energy as 'obsessive' without understanding protective function."
+      },
+      {
+        "blending_severity": "Level 3",
+        "autonomic_state": "Amber",
+        "affective_driver": "mixed",
+        "unblending_technique": "Breath-based regulation with explicit safety: Stop activity. 'Let's pause and breathe together. Three breaths where the exhale is longer than the inhale. I'm here. You're safe. Tell your nervous system it's okay to release this tension.'",
+        "expected_response": "Breath pattern shifts from shallow/held to deeper. Some tension releases from shoulders/jaw. Client can begin to name which parts are active with prompting. Slight return of Self-presence.",
+        "time_to_assess": "5-7 minutes",
+        "contraindicated": "Do not continue the intervention that triggered escalation. Do not use breath work if client is in dorsal collapse\u2014breath techniques require sympathetic energy."
+      },
+      {
+        "blending_severity": "Level 2",
+        "autonomic_state": "Red",
+        "affective_driver": "PANIC_GRIEF",
+        "unblending_technique": "CARE co-regulation with naming: 'I see how much pain this part is in. I'm here with you. You're not alone. Can we see if the part that's feeling this separation pain can sense that I'm here?'",
+        "expected_response": "Client can acknowledge clinician's presence as secure base even while in pain. PANIC/GRIEF intensity may remain but client feels 'held.' Can begin to differentiate 'I' (Self) from 'the part that's grieving.'",
+        "time_to_assess": "5-10 minutes",
+        "contraindicated": "Do not attempt to stop the grief or 'fix' the pain. Do not proceed with cognitive work\u2014client needs CARE system engagement, not analysis."
+      },
+      {
+        "blending_severity": "Level 1",
+        "autonomic_state": "Amber",
+        "affective_driver": "FEAR",
+        "unblending_technique": "Curiosity invitation with safety anchoring: 'I notice a part is a little anxious about this. Can you get curious about what this part is concerned about? What would help it feel safer?'",
+        "expected_response": "Client can name the anxious part with curiosity. Can articulate the specific fear. FEAR markers are minimal and client maintains grounded presence while exploring the concern.",
+        "time_to_assess": "1-2 minutes",
+        "contraindicated": "Do not dismiss the FEAR as 'irrational'\u2014it's always based on protective logic. Do not proceed without addressing the part's safety concern."
+      },
+      {
+        "blending_severity": "Level 1",
+        "autonomic_state": "Amber",
+        "affective_driver": "RAGE",
+        "unblending_technique": "Appreciation of protector with invitation: 'I notice a part has some frustration here. That makes sense\u2014something feels constraining. Would you be willing to help me understand what this part needs more freedom around?'",
+        "expected_response": "Client can observe the frustration with Self-curiosity. Can articulate what feels constraining. RAGE is minimal and can be explored without escalation.",
+        "time_to_assess": "1-2 minutes",
+        "contraindicated": "Do not use commands ('you need to calm down')\u2014this amplifies RAGE. Do not ignore the frustration signal\u2014it indicates a boundary or autonomy concern."
+      }
+    ]
+  },
+  "rule_count": 37,
+  "phase5_count": 53
+}

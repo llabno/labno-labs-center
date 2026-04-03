@@ -1,0 +1,185 @@
+{
+  "module": "m19",
+  "phase6_rules": [
+    {
+      "rule_name": "Channel Seeking Drive",
+      "target_system": "SEEKING",
+      "if_condition": "IF goal-directed, motivated, exploratory behavior is detected",
+      "then_directive": "THEN prioritize Explore track to channel motivation towards goal-directed activities",
+      "override_level": "recommended",
+      "interacts_with_rule": "Rage Suppresses Seeking"
+    },
+    {
+      "rule_name": "De-escalate Rage",
+      "target_system": "RAGE",
+      "if_condition": "IF signs of frustration, anger, or active resistance are detected",
+      "then_directive": "THEN prioritize Settle track to de-escalate before engaging SEEKING activities",
+      "override_level": "recommended",
+      "interacts_with_rule": "Rage Suppresses Seeking"
+    },
+    {
+      "rule_name": "Settle Fear Before Play",
+      "target_system": "FEAR",
+      "if_condition": "IF signs of anxiety, avoidance, or threat-management are detected",
+      "then_directive": "THEN prioritize Settle track to build safety before attempting PLAY interventions",
+      "override_level": "recommended",
+      "interacts_with_rule": "Fear Inhibits Play"
+    },
+    {
+      "rule_name": "Acknowledge Lust Drive",
+      "target_system": "LUST",
+      "if_condition": "IF behaviors related to sexual courting or arousal are detected",
+      "then_directive": "THEN prioritize Explore track, acknowledging the connection-seeking drive",
+      "override_level": "advisory",
+      "interacts_with_rule": "NONE"
+    },
+    {
+      "rule_name": "Leverage Nurturance to Soothe Grief",
+      "target_system": "CARE",
+      "if_condition": "IF nurturing, protective, or gentle behaviors are detected",
+      "then_directive": "THEN prioritize Build track and engage CARE system to inhibit PANIC/GRIEF",
+      "override_level": "recommended",
+      "interacts_with_rule": "Nurturance Soothes Grief"
+    },
+    {
+      "rule_name": "Soothe Grief Before Play",
+      "target_system": "PANIC/GRIEF",
+      "if_condition": "IF signs of distress related to social separation or loss are detected",
+      "then_directive": "THEN prioritize Settle track and use co-regulation (CARE) before attempting PLAY",
+      "override_level": "recommended",
+      "interacts_with_rule": "Grief Inhibits Play"
+    },
+    {
+      "rule_name": "Assess Resilience via Play",
+      "target_system": "PLAY",
+      "if_condition": "IF joyous, competitive, rough-and-tumble activity is detected",
+      "then_directive": "THEN prioritize Explore track and use playful state to assess resilience",
+      "override_level": "advisory",
+      "interacts_with_rule": "Stimulants Reduce Play"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_DecisionTree_decision_tr": [
+      {
+        "observation": "Energetic forward locomotion, vigorous exploration, excitement when anticipating rewards.",
+        "if_check": "Is the client showing goal-directed, motivated, exploratory behavior?",
+        "probable_system": "SEEKING",
+        "confirmation_test": "Behavior is goal-directed towards a reward, not aimless hyperactivity (mania) or ludic (PLAY).",
+        "then_routing": "Prioritize Explore track to channel motivation towards goal-directed activities.",
+        "escalation_trigger": "Overactivity leading to addictive behaviors, obsessive-compulsive disorders, or manic symptoms."
+      },
+      {
+        "observation": "High muscle tone, tensely arched body, hissing, growling, lashing out.",
+        "if_check": "Is the client showing signs of frustration, anger, or active resistance to perceived constraints?",
+        "probable_system": "RAGE",
+        "confirmation_test": "Behavior is active resistance directed at a threat, not avoidance/freezing (FEAR) or joyful wrestling (PLAY).",
+        "then_routing": "Prioritize Settle track to de-escalate and establish safety. Down-regulate RAGE before engaging SEEKING activities.",
+        "escalation_trigger": "Pathological rage or impulse-control disorders."
+      },
+      {
+        "observation": "Freezing, precipitous flight, jumpiness, excessive vigilance.",
+        "if_check": "Is the client showing signs of anxiety, avoidance, or threat-management?",
+        "probable_system": "FEAR",
+        "confirmation_test": "Behavior is a response to threat of pain/destruction, not social separation (PANIC/GRIEF).",
+        "then_routing": "Prioritize Settle track to reduce anxiety and build safety. Down-regulate FEAR before attempting PLAY interventions.",
+        "escalation_trigger": "Generalized anxiety, panic attacks, phobias, PTSD."
+      },
+      {
+        "observation": "Courting patterns, specific sexual postures (e.g., lordosis, mounting).",
+        "if_check": "Are the behaviors related to sexual courting or arousal?",
+        "probable_system": "LUST",
+        "confirmation_test": "Postures are specific to sexual receptivity, not general submission or structural issues.",
+        "then_routing": "Prioritize Explore track, acknowledging the connection-seeking drive.",
+        "escalation_trigger": "Hypersexuality or sexual disorders."
+      },
+      {
+        "observation": "Gentle caresses, hovering, tender ministrations, deliberate nurturant movements.",
+        "if_check": "Is the client exhibiting nurturing, protective, or gentle behaviors towards another?",
+        "probable_system": "CARE",
+        "confirmation_test": "Behaviors are focused on nurturance, not simple resting or fatigue.",
+        "then_routing": "Prioritize Build track, leveraging the co-regulatory state. Engage CARE system to inhibit PANIC/GRIEF.",
+        "escalation_trigger": "Postpartum depression and psychosis, sociopathy."
+      },
+      {
+        "observation": "Distress vocalizations, insistent crying, sorrowful and despairing bodily postures.",
+        "if_check": "Is the client showing signs of distress related to social separation or loss?",
+        "probable_system": "PANIC/GRIEF",
+        "confirmation_test": "Context is social separation, not physical threat (FEAR). Posture is despairing, not simple fatigue.",
+        "then_routing": "Prioritize Settle track to soothe distress. Use co-regulation (CARE) to inhibit separation distress before attempting PLAY.",
+        "escalation_trigger": "Panic attacks, depression, social phobias."
+      },
+      {
+        "observation": "Bouncy and bounding movement, chasing, pouncing, wrestling, laughter-like sounds.",
+        "if_check": "Is the client engaging in joyous, competitive, rough-and-tumble activities?",
+        "probable_system": "PLAY",
+        "confirmation_test": "Interaction is joyful and competitive, not aggressive (RAGE) or purely exploratory (SEEKING).",
+        "then_routing": "Prioritize Explore track; use playful state as an assessment of resilience. Note that psychostimulants reduce play.",
+        "escalation_trigger": "Overarousal leading to manic symptoms or attention deficit disorders."
+      }
+    ],
+    "Phase5_DecisionTree_differentia": [
+      {
+        "looks_like": "Tense, aroused state with vocalizations.",
+        "could_be_A": "RAGE: active resistance, hissing, growling, lashing out.",
+        "could_be_B": "FEAR: avoidance, freezing, precipitous flight, vigilance.",
+        "how_to_tell": "Assess if the behavior is active resistance (RAGE) or avoidance/threat-management (FEAR)."
+      },
+      {
+        "looks_like": "Client is in distress.",
+        "could_be_A": "PANIC/GRIEF: sorrowful postures, crying, distress vocalizations.",
+        "could_be_B": "FEAR: freezing or flight.",
+        "how_to_tell": "Assess the context: PANIC/GRIEF is a response to social separation, while FEAR is a response to threat of pain or destruction."
+      },
+      {
+        "looks_like": "Physical interaction like wrestling or pouncing.",
+        "could_be_A": "PLAY: bouncy, bounding movement, chasing, wrestling, laughter-like sounds.",
+        "could_be_B": "RAGE: tensely arched body, hissing, growling, lashing out.",
+        "how_to_tell": "PLAY is characterized by joyful social exchange and lightness of movement; RAGE is characterized by tense, aggressive defense."
+      },
+      {
+        "looks_like": "Energetic, non-stationary behavior.",
+        "could_be_A": "SEEKING: energetic forward locomotion, vigorous exploration.",
+        "could_be_B": "PLAY: bouncy and bounding lightness of movement, chasing.",
+        "how_to_tell": "SEEKING is goal-directed exploration for resources; PLAY is joyous, competitive social interaction."
+      },
+      {
+        "looks_like": "Client is motionless and quiet.",
+        "could_be_A": "FEAR: freezing response.",
+        "could_be_B": "Attentive stillness.",
+        "how_to_tell": "The FEAR freezing response is accompanied by other signs of anxiety like jumpiness and vigilance."
+      },
+      {
+        "looks_like": "Collapsed or flexed posture.",
+        "could_be_A": "PANIC/GRIEF: sorrowful and despairing bodily postures.",
+        "could_be_B": "Fatigue or chronic postural problem.",
+        "how_to_tell": "PANIC/GRIEF posture is linked to social separation distress and may be accompanied by crying or distress vocalizations."
+      },
+      {
+        "looks_like": "Energetic, excited, exploratory behavior.",
+        "could_be_A": "SEEKING: intensely interested in exploring their world.",
+        "could_be_B": "Mania or attention deficit disorder.",
+        "how_to_tell": "SEEKING is characterized by goal-directed, appetitive motivation and anticipation of reward."
+      },
+      {
+        "looks_like": "Attack behavior",
+        "could_be_A": "RAGE: Offensive or defensive aggression related to competition or threat.",
+        "could_be_B": "LUST: Aggression as part of a mating sequence.",
+        "how_to_tell": "Assess context and nature of attack. RAGE is often rule-based attacks on robust body parts. LUST may involve a behavioral shift from investigation/mounting to attack."
+      },
+      {
+        "looks_like": "Interaction with young",
+        "could_be_A": "CARE: Nurturing behaviors like pup retrieval, grooming, and nest building.",
+        "could_be_B": "RAGE: Infanticide or attack on pups.",
+        "how_to_tell": "Assess reproductive status and experience. Lactating females and experienced fathers typically show CARE. Virgin males may show aggression/infanticide."
+      },
+      {
+        "looks_like": "Social withdrawal",
+        "could_be_A": "FEAR: Avoidance of specific, feared social stimuli.",
+        "could_be_B": "DEPRESSION: Generalized social withdrawal accompanied by 'sickness behaviors' like fatigue and irritability.",
+        "how_to_tell": "Assess for specificity of avoidance. FEAR is linked to specific triggers, while depression-related withdrawal is more generalized and accompanied by pervasive negative affect."
+      }
+    ]
+  },
+  "rule_count": 7,
+  "phase5_count": 17
+}

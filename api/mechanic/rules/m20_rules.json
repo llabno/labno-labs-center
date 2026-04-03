@@ -1,0 +1,566 @@
+{
+  "module": "m20",
+  "phase6_rules": [
+    {
+      "rule_name": "beige_survival_state_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client is non-responsive, withdrawn, operates on pure instinct/reflexive responses, communicates through physiological cues only (startling, withdrawing, relaxing), AND cannot engage in therapeutic relationship",
+      "then_directive": "THEN recognize Beige/A-N survival state. Autonomic regulation is the ONLY intervention per M9 Dorsal Assessment Invalidity. No SD-informed communication adaptation possible \u2014 clinician is perceived as environmental element providing comfort or threat. Focus solely on providing safety, warmth, basic biological needs. Do NOT attempt any vMeme-specific framing.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal Assessment Invalidity (M9), ci_precaution_7_acute_distress_contraindication (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "purple_tribal_safety_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client references family/tribal beliefs about treatment, asks 'Is this treatment approved by [authority figure/tradition]?', draws strength from family support and community rituals, AND relaxes with familiar rituals but tenses with unfamiliar methods",
+      "then_directive": "THEN recognize Purple/B-O vMeme. Build relational trust first \u2014 clinician must become 'in-group' or work with family blessing. Assess whether family's opinion of clinician has been established. Watch for fear of unfamiliar out-group methods.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Social Engagement Assessment Gate (M9), ci_precaution_2_relational_container_required (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "purple_communication_adaptation",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Purple/B-O vMeme detected AND autonomic state is Green (ventral within in-group frame)",
+      "then_directive": "THEN deliver communication through relational, story-based language that respects tradition. Frame interventions through story: 'This is how we restore harmony to your body.' Include family/elders in treatment planning when possible. Avoid cold abstract logic. Homework must have family/tribe endorsement for compliance.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "red_power_assertion_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client challenges clinician immediately with confrontational body language, uses power-asserting language ('Don't tell me what to do', 'Just fix it'), frames recovery as battle/conquest, respects clinician's confidence but not credentials, AND admits shame but not guilt",
+      "then_directive": "THEN recognize Red/C-P vMeme. Assess autonomic state \u2014 typically Amber/Sympathetic with RAGE dominant. Use direct action-oriented language. Frame treatment as challenge to their strength. Never use shame. Do NOT mistake Red power assertion for simple non-compliance \u2014 this is vMeme-driven not personality deficit.",
+      "override_level": "recommended",
+      "interacts_with_rule": "RAGE Dominant Amber Routing (M9), Command vs Invitation Protocol (M9), Firefighter Detection Protocol (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "red_communication_adaptation",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Red/C-P vMeme detected AND autonomic state stable enough for communication",
+      "then_directive": "THEN use invitations not commands per M9 Command vs Invitation Protocol: 'Would you be willing to try this and see if you can master it?' Frame homework as conquest: 'Most people can't do this consistently \u2014 let's see what you can do.' Respect their power without enabling abuse. Frame recovery as heroic battle they can win.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Command vs Invitation Protocol (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "blue_protocol_seeking_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client arrives exactly on time, immediately asks 'What's the plan today?' or 'What should I do?', maintains rigid posture, seeks clear protocol, uses duty-based language ('I should...', 'The right way to...'), follows instructions to the letter, AND becomes anxious with ambiguity or too many choices",
+      "then_directive": "THEN recognize Blue/D-Q vMeme. Client needs authority-based framing. Assess autonomic state \u2014 typically rigid Green (safety through structure) or low Amber (mobilized by duty). Check for Manager part activation per M16 \u2014 Blue often presents through Manager.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16), Ventral State Detection (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "blue_communication_adaptation",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Blue/D-Q vMeme detected AND autonomic state is Green (ventral with social engagement through structure)",
+      "then_directive": "THEN frame all interventions with clear steps and rules: 'Here is your protocol: Step 1, we'll assess. Step 2, we'll work on tissue. Step 3, exercises.' Use authoritative tone. Homework must be written with exact sets, reps, and frequency. Appeal to duty and correctness. Project certainty \u2014 Blue clients become anxious if clinician seems uncertain.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "orange_evidence_seeking_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client asks 'What does the research say?' or 'What's the evidence for this?' before allowing intervention, maintains analytical posture, brings notes or research printouts, uses quantitative language ('percentage', 'progress', 'measurable'), AND compares clinician's approach to other providers",
+      "then_directive": "THEN recognize Orange/E-R vMeme. Client needs evidence-based framing. Assess autonomic state \u2014 typically Amber (sympathetic mobilized for achievement) often normalized as baseline. Check for normalized sympathetic activation per M9 Stop the Rep Rule. Orange clients may override distress signals to complete tasks.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Stop the Rep Rule (M9), Manager Detection Protocol (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "orange_communication_adaptation",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Orange/E-R vMeme detected AND autonomic state allows cognitive engagement",
+      "then_directive": "THEN frame all interventions with mechanism and evidence: 'This mobilization targets the sciatic nerve bed \u2014 research shows improvement over 6 weeks.' Provide measurable homework targets. Use data-driven language: 'Let's test this and see what data we get.' If Stop the Rep Rule triggers, reframe in Orange language: 'Your system just gave us data \u2014 pushing through reduces efficiency.'",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "green_relational_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client opens with relational statement before discussing symptoms, wants to discuss how pain affects relationships and emotional life, asks 'How do you feel about this plan?', seeks consensus, AND values being heard over being fixed",
+      "then_directive": "THEN recognize Green/F-S vMeme. Client needs collaborative relational framing. Assess autonomic state \u2014 typically Green/Ventral with social engagement fully online. Watch for consensus paralysis \u2014 Green may process extensively before acting.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9), Self-Energy Prerequisite Gate (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "green_communication_adaptation",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Green/F-S vMeme detected AND autonomic state is Green (ventral vagal with social engagement online)",
+      "then_directive": "THEN frame interventions collaboratively: 'What feels right to you about starting here?' Acknowledge emotional dimensions explicitly. Allow processing time but gently move toward action: 'I hear how much this is affecting you. And I'm wondering if you'd be willing to try this movement and see what we learn together.' Validate feelings but prevent consensus paralysis.",
+      "override_level": "recommended",
+      "interacts_with_rule": "ci_autonomic_green_full_protocol (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "yellow_systemic_thinking_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client integrates multiple perspectives on their condition, asks systemic questions like 'How does this connect to my stress and sleep?', demonstrates curiosity about function of pain, shows flexibility in communication style, AND treats clinician as peer resource",
+      "then_directive": "THEN recognize Yellow/G-T vMeme (Second Tier). Client can handle multi-framework explanations and tolerate uncertainty. Assess for genuine Yellow vs Orange analyzing \u2014 Yellow shows freedom from irrational fear and multi-source learning capacity. Treat as knowledgeable peer.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9), ci_parts_self_present (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "yellow_peer_communication",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Yellow/G-T vMeme confirmed AND autonomic state is highly integrated Green (flexible ventral)",
+      "then_directive": "THEN engage as peer. Offer systemic explanations. Do not oversimplify. Frame treatment as experiment: 'Let's try this and see what data we get for your system.' Respect their integration capacity: 'You see how this connects to your stress patterns \u2014 what's your sense of where to start?' Collaborate on treatment design.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "turquoise_holistic_detection",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client uses holistic/energetic language about healing, treats clinician as co-creator, views healing as part of interconnected web, demonstrates high body awareness without reactivity, AND can hold painful sensations in awareness without guarding",
+      "then_directive": "THEN assess for Turquoise/H-U vMeme. Differentiate from dorsal 'spacey' presentation by checking for social engagement markers (prosody, eye contact, warm face). If markers present despite spacey quality, client is in ventral not dorsal. Watch for spiritual bypassing shadow.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Ventral State Detection (M9), Self vs Manager Differentiation (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "turquoise_cocreator_communication",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF Turquoise/H-U vMeme confirmed AND genuine ventral state verified (not dorsal spaciness)",
+      "then_directive": "THEN treat as co-creator. Acknowledge holistic frame. Use abstract/holistic language acknowledging interconnectedness while returning to somatic reality: 'As we work with your tissue, what does your body's wisdom tell you about what it needs?' Do NOT pathologize cosmic perspective but ensure practical physical steps included. Use Stone 6 frequently to anchor holistic awareness in body.",
+      "override_level": "recommended",
+      "interacts_with_rule": "gut_level_client_support (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "blue_to_red_regression_detection",
+      "rule_category": "regression_detection",
+      "if_condition": "IF previously Blue/D-Q client drops rule-following, shifts to 'nothing works' frustration with aggressive tone, shows sympathetic activation intensifying with body tensely arched and jaw clenching",
+      "then_directive": "THEN recognize Blue\u2192Red regression under stress. Check M9 autonomic state \u2014 if sympathetic activation detected, pause M20 routing and return to M9 co-regulation. Use RAGE de-escalation per M9: invitations not commands, sigh of frustration, calm up from flood to flow. Do NOT attempt Blue authority framing while in Red regression.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "RAGE Dominant Amber Routing (M9), Descending Transition Arrest Amber-to-Red (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "orange_to_blue_regression_detection",
+      "rule_category": "regression_detection",
+      "if_condition": "IF previously Orange/E-R client drops analytical framing, shifts to 'just tell me what to do' seeking protocol, shows increased anxiety and rule-seeking when strategies fail",
+      "then_directive": "THEN recognize Orange\u2192Blue regression under stress. Temporarily shift from evidence framing to protocol framing: 'Here's what we're going to do step by step.' Provide structure until client stabilizes. Reassess vMeme when autonomic state returns to baseline.",
+      "override_level": "recommended",
+      "interacts_with_rule": "FEAR Dominant Amber Routing (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "green_to_orange_regression_detection",
+      "rule_category": "regression_detection",
+      "if_condition": "IF previously Green/F-S client drops relational processing, shifts to strategic problem-solving ('let me research this'), shows decreased need for consensus and increased goal-orientation under stress",
+      "then_directive": "THEN recognize Green\u2192Orange regression. Temporarily accommodate strategic framing while maintaining relational connection: 'I can give you the research AND I want to check in about how you're feeling about all this.' Do not force relational processing if client temporarily needs strategic distance.",
+      "override_level": "recommended",
+      "interacts_with_rule": "SEEKING Dominant Green Routing (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "purple_to_beige_regression_detection",
+      "rule_category": "regression_detection",
+      "if_condition": "IF client showing Purple/B-O markers suddenly becomes non-verbal, non-responsive, operates on reflexive survival responses only, shows complete system collapse",
+      "then_directive": "THEN recognize Purple\u2192Beige regression (complete system collapse). Immediately implement M9 dorsal protocol. No SD communication adaptation possible. Focus solely on basic biological safety. Monitor for ascending transition signs: imagined movement activating motor cortex, return of sensation, any shift toward verbal capacity.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal Assessment Invalidity (M9), Ascending Transition Support from Dorsal (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "pain_triggered_regression_universal",
+      "rule_category": "regression_detection",
+      "if_condition": "IF client encounters unexpected pain during session AND shows autonomic state change (breath holding, withdrawal, vocalization) AND previously stable vMeme presentation destabilizes",
+      "then_directive": "THEN recognize pain encounter as highest-risk moment for vMeme regression. Per M9 Stop the Rep Rule: STOP activity immediately. Match response to original vMeme before regression: Blue: 'This is a normal part of the protocol.' Orange: 'This is useful data.' Green: 'What do you need right now?' Red: 'Your system just told us where the edge is.' Purple: 'Your body is communicating with us.' Monitor for further descent.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Stop the Rep Rule (M9), Dissolution Sequence Recognition (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "six_conditions_potential_assessment",
+      "rule_category": "change_readiness",
+      "if_condition": "IF clinician is assessing client readiness for developmental shift in relationship to body/pain",
+      "then_directive": "THEN assess Condition 1 (Potential): Does client have neurological capacity to think differently about their condition? Check for Second-Tier markers: Vast Conceptual Space, Freedom from Irrational Fear, Multi-Source Learning. If all three markers absent, client cannot yet make Momentous Leap to systems thinking about their body.",
+      "override_level": "advisory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "six_conditions_solutions_assessment",
+      "rule_category": "change_readiness",
+      "if_condition": "IF client seems stuck at current vMeme despite adequate treatment",
+      "then_directive": "THEN assess Condition 2 (Solutions): Are current-level problems solved? A Blue client cannot shift to Orange until their need for structure and certainty is adequately met. A Green client cannot shift to Yellow until their need for relational harmony is adequately addressed. Do not push vMeme transition until current needs are met.",
+      "override_level": "advisory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "six_conditions_dissonance_recognition",
+      "rule_category": "change_readiness",
+      "if_condition": "IF client shows uncertainty, anxiety, or sense that current approach is failing ('I've tried everything' but still engaged, not collapsed)",
+      "then_directive": "THEN recognize potential Condition 3 (Dissonance): Client may be in Exit phase of current vMeme. This is productive dissonance if client maintains autonomic regulation. Provide appropriate next-level insight (Condition 4) matched to current vMeme. Do NOT push if dissonance appears overwhelming (check M9 state).",
+      "override_level": "advisory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "vmeme_life_condition_fit_assessment",
+      "rule_category": "fit_assessment",
+      "if_condition": "IF client shows persistent treatment resistance despite correct vMeme communication AND autonomic state is stable",
+      "then_directive": "THEN assess Fit/Congruency between client's vMeme and their Life Conditions. Orange client whose body demands rest but who pushes to 'power through' has Fit problem. Blue client in chaotic life situation may cling to protocol as stability anchor. Healthy Blue following structured protocol may be better served than struggling Orange fighting limitations. Address Fit before attempting vMeme shift.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "homework_framing_by_vmeme",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF prescribing homework AND client vMeme has been assessed",
+      "then_directive": "THEN frame homework per vMeme: Blue: 'Here is your protocol: 3 sets of 10, twice daily. This is the correct way.' Provide written instructions with exact specifications. Orange: 'Track your progress with these metrics. Target is X improvement in Y weeks.' Green: 'Notice how this feels. Share with your support network. We'll process how it went together.' Purple: 'This is the traditional way we restore harmony. Include your family.' Red: 'Most people can't stick with this \u2014 let's see what you can do.'",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "red_shadow_aggressive_noncompliance",
+      "rule_category": "shadow_detection",
+      "if_condition": "IF client shows demanding, intimidating, non-compliant pattern AND sees clinical encounter as power struggle AND challenges authority constantly AND may bully staff or quit abruptly",
+      "then_directive": "THEN recognize Red/C-P shadow expression. Do NOT engage in power struggle. Do NOT shame. Frame recovery as challenge that respects their power. If RAGE escalates beyond standard Settle interventions, per M19 RAGE Escalation to Pathology rule: flag escalation risk, do not proceed with exploratory work until RAGE managed.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "RAGE Escalation to Pathology (M19)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "blue_shadow_rigid_authority_deference",
+      "rule_category": "shadow_detection",
+      "if_condition": "IF client is so deferential to authority they won't speak up if treatment is causing harm AND shows rigid adherence to 'what the doctor said' even when not working AND becomes anxious with any deviation from protocol",
+      "then_directive": "THEN recognize Blue/D-Q shadow expression. Client may be so compliant they suppress their own body signals. Use permission language per M18: 'It's okay to tell me if something doesn't feel right.' Check for Manager part per M16 performing 'good patient.' Build safety for client to express disagreement without losing structure.",
+      "override_level": "recommended",
+      "interacts_with_rule": "ci_precaution_5_permission_before_depth (M18), Manager Detection Protocol (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "orange_shadow_body_as_machine",
+      "rule_category": "shadow_detection",
+      "if_condition": "IF client treats body as machine to be fixed AND is impatient/overly analytical AND may have spreadsheets tracking symptoms AND dismisses 'soft' aspects of healing (emotions, rest) AND overrides body signals to achieve performance goals",
+      "then_directive": "THEN recognize Orange/E-R shadow expression. Use M9 Stop the Rep Rule awareness: Orange will override breath holding and jaw clenching to complete tasks. Per M18 intellectualization_detection: client may talk ABOUT movement rather than describing felt sensation. Use Stone 7 frequently: 'That's an analysis. What do you actually FEEL?'",
+      "override_level": "recommended",
+      "interacts_with_rule": "Stop the Rep Rule (M9), intellectualization_detection (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "green_shadow_consensus_paralysis",
+      "rule_category": "shadow_detection",
+      "if_condition": "IF client stuck in endless processing without action AND needs to consult entire support network before decisions AND shows passive-aggression if feels unheard AND prioritizes being liked over effective treatment",
+      "then_directive": "THEN recognize Green/F-S shadow expression (consensus paralysis). Validate feelings while gently moving toward action: 'I hear you, and I'm wondering what one small thing we could try today?' Do NOT collude with endless processing. If Mean Green Meme pattern emerges (dogmatic pluralism with pontification about equality), recognize as unhealthy GREEN-RED meshing.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "turquoise_shadow_spiritual_bypassing",
+      "rule_category": "shadow_detection",
+      "if_condition": "IF client uses holistic/spiritual language but seems disconnected from body AND may neglect practical exercises for 'energetic' focus AND shows passivity waiting for universe to heal them AND cosmic framing increases when body sensation invited",
+      "then_directive": "THEN recognize Turquoise/H-U shadow (spiritual bypassing). Differentiate from healthy Turquoise: test with direct embodiment invitation 'What sensation are you aware of in your hip right now \u2014 not energetically, but physically?' If client cannot access sensation or deflects to energetic language, may be Manager using cosmic frame per M16. Address parts before vMeme communication.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Self vs Manager Differentiation (M16), intellectualization_detection (M18)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "first_tier_communication_ceiling",
+      "rule_category": "tier_routing",
+      "if_condition": "IF client assessed as First Tier (Beige through Green) AND shows no Second Tier markers (Vast Conceptual Space, Freedom from Irrational Fear, Multi-Source Learning)",
+      "then_directive": "THEN do NOT use multi-framework explanations. First Tier clients believe their way is the only 'right' way. Match communication to specific vMeme. Introducing Yellow/Turquoise concepts to First Tier client will be rejected per Assimilation-Contrast Effect \u2014 ideas too far from worldview are contrasted not assimilated.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "second_tier_framework_access",
+      "rule_category": "tier_routing",
+      "if_condition": "IF client shows Second Tier markers (Yellow/G-T or Turquoise/H-U confirmed) AND autonomic state is integrated ventral",
+      "then_directive": "THEN client can handle explicit multi-framework reasoning. Can discuss M9 autonomic states, M19 affective systems, M16 parts openly if clinically useful. Client can tolerate uncertainty and engage with 'why' behind treatment. Respect their capacity to see entire Spiral as functional whole. Do not oversimplify.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "autonomic_override_all_vmeme_rules",
+      "rule_category": "cross_module",
+      "if_condition": "IF M20 vMeme communication rule AND M9 autonomic state indicates Red (dorsal) or high Amber (sympathetic with RAGE or FEAR dominant)",
+      "then_directive": "THEN M9 autonomic safety protocol OVERRIDES M20 communication adaptation. Autonomic state always wins. Return to M9 co-regulation before attempting any vMeme-specific communication framing. vMeme communication rules only apply when social engagement system is sufficiently online.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "All M9 state routing rules",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "parts_activation_suspends_vmeme_routing",
+      "rule_category": "cross_module",
+      "if_condition": "IF M16 parts activation detected (Manager bracing, Firefighter reactivity, or Exile emergence) AND vMeme-specific communication seems to be landing on part not Self",
+      "then_directive": "THEN suspend vMeme communication routing. Per M16: if Protector intensifies despite appropriate vMeme communication, the communication is landing on the part not the Self. Address parts per M16 protocol before resuming vMeme-informed communication. Use vMeme frame to support parts work when possible: Blue Manager may need 'correct protocol' for giving permission.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16), Protector Backlash Prevention (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "vmeme_regression_to_autonomic_mapping",
+      "rule_category": "cross_module",
+      "if_condition": "IF vMeme regression detected in session",
+      "then_directive": "THEN map regression to simultaneous autonomic shift: Blue\u2192Red regression maps to ventral\u2192sympathetic (FEAR of chaos intensifies or RAGE at failed rules). Orange\u2192Blue regression maps to increased sympathetic (SEEKING blocked, anxiety rising). Green\u2192Orange maps to ventral shifting toward sympathetic (SEEKING activation, relational processing abandonment). Any\u2192Beige maps to dorsal collapse. Use M9 state-appropriate intervention before returning to vMeme communication.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dissolution Sequence Recognition (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "multiple_vmeme_access_center_of_gravity",
+      "rule_category": "vmeme_detection",
+      "if_condition": "IF client displays markers of multiple vMemes within session AND can shift communication styles AND autonomic state is stable Green (ventral vagal with flexibility)",
+      "then_directive": "THEN assess center of gravity \u2014 which vMeme client defaults to under stress. Use Feel Towards test per M16: 'When you think about this pain not going away, what comes up first \u2014 frustration that it's slowing your progress, or sadness about what you're missing?' Response reveals center of gravity. Match communication to dominant vMeme while honoring capacity for other frames.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Feel Towards Diagnostic Test (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "resistance_diagnosis_by_vmeme",
+      "rule_category": "fit_assessment",
+      "if_condition": "IF client shows resistance pattern (pushes back, cancels appointments, declining engagement) AND previously identified vMeme no longer seems to fit",
+      "then_directive": "THEN diagnose resistance type before responding: Blue resistance: treatment deviates from expected protocol, clinician seems uncertain \u2192 provide more structure, clarify protocol. Orange resistance: progress too slow, approach seems inefficient \u2192 show data, demonstrate efficiency. Green resistance: feels unheard, relationship rupture \u2192 repair relationship, process feelings. Red resistance: feels controlled or diminished \u2192 respect power, remove control language. Reassess vMeme if resistance persists.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "homework_noncompliance_vmeme_mismatch",
+      "rule_category": "fit_assessment",
+      "if_condition": "IF client does not complete homework AND no autonomic or parts-based explanation",
+      "then_directive": "THEN assess for vMeme mismatch \u2014 homework non-compliance often indicates vMeme framing mismatch not client failure. Blue client given choice-heavy Green homework won't comply. Orange client given time-inefficient protocol won't comply. Green client given impersonal metrics homework won't comply. Reframe homework in client's vMeme language before assuming non-compliance.",
+      "override_level": "recommended",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "never_share_sd_terminology_with_client",
+      "rule_category": "communication_adaptation",
+      "if_condition": "IF clinician is tempted to explain SD framework to client or share vMeme assessment",
+      "then_directive": "THEN DO NOT. No client should hear 'you're operating from Blue' or 'that's your Red shadow.' SD is a clinician-side lens for understanding client worldview, not a client-facing framework. Sharing creates hierarchy perception that will be rejected per First Tier's belief that their way is the 'right' way. Use SD to inform HOW you communicate, never WHAT you say about the client.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "NONE",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "blue_manager_integration",
+      "rule_category": "cross_module",
+      "if_condition": "IF Blue/D-Q vMeme detected AND M16 Manager part also active (chronic tension, perfectionism, breath holding, 'I should' language)",
+      "then_directive": "THEN integrate frameworks: Blue vMeme and Manager parts often co-present. Use Blue authority framing WITH M16 Manager negotiation: 'Your system has been working very hard to follow the correct protocol for protection. What would it need to know to allow this muscle to soften?' Frame permission-giving as the 'correct' procedure. Appreciate Manager's dedication to doing things right.",
+      "override_level": "recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "movement_triggered_exile_vmeme_collapse",
+      "rule_category": "cross_module",
+      "if_condition": "IF movement triggers emotional release AND voice quality becomes age-discrepant (childlike pitch/tone) AND autonomic state shifts from Green toward Red (dorsal collapse with PANIC/GRIEF markers)",
+      "then_directive": "THEN recognize regression in progress \u2014 vMeme routing suspended. Per M18 exile_flooding_response: STOP all movement and inquiry. Per M16 Exile Flooding Emergency Protocol: contain Exile feelings. Per M9 PANIC/GRIEF Dominant Red Routing: clinician provides consistent regulated presence. vMeme communication adaptation irrelevant until autonomic state restored \u2014 focus entirely on M9/M16/M18 protocols.",
+      "override_level": "mandatory",
+      "interacts_with_rule": "exile_flooding_response (M18), Exile Flooding Emergency Protocol (M16), PANIC/GRIEF Dominant Red Routing (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "externalization_by_vmeme",
+      "rule_category": "cross_module",
+      "if_condition": "IF client externalizes body/pain as separate entity ('my pain won't let me') AND vMeme has been assessed",
+      "then_directive": "THEN use M18 externalization_detection challenge adapted to vMeme: Orange: 'Your nervous system is generating this signal \u2014 let's understand the mechanism.' Blue: 'Your body is doing exactly what it's supposed to do given what it's learned \u2014 let's update the protocol.' Green: 'What would it be like to be WITH your body in this, rather than having it happen TO you?' Per M16: if externalization persists, may indicate Manager protection against Exile pain.",
+      "override_level": "recommended",
+      "interacts_with_rule": "externalization_detection (M18), Burden vs Structural Differentiation (M16)",
+      "source_module": "M21_Spiral_Dynamics"
+    },
+    {
+      "rule_name": "dorsal_vmeme_assessment_invalid",
+      "rule_category": "cross_module",
+      "if_condition": "IF client presents in dorsal state (slumped posture, flat voice, 'I've tried everything', numb/foggy) AND vMeme assessment is attempted",
+      "then_directive": "THEN flag vMeme assessment as unreliable. Per M9 Dorsal Assessment Invalidity: defer all assessment. vMeme may be Blue (protocol failed), Orange (strategies exhausted), Green (relational support insufficient), but assessment cannot be trusted in dorsal state. Only after ventral restoration can vMeme be accurately assessed: 'What kind of support has helped you most in the past?' (reveals vMeme preference).",
+      "override_level": "mandatory",
+      "interacts_with_rule": "Dorsal Assessment Invalidity (M9)",
+      "source_module": "M21_Spiral_Dynamics"
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_DecisionTree": [
+      {
+        "observation": "Client arrives exactly on time, immediately asks 'What's the plan today?' or 'What should I do?', rigid posture, difficulty relaxing, seeks clear protocol. Per Phase3: 'Asks for the protocol. Wants to know the rules. Disciplined, dutiful, and highly compliant.'",
+        "if_check": "IF client requests protocol/rules/structure before engaging AND maintains rigid posture AND autonomic state is Green (ventral vagal with social engagement through structure, not warmth)",
+        "probable_vmeme": "Blue / D-Q",
+        "confirmation_markers": "Confirming: uses duty-based language ('I should...', 'The right way to...'), follows instructions to the letter, becomes anxious with ambiguity or too many choices. Per Phase3: 'May be so deferential to authority they won't speak up if a treatment is causing harm.' Disconfirming: challenges clinician's authority without seeking alternative authority structure (\u2192 Red), asks for evidence/rationale rather than protocol (\u2192 Orange).",
+        "then_routing": "Frame all interventions with clear steps and rules. 'Here is your protocol: Step 1, we'll assess your hip mobility. Step 2, we'll work on the tissue. Step 3, you'll do these three exercises.' Use authoritative tone. Per Phase2: 'Provide a structured plan with defined milestones and appeal to their sense of duty and correctness.' Homework must be written with exact sets, reps, and frequency.",
+        "regression_indicator": "Under acute pain: drops rule-following, shifts to 'nothing works' frustration with aggressive tone (\u2192 Red regression) or seeks tribal/family validation 'my family says this treatment is wrong' (\u2192 Purple regression). Check M9 autonomic state \u2014 if sympathetic activation detected with breath holding and jaw clenching intensifying, pause M20 routing and return to M9 co-regulation. Per Phase4: 'ventral \u2192 sympathetic (FEAR of chaos intensifies) or dorsal (collapse if authority fails).'"
+      },
+      {
+        "observation": "Client asks 'What does the research say?' or 'What's the evidence for this?' before allowing intervention. Maintains analytical posture, brings notes or research printouts. Per Phase3: 'May bring spreadsheets tracking symptoms. Proactive and goal-oriented, armed with their own internet research.'",
+        "if_check": "IF client requests evidence/mechanism before consenting to treatment AND maintains cognitive engagement during explanation AND autonomic state is Green or low Amber (sympathetic mobilized for achievement)",
+        "probable_vmeme": "Orange / E-R",
+        "confirmation_markers": "Confirming: uses quantitative language ('percentage,' 'progress,' 'measurable'), asks about timelines and benchmarks, compares clinician's approach to other providers ('My last PT said...'). Per Phase3: 'Doctor shopping for the best expert.' Disconfirming: defers to clinician authority without questioning rationale (\u2192 Blue), wants to discuss emotional meaning of pain rather than fix it (\u2192 Green).",
+        "then_routing": "Frame all interventions with mechanism and evidence. 'This mobilization targets the sciatic nerve bed \u2014 research shows 3 sets of 10-second holds improves neural gliding by approximately 15% over 6 weeks.' Provide measurable homework targets. Per Phase2: 'Focus on efficiency, results, and the scientific rationale for the treatment.' Use data-driven language: 'Let's test this and see what data we get.'",
+        "regression_indicator": "Under acute pain: drops analytical framing, shifts to 'just tell me what to do' seeking protocol (\u2192 Blue regression) or 'this isn't working, I'm finding someone better' with frustrated tone (\u2192 Red regression). Check M9 autonomic state \u2014 if breath holding or jaw clenching during movement, per Stop the Rep Rule, pause and assess. Per Phase4: 'SEEKING may shift to RAGE when goals blocked.'"
+      },
+      {
+        "observation": "Client opens with relational statement: 'How are you today?' before discussing symptoms. Wants to discuss how pain is affecting their relationships and emotional life. Per Phase3: 'Values the therapeutic relationship above all. Seeks an egalitarian partnership.'",
+        "if_check": "IF client prioritizes relational connection before clinical content AND describes pain in emotional/relational terms AND autonomic state is Green (ventral vagal with social engagement fully online)",
+        "probable_vmeme": "Green / F-S",
+        "confirmation_markers": "Confirming: asks 'How do you feel about this plan?', wants to process feelings before action, seeks consensus, may reference support network. Per Phase3: 'May get stuck in consensus paralysis.' Disconfirming: wants to 'beat' the injury or measure progress quantitatively (\u2192 Orange), seeks clear rules rather than collaborative exploration (\u2192 Blue).",
+        "then_routing": "Frame interventions collaboratively. 'What feels right to you about starting here?' Acknowledge emotional dimensions explicitly. Per Phase2: 'Empathetic, inclusive, and consensus-oriented. Values sharing feelings and being heard.' Allow processing time but gently move toward action: 'I hear how much this is affecting you. And I'm wondering if you'd be willing to try this movement and see what we learn together.'",
+        "regression_indicator": "Under acute pain: drops relational processing, shifts to strategic problem-solving 'let me research this' (\u2192 Orange regression) or seeks structure 'just tell me what to do' (\u2192 Blue regression). Check M9 autonomic state \u2014 if PANIC/GRIEF markers appear (crying, sorrowful postures), per Phase4: 'ventral \u2192 sympathetic (FEAR of conflict) or dorsal (PANIC/GRIEF if relational rupture).' Engage CARE system through M9 Nurturance Soothes Grief Protocol."
+      },
+      {
+        "observation": "Client is demanding, challenges clinician immediately, uses confrontational body language, may state 'Don't tell me what to do' or 'Just fix it.' Per Phase3: 'Views the clinical encounter as a power struggle. May be demanding, intimidating, and non-compliant.'",
+        "if_check": "IF client challenges authority with power-asserting language AND displays confrontational posture (tense, arched) AND autonomic state is Amber (sympathetic with RAGE dominant)",
+        "probable_vmeme": "Red / C-P",
+        "confirmation_markers": "Confirming: frames recovery as battle/conquest ('I'm going to beat this'), seeks immediate results, respects clinician's confidence but not credentials, admits shame but not guilt. Per Phase3: 'Pain is a sign of weakness to be conquered or denied.' Disconfirming: seeks rules or protocol from authority (\u2192 Blue), wants to analyze options and understand mechanism (\u2192 Orange).",
+        "then_routing": "Use direct, action-oriented language. Frame treatment as challenge to their strength. Per Phase2: 'Respect their power, avoid shaming, and get to the point.' Use invitations not commands per M9 Command vs Invitation Protocol: 'Would you be willing to try this and see if you can master it?' Frame homework as conquest: 'Most people can't do this consistently \u2014 let's see what you can do.' Never use shame.",
+        "regression_indicator": "Under acute pain: seeks tribal protection 'my family/crew says...' (\u2192 Purple regression) or complete system collapse with withdrawal (\u2192 Beige regression). Check M9 autonomic state \u2014 per RAGE Dominant Amber Routing: 'If RAGE cannot be de-escalated through standard Settle interventions, flag escalation risk.' Use sigh of frustration, rant to release, calm up from flood to flow before any biomechanical work."
+      },
+      {
+        "observation": "Client speaks about pain in terms of family tradition, mentions what elders or family members believe, may reference rituals or folk remedies. Per Phase3: 'Draws strength from family support and community rituals. The family's opinion of the clinician is critical.'",
+        "if_check": "IF client references family/tribal beliefs about treatment AND seeks relational trust before clinical engagement AND autonomic state is Green within in-group frame (ventral when feeling safe with 'tribe') or Amber against out-group methods",
+        "probable_vmeme": "Purple / B-O",
+        "confirmation_markers": "Confirming: asks 'Is this treatment approved by [authority figure/tradition]?', relaxes with familiar rituals, tenses with unfamiliar methods. Per Phase3: 'Pain can be a curse from displeased spirits.' Disconfirming: challenges clinician to prove strength (\u2192 Red), seeks individual protocol independent of family opinion (\u2192 Blue or higher).",
+        "then_routing": "Build relational trust first \u2014 you must become 'in-group.' Involve family in treatment planning when possible. Per Phase2: 'Trust is paramount and is built on relationship, not credentials.' Frame interventions through story and tradition: 'This is how we restore harmony to your body.' Acknowledge family beliefs without dismissing them. Per Phase4: 'CI available if relational container includes tribal/family frame; honor story-based communication.'",
+        "regression_indicator": "Under acute pain: complete system collapse to survival mode (\u2192 Beige regression) with non-verbal communication through physiological cues only. Check M9 autonomic state \u2014 per Phase4: 'ventral \u2192 dorsal or sympathetic as individual self dissolves into tribal safety-seeking.' If PANIC/GRIEF activates due to separation from tribe/family, engage CARE system per M9 Nurturance Soothes Grief Protocol."
+      },
+      {
+        "observation": "Client integrates multiple perspectives on their condition, asks systemic questions like 'How does this connect to my stress and sleep?', treats clinician as peer resource. Per Phase3: 'A masterful problem-solver for their own condition. Sees the connections between physical symptoms, lifestyle, mindset, and environment.'",
+        "if_check": "IF client demonstrates systems thinking about their condition AND shows flexibility in communication style AND autonomic state is highly integrated Green (ventral vagal with ability to shift perspectives without reactivity)",
+        "probable_vmeme": "Yellow / G-T",
+        "confirmation_markers": "Confirming: curious about function of pain rather than just elimination, integrates advice from multiple sources, flexible and adaptive approach. Per Phase3: 'Pain is valuable information and a signal that a complex system is out of balance.' Per Phase1: 'freedom from irrational fear.' Disconfirming: needs consensus/relational validation before action (\u2192 Green), needs clear protocol with one right way (\u2192 Blue).",
+        "then_routing": "Treat as knowledgeable peer. Offer systemic explanations. Per Phase2: 'Appreciates complexity, systemic explanations, and functional frameworks.' Do not oversimplify. Frame treatment as experiment: 'Let's try this and see what data we get for your system.' Respect their integration capacity: 'You see how this connects to your stress patterns \u2014 what's your sense of where to start?'",
+        "regression_indicator": "Under acute pain: Per Phase3: 'Can get paralyzed by complexity.' May shift to Green (seeking relational processing) or Orange (strategic problem-solving). Per Phase4: 'Yellow regression is less driven by fear, more by temporary overwhelm.' Check M9 autonomic state \u2014 Yellow typically returns quickly to ventral. If complexity paralysis looks like dorsal (flat, foggy), differentiate from actual shutdown."
+      },
+      {
+        "observation": "[Clinical inference] Client is non-responsive, withdrawn, cannot engage verbally, communicates through physiological cues (startling, withdrawing, relaxing). Per Phase3: 'Non-responsive, withdrawn, and unable to engage in a therapeutic relationship. Communication is through physiological cues.'",
+        "if_check": "IF client is non-verbal or minimally verbal AND operates on pure instinct/reflexive responses AND autonomic state is Red (dorsal vagal shutdown or freeze)",
+        "probable_vmeme": "Beige / A-N",
+        "confirmation_markers": "Confirming: reflexive self-protection against perceived threats, pure survival-level response, no capacity for relationship or protocol. Per Phase3: 'Pain is a raw biological signal leading to reflexive avoidance.' Per Phase2: 'Typically only appears as regression due to severe trauma, shock, or advanced neurological disease.' Disconfirming: any capacity for verbal engagement about treatment or relationship (\u2192 higher vMeme).",
+        "then_routing": "Per Phase4: 'Autonomic regulation is the ONLY intervention (M9).' No SD-informed communication adaptation possible \u2014 clinician is perceived as environmental element. Per ci_precaution_7_acute_distress_contraindication: 'Do NOT use Compassionate Inquiry. Be a calm presence for them, ask them what they need, and do what is necessary to keep them safe.' Focus solely on providing safety, warmth, basic biological needs. Per M9 Dorsal Assessment Invalidity: 'implement coming back to life protocol through imagined then gentle movement.'",
+        "regression_indicator": "There is no regression FROM Beige \u2014 this IS the survival baseline. Focus on ascending transition per M9: imagine movement, self-touch, remember-imagine-enact connection. Must safely traverse sympathetic energy to return to higher vMemes. Any return of verbal capacity or relational engagement indicates movement toward Purple or higher."
+      },
+      {
+        "observation": "Client brings profound presence and trust, speaks in holistic/energetic terms about their condition, views healing as part of interconnected web. Per Phase3: 'Brings a profound sense of presence and trust to the session. Views the healing process as part of an interconnected web.'",
+        "if_check": "IF client uses holistic/cosmic language about healing AND demonstrates high body awareness without reactivity AND autonomic state is deep Green (ventral vagal with social engagement online despite 'spacey' quality)",
+        "probable_vmeme": "Turquoise / H-U",
+        "confirmation_markers": "Confirming: can hold painful sensations without guarding, treats clinician as co-creator, speaks of personal healing contributing to collective healing. Per Phase3: 'High degree of body awareness and integration.' Disconfirming: needs systemic analysis and functional frameworks (\u2192 Yellow), needs relational consensus and processing (\u2192 Green). Per Phase4: 'differentiate from dorsal by checking for social engagement markers (prosody, eye contact, warm face).'",
+        "then_routing": "Treat as co-creator. Acknowledge holistic frame. Per Phase2: 'Use of abstract, metaphorical, and holistic language focusing on energy, interconnectedness.' BUT ensure practical physical steps included. Per Phase4: 'use Stone 6 frequently to anchor holistic awareness in body.' Frame treatment: 'As we work with your tissue, what does your body's wisdom tell you about what it needs?' Do NOT pathologize cosmic perspective.",
+        "regression_indicator": "Per Phase4: 'Under acute pain/stress, potential regression to Yellow (cognitive reframing, systemic analysis) or Green (communal support-seeking).' Watch for 'spiritual bypassing' \u2014 focusing on energetic dimension to avoid practical physical steps. Per Phase3: 'passivity, waiting for universe to heal them.' Check if this is healthy surrender from Self or subtle Firefighter dissociation framed spiritually \u2014 differentiate by checking social engagement and embodiment."
+      },
+      {
+        "observation": "Client presents with perfectionism, chronic tension, breath holding during unfamiliar movements. Per Phase3: 'Rigid posture, difficulty relaxing into manual work. Holds breath during unfamiliar movements.'",
+        "if_check": "IF client shows proactive guarding/bracing quality AND tension is anticipatory (preventing future pain) AND autonomic state is low Amber or rigid Green (mobilized by duty/structure)",
+        "probable_vmeme": "Blue / D-Q (presenting through Manager part)",
+        "confirmation_markers": "Confirming: verbal markers like 'I should...', follows instructions exactly, becomes anxious with deviation from protocol. Per Phase4 M16: 'Manager Detection Protocol \u2014 chronic physical tension, high shoulders, breath holding, jaw clenching.' Disconfirming: tension is reactive to current emotional breakthrough (\u2192 Firefighter/Red), tension is driven by achievement/performance optimization (\u2192 Orange).",
+        "then_routing": "Combine Blue communication frame with M16 Manager negotiation. Per Phase4: 'Appreciate Manager's protective intent. Negotiate permission by explaining how Self can maintain safety without chronic bracing.' Frame: 'Your system has been working very hard to follow the correct protocol for protection. What would it need to know to allow this muscle to soften?'",
+        "regression_indicator": "Per Phase4: 'Manager may briefly intensify control' under stress. If tension increases despite structured approach, check for underlying Exile activation. Per M16 Protector Permission Mandate: 'Bypassing Protectors causes backlash (Dorsal Vagal shutdown, symptom worsening).' Return to M9 co-regulation if sympathetic markers intensify."
+      },
+      {
+        "observation": "Client asks about efficiency, timelines, metrics but shows breath holding and performance anxiety during movement. Per Phase3: 'Impatient, overly analytical. Treats their body as a machine to be fixed.'",
+        "if_check": "IF client uses achievement/optimization language AND shows autonomic markers of sympathetic activation (breath holding, jaw clenching) normalized as baseline AND Stop the Rep Rule triggers during movement",
+        "probable_vmeme": "Orange / E-R (with normalized sympathetic activation)",
+        "confirmation_markers": "Confirming: overrides distress signals to complete task, uses performance metrics language, impatient with 'soft' interventions like rest. Per Phase4: 'Orange clients normalize high activation; check for genuine spontaneous breath, not controlled breathing for optimal performance.' Disconfirming: cannot articulate logical rationale, seeks group consensus (\u2192 Green), seeks one correct protocol from authority (\u2192 Blue).",
+        "then_routing": "Per M9 Stop the Rep Rule: 'stop activity immediately and state The rep doesn't count.' Then reframe in Orange language: 'Your system just gave us data \u2014 that's useful information. Pushing through that signal actually reduces efficiency. Let's optimize by working WITH your nervous system.' Use evidence-based rationale for co-regulation: 'Research shows that breath holding activates your sympathetic nervous system, which reduces motor control precision by X%.'",
+        "regression_indicator": "Per Phase4: 'SEEKING may shift to RAGE when goals blocked.' If frustration escalates ('this isn't working fast enough'), client may regress to Red (power struggles) or Blue (seeking rigid protocol). Per M16: 'achievement itself may be Firefighter escape from Exile pain.' Check for underlying worthlessness/failure Exile if Orange strategies consistently fail."
+      },
+      {
+        "observation": "Client becomes tearful during manual work, voice quality shifts to childlike, posture collapses. Per Phase3: 'Body's state is highly tied to emotional state and relational quality.' Per M18: 'Client's voice quality shifts to little girl or little boy voice during movement.'",
+        "if_check": "IF movement triggers emotional release AND voice quality becomes age-discrepant (childlike pitch/tone) AND autonomic state shifts from Green toward Red (dorsal collapse with PANIC/GRIEF markers)",
+        "probable_vmeme": "Regression in progress \u2014 vMeme routing suspended",
+        "confirmation_markers": "Confirming: cannot maintain adult perspective, loses contact with present moment, crying without ability to witness experience. Per M18 exile_voice_detection: 'Recognize Exile speaking \u2014 movement has accessed young traumatized part.' Disconfirming: client can witness own emotion while feeling it (Self-led crying, remains Green vMeme-capable).",
+        "then_routing": "Per M18 exile_flooding_response: 'STOP all movement and inquiry. Return to Compassionate Listening only.' Per M16 Exile Flooding Emergency Protocol: 'Ask Exile directly to contain its feelings for now.' Per M9 PANIC/GRIEF Dominant Red Routing: 'Clinician provides consistent regulated presence as secure neurochemical base.' vMeme communication adaptation irrelevant until autonomic state restored \u2014 focus entirely on M9/M16 protocols.",
+        "regression_indicator": "This IS regression in progress. Per Phase4: 'Regression to Beige from any higher vMeme represents complete system collapse.' Monitor for further descent: if client becomes non-verbal, non-responsive, reflexive only \u2192 Beige survival state. Per M9 Dissolution Sequence Recognition: 'Cannot skip hierarchy in return \u2014 must safely traverse sympathetic mobilizing energy to return to ventral.'"
+      },
+      {
+        "observation": "Client presents issue in terms of both analytical understanding AND emotional impact, can shift between perspectives. Per Phase3 Green: 'In touch with the emotional aspects.' But also shows goal-orientation like Phase3 Orange.",
+        "if_check": "IF client displays markers of multiple vMemes within session AND can shift communication styles AND autonomic state is stable Green (ventral vagal with flexibility)",
+        "probable_vmeme": "Multiple vMeme access \u2014 assess center of gravity",
+        "confirmation_markers": "Confirming: uses both evidence-based rationale (Orange) AND relational processing (Green) OR both protocol-seeking (Blue) AND goal-optimization (Orange). Per Phase1: 'Center of Gravity \u2014 The vMeme that is most central to their identity and meaning-making.' Assess which frame client defaults to under stress. Disconfirming: rigid adherence to single communication style across all situations.",
+        "then_routing": "Use Feel Towards test per M16 to assess: 'When you think about this pain not going away, what comes up first \u2014 frustration that it's slowing your progress, or sadness about what you're missing?' Response reveals center of gravity. Match communication to dominant vMeme while honoring capacity for other frames. Per Phase1 Wave Phases: 'Entry (beginners), Center (stabilized), and Exit (uncertainty and anxiety as the system fails)' \u2014 client may be in Exit phase of one vMeme transitioning to Entry of next.",
+        "regression_indicator": "Under acute pain: observe which vMeme emerges first. Per Phase1: 'Individuals will assimilate ideas within their vMeme range but contrast (reject) ideas too far from their worldview.' If client suddenly rejects communication style that previously worked, they may have regressed to lower vMeme. Return to M9 autonomic assessment before attempting vMeme re-identification."
+      },
+      {
+        "observation": "Client discusses homework compliance, asks what they should do between sessions. Per Phase3 Blue: 'I am doing my exercises exactly as prescribed.' vs Phase3 Orange: 'What's the most efficient way?' vs Phase3 Green: 'How does this fit with my overall wellness?'",
+        "if_check": "IF homework prescription moment AND client has been assessed at specific vMeme during session AND autonomic state remains stable",
+        "probable_vmeme": "Use previously identified vMeme for homework framing",
+        "confirmation_markers": "Blue markers: asks for written protocol, specific numbers, correct form. Orange markers: asks about metrics, progress tracking, optimization. Green markers: asks how it integrates with other practices, affects relationships. Purple markers: asks if family should be involved, if this honors tradition. Red markers: frames as challenge to conquer.",
+        "then_routing": "Blue: 'Here is your protocol: 3 sets of 10, twice daily. This is the correct way.' Provide written instructions with exact specifications. Orange: 'Track your progress with these metrics. Target is X improvement in Y weeks. Here's the research.' Green: 'Notice how this feels in your body. Share with your support network. We'll process how it went together.' Purple: 'This is the traditional way we restore harmony. Include your family in supporting you.' Red: 'Most people can't stick with this \u2014 let's see what you can do. Beat your previous record.'",
+        "regression_indicator": "Homework non-compliance often indicates vMeme mismatch, not client failure. Per Phase2: 'Effectiveness is determined by the Fit between the person's vMeme and their Life Conditions.' If client doesn't do homework: reassess vMeme \u2014 Blue client given choice-heavy Green homework won't comply; Orange client given time-inefficient protocol won't comply. Reframe homework in client's vMeme language."
+      },
+      {
+        "observation": "Client pushes back on treatment recommendation, cancels appointments, shows declining engagement. Per Phase2: 'Different vMemes resist for different reasons.'",
+        "if_check": "IF client shows resistance pattern AND previously identified vMeme no longer seems to fit AND autonomic state may be shifting",
+        "probable_vmeme": "Reassess \u2014 resistance indicates vMeme mismatch or regression",
+        "confirmation_markers": "Blue resistance: treatment deviates from expected protocol, clinician seems uncertain. Per Phase3: 'Resistance to ambiguity, too many choices.' Orange resistance: progress too slow, approach seems inefficient. Per Phase3: 'Doctor shopping for the best expert.' Green resistance: feels unheard, relationship rupture. Per Phase3: 'Passive-aggression if they feel unheard or invalidated.' Red resistance: feels controlled or diminished. Per Phase3: 'Open defiance, power struggles, walking out.'",
+        "then_routing": "Diagnose resistance type before responding. Blue: provide more structure, clarify protocol, project certainty. Orange: show data, demonstrate efficiency, offer better metrics. Green: repair relationship, process feelings, seek consensus. Red: respect power, remove control language, offer challenge. Per Phase1 Six Conditions for Change: check if client has 'Dissonance (realization of failure)' \u2014 resistance may signal Exit phase of current vMeme.",
+        "regression_indicator": "Persistent resistance despite correct vMeme communication indicates possible regression or Exit phase. Per Phase1: 'Exit (uncertainty and anxiety as the system fails).' Client may be leaving one vMeme for another. Check autonomic state first \u2014 if sympathetic or dorsal, address regulation before attempting communication adaptation. Per M9 Social Engagement Assessment Gate: 'IF social engagement system indicators absent... route to Settle track before proceeding.'"
+      },
+      {
+        "observation": "Client experiences unexpected pain during manual work or movement, shows immediate autonomic shift. Per Phase3 various: pain responses differ by vMeme.",
+        "if_check": "IF client encounters unexpected pain during session AND shows autonomic state change (breath holding, withdrawal, vocalization) AND previously stable presentation destabilizes",
+        "probable_vmeme": "Pain encounter \u2014 high regression risk moment",
+        "confirmation_markers": "Blue pain response: 'Is this supposed to happen? Is this the right way?' (seeks protocol validation). Orange pain response: 'What's the mechanism? Is this efficient?' (seeks explanation). Green pain response: 'What does this mean? Can we talk about it?' (seeks processing). Red pain response: 'I can push through this' or anger at clinician. Purple pain response: 'Is this a bad sign?' (seeks tribal/ancestral meaning). Per Phase3: 'Pain is a test of faith (Blue), technical problem (Orange), experience to be witnessed (Green), weakness to conquer (Red), curse from spirits (Purple).'",
+        "then_routing": "Per M9 Stop the Rep Rule: 'STOP activity immediately.' Then match response to vMeme. Blue: 'This is a normal part of the protocol. Here's what happens next.' Orange: 'This is useful data. Your nervous system gave us information about your limit.' Green: 'I see that affected you. What do you need right now?' Red: 'Your system just told us where the edge is. That takes strength to feel.' Purple: 'Your body is communicating with us. Let's honor that signal.' Per M18: 'What are you noticing in your body right now?'",
+        "regression_indicator": "Pain encounter is highest-risk moment for vMeme regression. Monitor for: Blue \u2192 Red (frustration/power struggle), Orange \u2192 Blue (seeking protocol when strategy fails), Green \u2192 Orange or Blue (drops relational processing for analysis or rules), Red \u2192 Purple or Beige (tribal safety-seeking or survival collapse). Per M9 Dissolution Sequence Recognition: 'IF client moves from ventral to sympathetic to dorsal within session THEN recognize dissolution sequence in progress, pause all biomechanical work immediately.'"
+      },
+      {
+        "observation": "Client uses 'I should' language, criticizes self during movement, shows perfectionism. Per Phase3 Blue: 'Disciplined, dutiful' and Phase4 M16: 'Manager Detection Protocol.'",
+        "if_check": "IF client displays self-critical patterns AND uses duty/should language AND autonomic state shows guarding/bracing quality",
+        "probable_vmeme": "Blue / D-Q with Manager part activation",
+        "confirmation_markers": "Confirming: 'I should be able to do this by now', 'Am I doing it right?', guilt about not following protocol perfectly. Per M18 self_critical_belief_surfacing: 'superego attack observable.' Per Phase1: 'finding meaning through duty, guilt, and righteousness.' Disconfirming: self-criticism is achievement-based not duty-based (\u2192 Orange), self-criticism relates to not being a good community member (\u2192 Green).",
+        "then_routing": "Acknowledge protective function of Manager per M16. Use M18 Stone 7: 'That sounds like a belief about yourself. What are you actually feeling right now?' Address Blue frame: 'Your dedication to doing this correctly shows real commitment. And I'm wondering \u2014 what would happen if you didn't have to do it perfectly to do it well?' Per M18 should_superego_redirect: 'Your superego is beating you up right now. What does YOUR body \u2014 not your superego \u2014 need right now?'",
+        "regression_indicator": "Per Phase4: 'Manager may intensify control' under stress. If self-criticism intensifies despite acknowledgment, may indicate underlying Exile activation. Per M16: 'Exile material often involves experiences of chaos, abandonment by authority, or moral failure.' Check if Blue Manager is protecting Exile carrying worthlessness burden. If so, vMeme routing secondary to M16 parts work."
+      },
+      {
+        "observation": "Client reports they've 'tried everything,' presents with flat affect, slumped posture, defeated quality. Per Phase3 various: this presentation crosses vMemes but indicates dorsal state.",
+        "if_check": "IF client presents with 'tried everything' narrative AND shows dorsal markers (flat voice, slumped posture, disconnection) AND autonomic state is Red (dorsal vagal)",
+        "probable_vmeme": "vMeme assessment unreliable \u2014 dorsal state overrides",
+        "confirmation_markers": "Per M9 Dorsal Assessment Invalidity: 'IF client presents with slumped posture, flat voice, disconnected movement quality, numb/foggy reporting THEN defer structural assessment.' Per Phase4: 'At this level, ALL higher frameworks collapse \u2014 autonomic regulation IS the intervention.' vMeme may be Blue (protocol failed), Orange (strategies exhausted), Green (relational support insufficient), but assessment unreliable in dorsal state.",
+        "then_routing": "Per M9 Dorsal Assessment Invalidity: 'implement coming back to life protocol through imagined then gentle movement to activate motor cortex, use self-touch to restore sensation.' Do NOT attempt vMeme-specific communication \u2014 focus on M9 protocol. Per M18 ci_autonomic_red_contraindicated: 'Compassionate Listening only.' Only after ventral restoration can vMeme be accurately assessed: 'What kind of support has helped you most in the past?' (reveals vMeme preference).",
+        "regression_indicator": "Per M9 Dissolution Sequence Recognition: 'Cannot skip hierarchy in return \u2014 must safely traverse sympathetic mobilizing energy to return to ventral.' Monitor for signs of ascending: 'imagining movement activates motor cortex, gentle movement possible, any shift from flat voice toward vocal modulation.' Once sympathetic mobilizing energy appears, prepare for vMeme-appropriate support. If PANIC/GRIEF identified, engage CARE system per M9 Nurturance Soothes Grief Protocol before attempting vMeme routing."
+      },
+      {
+        "observation": "Client describes issue in 'it' language \u2014 'my pain won't let me' or 'my body is doing this to me.' Per M18 externalization_detection.",
+        "if_check": "IF client externalizes body/pain as separate entity AND shows disconnection from body ownership AND autonomic state variable",
+        "probable_vmeme": "Assess underlying vMeme through externalization frame",
+        "confirmation_markers": "Orange externalization: 'My hip is malfunctioning' (body as machine). Blue externalization: 'My pain is testing me' (body as moral challenge). Green externalization: 'My body is telling me something' (body as separate wisdom). Purple externalization: 'Something is wrong with my energy' (body under spiritual influence). Per M18: 'creates it as separate entity acting upon them.'",
+        "then_routing": "Use M18 externalization_detection: 'What if there's no it? What if this is a process inside YOU?' Then adapt to vMeme. Orange: 'Your nervous system is generating this signal \u2014 let's understand the mechanism.' Blue: 'Your body is doing exactly what it's supposed to do given what it's learned \u2014 let's update the protocol.' Green: 'What would it be like to be WITH your body in this, rather than having it happen TO you?' Per Phase4 M16 Burden vs Structural Differentiation: 'Ask: If this sensation could speak, what would it say?' \u2014 response reveals vMeme frame.",
+        "regression_indicator": "Per M18 externalization_escalation: 'Client cannot shift from externalized to internal perspective after two attempts' indicates 'Protective parts likely too strong.' Return to M16 parts work before vMeme communication. Per Phase4: externalization may indicate Manager protection against Exile pain \u2014 the 'it' creates distance from unbearable internal experience. Address parts before vMeme."
+      },
+      {
+        "observation": "Client uses spiritually-framed language but seems disconnected from body, may neglect practical exercises for 'energetic' focus. Per Phase3 Turquoise shadow: 'spiritual bypassing.'",
+        "if_check": "IF client uses holistic/spiritual language AND shows disconnect between stated awareness and embodied presence AND autonomic state may appear Green but lacks true grounding",
+        "probable_vmeme": "Turquoise shadow presentation \u2014 differentiate from healthy Turquoise",
+        "confirmation_markers": "Healthy Turquoise: 'Can hold painful sensations in awareness without guarding or reacting. High degree of body awareness and integration.' Shadow Turquoise: 'focusing on the cosmic/energetic dimension to the point of neglecting practical, physical steps. Can be passive, waiting for the universe to heal them.' Per Phase4: 'differentiate by checking for social engagement and embodiment.' Check M16: 'cosmic framing may mask subtle Manager.'",
+        "then_routing": "Per Phase4: 'use Stone 6 frequently to anchor holistic awareness in body.' Test with direct embodiment invitation: 'What sensation are you aware of in your hip right now \u2014 not energetically, but physically?' If client can access direct sensation, healthy Turquoise \u2014 honor holistic frame while including practical steps. If client cannot access sensation or deflects to energetic language, possible Manager using cosmic frame. Per M16 Self vs Manager Differentiation: 'test with ambiguity \u2014 Self tolerates uncertainty, Manager becomes more controlled.'",
+        "regression_indicator": "Per Phase4: 'Turquoise shadow risk: using holistic/cosmic language as intellectualization defense.' If spiritual framing increases when body sensation is invited, possible Manager protection. Per M18 intellectualization_detection: 'Client talks ABOUT the movement rather than describing felt sensation.' Address as parts issue (M16) before vMeme communication. If client shows dorsal markers despite 'spacey' presentation, per Phase4: 'differentiate from dorsal by checking for social engagement markers.'"
+      },
+      {
+        "observation": "Client asks how treatment connects to larger system \u2014 sleep, stress, diet. Per Phase3 Yellow: 'Sees the connections between physical symptoms, lifestyle, mindset, and environment.'",
+        "if_check": "IF client demonstrates systemic thinking AND integrates multiple information sources AND autonomic state is highly flexible Green (can shift perspectives without reactivity)",
+        "probable_vmeme": "Yellow / G-T",
+        "confirmation_markers": "Confirming: 'I see how this connects to my stress patterns', curious about function of symptoms, flexible approach that integrates multiple frameworks. Per Phase1: 'Characterized by Vast Conceptual Space, Freedom from Irrational Fear, and Multi-Source Learning.' Disconfirming: needs one correct answer (\u2192 Blue or Orange), overwhelmed by complexity (\u2192 lower vMeme under stress), needs relational validation for decisions (\u2192 Green).",
+        "then_routing": "Engage as peer. Provide systemic information. Per Phase2: 'Appreciates complexity, systemic explanations, and functional frameworks. Values competence and knowledge over bedside manner.' Collaborate: 'You're seeing the pattern between your sleep and your tissue tension. What's your sense of where to intervene in that system?' Respect their integration: 'You've already synthesized information from multiple sources \u2014 what's missing for you?'",
+        "regression_indicator": "Per Phase3: 'Can get paralyzed by complexity.' If client becomes stuck in analysis, may need gentle direction: 'Given everything you know, what does your body want to try first?' Per Phase4: 'Yellow regression is less driven by fear, more by temporary overwhelm.' If complexity paralysis appears, check if it looks like dorsal (truly stuck) or just processing (will resolve). Yellow typically returns quickly to functional state."
+      },
+      {
+        "observation": "Client presents with clear vMeme markers but has disclosed trauma history or shows IFS parts activation during session. Per Phase4: 'M16 Self-Energy Prerequisite Gate requires 8 Cs before proceeding.'",
+        "if_check": "IF client shows apparent vMeme presentation AND M16 parts activation detected (Manager bracing, Firefighter reactivity, or Exile emergence) AND autonomic state shows corresponding shift",
+        "probable_vmeme": "Parts activation overrides vMeme routing",
+        "confirmation_markers": "Per Phase4: 'The three-layer check structure (autonomic \u2192 affective \u2192 parts) creates coherent decision tree.' M16 takes precedence when parts are activated. Per Phase4 constitutional check: 'M16 Self-Energy gate takes precedence. Even with ventral indicators, must perform Feel Towards test before confirming Self-presence.'",
+        "then_routing": "Per M16 Feel Towards Diagnostic Test: 'Ask How do you feel toward that part?' If answer is NOT one of 8 Cs (curious, compassionate, calm, etc.) \u2192 a Concerned Part is blended. vMeme communication adaptation is secondary to parts stabilization. Only after Self-presence confirmed can vMeme routing reliably inform communication. Use vMeme frame to support parts work: Blue Manager may need 'correct protocol' for giving permission; Orange Manager may need efficiency rationale; Green Exile may need relational safety.",
+        "regression_indicator": "Per Phase4: 'Blending cascade parallels Porges dissolution sequence.' Parts activation often precedes or accompanies vMeme regression. If Protector intensifies despite appropriate vMeme communication, the communication is landing on the part not the Self. Per M16 Protector Backlash Prevention: 'IF Protector gives qualified yes but body language shows increased guarding... Immediately STOP Exile work. Return to Protector.' Address parts before resuming vMeme-informed communication."
+      }
+    ]
+  },
+  "rule_count": 43,
+  "phase5_count": 21
+}

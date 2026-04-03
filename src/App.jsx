@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles, Brain } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -18,6 +18,7 @@ import Strategic from './pages/Strategic';
 import StrategicPlaybook from './pages/StrategicPlaybook';
 import WorkHistory from './pages/WorkHistory';
 import ClinicalBlog from './pages/ClinicalBlog';
+import InternalMechanic from './pages/InternalMechanic';
 import Telemetry from './pages/Telemetry';
 import ProjectsTasks from './pages/ProjectsTasks';
 import TaskQueue from './pages/TaskQueue';
@@ -53,6 +54,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Clinical Blog', path: '/blog', icon: <FileText size={20} /> },
     { name: 'Task Queue (50)', path: '/taskqueue', icon: <Layers size={20} /> },
     { name: 'Work History', path: '/history', icon: <Clock size={20} /> },
+    { name: 'Internal Mechanic', path: '/mechanic', icon: <Brain size={20} /> },
     { name: 'Projects & Tasks', path: '/projects', icon: <ListChecks size={20} /> },
     { name: 'Telemetry', path: '/telemetry', icon: <BarChart3 size={20} /> },
     { name: 'Wishlist', path: '/wishlist', icon: <Sparkles size={20} /> },
@@ -165,6 +167,7 @@ function App() {
       <div className="app-container">
         <div className="animated-bg"></div>
         <GlassCursorBlob />
+        <CookieConsent />
         <Sidebar user={session.user} onLogout={handleLogout} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -178,6 +181,7 @@ function App() {
           <Route path="/blog" element={<ClinicalBlog />} />
           <Route path="/taskqueue" element={<TaskQueue />} />
           <Route path="/history" element={<WorkHistory />} />
+          <Route path="/mechanic" element={<InternalMechanic />} />
           <Route path="/projects" element={<ProjectsTasks />} />
           <Route path="/telemetry" element={<Telemetry />} />
           <Route path="/wishlist" element={<Wishlist />} />

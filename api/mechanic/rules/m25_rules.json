@@ -1,0 +1,943 @@
+{
+  "module": "m25",
+  "phase6_rules": [
+    {
+      "rule_name": "Backwards Law Detection",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client reports trying hard to relax but body becomes more tense during session AND effort level increases with decreased result AND breathing becomes more shallow with increased effort AND client uses phrases like 'I'm really trying' or 'I should be able to relax by now'",
+      "then_directive": "THEN identify Backwards Law in action. Stop all relaxation cuing. Ask client to intentionally explore the tension with curiosity instead of trying to eliminate it. Reduce_Effort approach: reframe from goal-oriented to process-oriented.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Stop the Rep Rule (M9) | Manager Detection Protocol (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Diagnosis Identity Attachment",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client repeatedly says 'I am my chronic pain' or 'I am a back pain sufferer' AND cannot separate sensation from identity AND uses permanent language ('always', 'never') despite objective variation in symptoms across sessions",
+      "then_directive": "THEN identify Attachment_Diagnosis pattern. Introduce the Whirlpool Pattern metaphor. Guide language shift from 'I am' to 'Right now I notice'. Track sensation changes across the session as evidence of impermanence. Do NOT force language change if client becomes hostile.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Burden vs Structural Differentiation (M16) | ci_stepping_stone_7 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Outcome Timeline Attachment",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client fixates on specific timeline AND measures every session against the timeline goal rather than noticing present-moment changes AND anxiety increases when progress doesn't match expected trajectory",
+      "then_directive": "THEN identify Attachment_Outcome pattern. Shift session focus to exploration rather than outcome. Practice noticing what IS happening rather than what SHOULD be happening. Apply Non-Attachment to Outcome as therapeutic principle.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "SEEKING Dominant Green Routing (M9+M19)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Square Zen Movement Detection",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF movement is rigid, identical repetitions, performed like a test AND client asks repeatedly 'Am I doing this right?' or self-corrects constantly AND no variation across repetitions AND cannot tolerate unstructured exploration",
+      "then_directive": "THEN identify Spontaneity_Absent with Square Zen quality. Create exploratory movement context with no 'correct' form. Use language like 'What happens if you try it this way?' Remove success/failure framing. Model playful, curious attitude.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | PLAY Dominant Green Routing (M9+M19)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Controlling Controls Detection",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client is constantly self-correcting movements AND verbally reports they are trying to 'do it right' AND movement lacks wiggliness AND perpetual self-supervision mode active",
+      "then_directive": "THEN identify Controlling_Controls pattern. Guide client toward Bare Attention on sensation rather than performance. Introduce Play to bypass the need to 'do it right'. Apply Backwards Law: trying to be perfect creates rigidity.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | intellectualization_detection (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Clinician Outcome Attachment",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF clinician notices own body tensing, breath shallowing, or sense of urgency to 'fix' this client AND clinician feels more distressed than client about lack of progress AND clinician adds techniques without clear clinical indication",
+      "then_directive": "THEN identify Clinician_Attachment. Stop. Breathe. Return to Observer Stance. Release attachment to outcome. Remember: job is to create Holding Environment, not to fix. Practice Non-Attachment to Outcome.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16) | clinician_activation_management (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Effortful Pursuit Creates Opposite",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client trying to be spontaneous appears more studied and rigid AND pursuing relaxation creates tension AND pursuing health creates anxiety AND pursuing security creates insecurity",
+      "then_directive": "THEN identify Backwards Law violation. Introduce paradoxical intention: intentionally 'go with' the unwanted state. Shift from goal-oriented to process-oriented approach. Explore tension instead of fighting it.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "FEAR Dominant Amber Routing (M9+M19)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Wanting vs Needing Differentiation",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF client expresses strong desire for improvement AND clinician assessing whether this is healthy goal-setting or attachment",
+      "then_directive": "THEN differentiate wanting improvement (healthy, allows for present-moment awareness) from needing it (attachment, creates tension). Attachment markers: catastrophic thinking if goal not met, inability to notice present-moment changes, anxiety that increases with effort. Healthy goal-setting: can hold goal lightly while attending to process.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone rule \u2014 no direct cross-module equivalent. Consider linking to M9 Window of Tolerance (desire within WoT = wanting; outside = needing)."
+    },
+    {
+      "rule_name": "Physical Bracing Resistance",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF client displays observable physical bracing (shoulders elevated, jaw clenched, breath held) that persists despite verbal cuing to release AND bracing intensifies when client is asked to release it AND client reports feeling 'unsafe' or 'unprotected' when armor softens",
+      "then_directive": "THEN identify Resistance_Physical with Compulsive Armoring. Reflect what you observe without judgment: 'I notice your shoulders are lifted and your jaw is tight. I'm curious what that tension is protecting.' Treat Suffering_as_Signal not enemy. Do NOT ask client to 'let go'.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | Protector Permission Mandate (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Mental Narrative Resistance",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF client uses catastrophizing language AND cannot separate raw sensation from meaning-making AND story about the sensation is more prominent than the sensation itself AND language of permanence and catastrophe",
+      "then_directive": "THEN identify Resistance_Mental with Prapanca (mental proliferation). Guide client to parse Felt Sense from story. Ask 'What is the actual sensation you're feeling right now, before the thought about what it means?' Practice Bare Attention on raw sensation.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_stepping_stone_7 (M18) | interpretation_not_feeling_redirect (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Secondary Resistance Loop",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF client reports frustration about being frustrated or shame about feeling anxious AND judges their own emotional response AND uses 'should' language about feelings AND secondary loop of self-criticism creates more tension than original emotion",
+      "then_directive": "THEN identify Resistance_Secondary (resistance to the resistance). Validate the initial emotion as a signal. Reflect 'It sounds like part of you is frustrated, and another part is judging that frustration. What if we just let the frustrated part be heard?' Interrupt the secondary resistance loop.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | Polarization Detection and Management (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Argument With Reality Resistance",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF client describes 'This should not be happening' about their current experience AND is in argument with reality AND uses 'should' language frequently AND cannot accept present-moment experience",
+      "then_directive": "THEN identify Resistance_Mental. Reflect: 'I hear you saying this shouldn't be happening, and it is happening. What if we just notice what IS happening right now?' Practice Bare Attention without judgment. Do NOT argue or try to convince client reality is acceptable.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_stepping_stone_6 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Resistance vs Protection Differentiation",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF physical bracing detected AND clinician assessing whether this is Buddhist resistance or IFS Protector function",
+      "then_directive": "THEN differentiate: Buddhist resistance is mental proliferation creating suffering on top of sensation. IFS Protector is adaptive strategy with positive intent. Both present similarly but intervention differs. Ask 'What is this tension trying to do for you?' If answer reveals positive intent (protection, safety), treat as M16 Protector. If answer reveals narrative about how things should be different, treat as M25 resistance.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | functionality_question_for_guarding (M18)",
+      "source_module": "M25_Watts+M16",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Dukkha Squirrel Cage Recognition",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF client reports feeling 'stuck' or describes a repetitive, non-productive struggle with their symptoms AND effort to escape the unwanted experience is the very thing that perpetuates it",
+      "then_directive": "THEN identify Dukkha (chronic frustration) pattern. Apply Backwards Law by inviting curiosity about the 'stuck' feeling instead of trying to escape it. Practice Bare Attention on the feeling. Introduce concept: 'What if trying to escape is what keeps you stuck?'",
+      "override_level": "Recommended",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. M22 Epstein contains structural parallel (basic fault loop). Consider linking: Dukkha_Squirrel_Cage \u2194 Basic_Fault_Activation (M22)."
+    },
+    {
+      "rule_name": "Observer Capacity Present",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF client can describe sensation without adding story, judgment, or prediction about what it means AND uses present-tense, descriptive language AND can witness sensation changing without needing to fix it AND physiological signs of down-regulation present",
+      "then_directive": "THEN identify Observer_Present with Bare Attention capacity. Acknowledge this capacity explicitly. Continue to support Bare Attention practice. Gradually introduce more challenging sensations to test stability of observer stance.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Self-Energy Prerequisite Gate (M16) | Ventral State Detection (M9)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Observer Paradox Detection",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF client describes experience as happening TO them as a separate observer AND reports feeling 'stuck in a squirrel cage' of self-observation AND increased effort to observe creates more tension",
+      "then_directive": "THEN identify Observer_Absent with Observer Paradox active. Introduce the paradox: 'The eye cannot see itself.' Shift from trying to observe oneself to simply observing sensations. Practice allowing experience rather than supervising it.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Observer Capacity Under Load",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF client demonstrates observer capacity at baseline AND clinician testing stability under increased sensation intensity",
+      "then_directive": "THEN track whether observer capacity remains stable when sensation intensifies or whether storytelling returns under load. If observer collapses suddenly under minor stress, may indicate False Self performance rather than genuine integration. Continue building capacity before advancing.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Self vs Manager Differentiation (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Observer Capacity as Prerequisite",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF clinician considering advanced clinical work requiring client witness capacity",
+      "then_directive": "THEN verify observer capacity is present and stable. Observer capacity (ability to witness sensation without reacting) is prerequisite for advanced clinical work. If absent, focus on building this capacity before proceeding with deeper exploration.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_precaution_1_client_readiness_gate (M18) | Observing Ego Capacity Assessment (M22)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Bodymind Connection Detection",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF client makes connection between physical pattern and life pattern AND recognition comes with felt shift or release rather than just intellectual insight",
+      "then_directive": "THEN identify Observer_Present with Bodymind Unity emerging. Acknowledge this integration. Ask 'What becomes possible if you bring awareness to this pattern in both contexts?' This is high-level observer capacity.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_stepping_stone_8 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Clinician Observer Stance Lost",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF clinician feels frustrated with client's 'resistance' or pace of change AND uses language like 'non-compliant' or 'resistant' about client AND session feels effortful rather than flowing",
+      "then_directive": "THEN identify Clinician_Observer_Lost. Practice Bare Attention on own resistance. Ask 'What is this client's symptom trying to protect?' Return to Therapeutic Patience. Reframe client behavior as signal not enemy.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16) | clinician_activation_management (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Wu Wei Emerging Through Release",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF client exhibits unprompted yawning, stretching, postural shifts, or small 'wiggly' movements during session AND movements appear spontaneous not controlled AND often follows a moment of deepened breath or visible softening AND has quality of release rather than effort",
+      "then_directive": "THEN identify Wu_Wei_Emerging. Do not interrupt or correct. These are spontaneous releases indicating nervous system integration. Create space for them. If appropriate, reflect: 'I notice your system is finding its own way'.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Ascending Transition Support Green-Bound (M9)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Play State Detection",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF during movement exploration client laughs spontaneously or expresses surprise at unexpected capacity AND movement has exploratory quality AND client is curious rather than self-critical AND novel movement patterns emerge that client 'discovers' rather than performs",
+      "then_directive": "THEN identify Spontaneity_Present. Support this state by maintaining playful, exploratory context. Avoid shifting back to corrective or goal-oriented mode. This IS the therapeutic intervention. Assess for genuine Play/Fun state vs nervous laughter.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "PLAY Dominant Green Routing (M9+M19)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Effortless Action Detection",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF client moves with fluid, efficient grace AND movement appears to happen 'by itself' AND has 'wiggliness' quality AND client reports sense of ease or 'it just happened' AND no visible effort or self-consciousness",
+      "then_directive": "THEN identify Wu_Wei_Emerging (Sahaja - spontaneous naturalness). This is the goal state. Do not interrupt with technique or correction. Create space for client to stabilize in this state. If appropriate, reflect: 'This is what we're working toward \u2014 this ease'.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Ventral State Detection (M9)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Systemic Self-Organization",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF change in one area (e.g. jaw release) creates visible change elsewhere (e.g. hip ROM improves) AND change feels 'wiggly' and organic, not forced AND client notices connection with curiosity AND system is self-organizing rather than being manually corrected",
+      "then_directive": "THEN identify Wu_Wei_Emerging with Mutual Arising visible. Do not over-direct. Let the system continue to self-organize. Reflect the interconnection: 'Notice how softening here affected there.' Embody Non-Attachment to specific technique.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. M9 autonomic state integration is the closest mechanism. Consider: Mutual_Arising_Clinical \u2194 Ventral_Vagal_Integration (M9)."
+    },
+    {
+      "rule_name": "External Structure Intolerance",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF client cannot tolerate even brief pauses or unstructured time AND immediately asks 'What should I do next?' AND appears anxious without constant direction AND cannot self-organize movement",
+      "then_directive": "THEN identify Spontaneity_Absent. Start with very short unstructured intervals. Ask 'Just notice what your body wants to do for the next 30 seconds.' Gradually increase tolerance for self-directed exploration. If client becomes panicked, assess for deeper reliance on False Self control.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | False_Self_Compliance_Detection (M21)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Impermanence Recognized",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF client verbalizes that today feels different from yesterday AND can track the variation without needing it to mean 'progress' or 'setback' AND uses language like 'right now' or 'today' rather than 'always'",
+      "then_directive": "THEN identify Impermanence_Recognized (Anicca awareness). Reinforce this recognition. Ask 'What does it mean that your experience can change?' Connect to impermanence as path out of stuck identity.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. M22 temporal self-metaphor recognition is equivalent gate. Consider: Impermanence_Recognized \u2194 Temporal_Self_Metaphor_Emergence (M22)."
+    },
+    {
+      "rule_name": "Impermanence Denied Despite Evidence",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF despite objective improvement visible to clinician, client insists 'nothing has changed' or 'I'm still broken' AND cannot see or dismisses objective change AND narrative of brokenness is more powerful than sensory evidence",
+      "then_directive": "THEN identify Impermanence_Denied. Gently reflect the discrepancy between objective change and unchanging narrative. Ask 'What would it mean if you weren't broken?' Explore secondary gain of brokenness narrative. If client becomes hostile, brokenness narrative is serving protective function.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Burden vs Structural Differentiation (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Language Shift to Fluid Framing",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF client language shifts from 'I am in pain' to 'I notice pain right now' AND shift feels embodied not performative AND demonstrates changed relationship to sensation",
+      "then_directive": "THEN identify Impermanence_Recognized with dis-identification beginning. Reinforce this shift. Connect to Whirlpool Pattern: you are not the pain, you are the awareness noticing it. This is Anatta (no-self) beginning to be realized.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_stepping_stone_16 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Clinical Language Impermanence Application",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF clinician using language with client about their condition",
+      "then_directive": "THEN apply impermanence-informed language. Shift from fixed ('your condition') to fluid ('what you notice today'). Avoid reinforcing permanent identity with diagnosis. Model process-oriented rather than thing-oriented language. Reserve for clients who have begun showing impermanence recognition.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. Applies across all agents. No specific rule needed \u2014 embed in agent tone guidelines."
+    },
+    {
+      "rule_name": "Pain vs Suffering Differentiation Capacity",
+      "rule_category": "Suffering_Differentiation",
+      "if_condition": "IF client can differentiate between raw sensation ('I feel burning in my hip') and story about sensation ('This means my hip is deteriorating') AND can identify Prapanca (mental proliferation) and return to Felt Sense",
+      "then_directive": "THEN identify Suffering_vs_Pain differentiation capacity present. Reinforce this capacity. Practice Bare Attention on more challenging sensations. Teach client this is core skill for reducing suffering even when pain persists.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_stepping_stone_7 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Suffering Exceeds Objective Findings",
+      "rule_category": "Suffering_Differentiation",
+      "if_condition": "IF client reports suffering (distress, catastrophizing, despair) that far exceeds observable physical findings or functional limitation AND discrepancy between objective assessment and subjective distress AND story about pain is more disabling than sensation itself",
+      "then_directive": "THEN identify Suffering_Exceeds_Findings. Gently reflect the discrepancy. Introduce Pain vs Suffering distinction. Ask 'What is the sensation right now, and what is the story you're telling about it?' Practice parsing the two. If suffering level interferes with treatment engagement, flag for interdisciplinary support.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Burden vs Structural Differentiation (M16) | Posture-Affect Integration Rule (M9+M19)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Secondary Tension From Resistance",
+      "rule_category": "Suffering_Differentiation",
+      "if_condition": "IF resistance to primary pain creates secondary tension AND client in argument with sensation AND mental proliferation smothering raw sensation",
+      "then_directive": "THEN identify suffering (resistance) creating additional suffering on top of pain (sensation). Guide client to parse Felt Sense from the story about it. 'What is the pure sensation, before the thought about it?' Reduce resistance layer to reduce total distress.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "ci_stepping_stone_6 (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "When Acceptance vs Action Needed",
+      "rule_category": "Suffering_Differentiation",
+      "if_condition": "IF suffering signals detected AND clinician assessing whether acceptance or action is indicated",
+      "then_directive": "THEN differentiate: If suffering is from resistance to unchangeable present moment (what IS), acceptance is indicated. If suffering is from action needed but not taken (treatable condition being neglected), action is indicated. Suffering as signal provides information about what is needed, not prescription for passivity.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. M18 Stone 6/7 governs similar differentiation. Consider: Acceptance_vs_Action \u2194 ci_stepping_stone_6 (M18)."
+    },
+    {
+      "rule_name": "Clinician Presence Reset",
+      "rule_category": "Clinician_Presence",
+      "if_condition": "IF clinician notices own attachment to outcome for specific client OR clinician notices own resistance to client's pace or presentation",
+      "then_directive": "THEN implement Clinician_Reset. Stop. Breathe. Return to Observer Stance. Release attachment to outcome. Remember wu wei for clinician: sometimes doing nothing is the most skillful intervention. Practice Bare Attention on own internal state.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16) | clinician_activation_management (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Clinician Beginner's Mind",
+      "rule_category": "Clinician_Presence",
+      "if_condition": "IF clinician working with familiar client AND noticing assumptions based on history",
+      "then_directive": "THEN apply beginner's mind: approach familiar client as if new. Release assumptions from previous sessions. Notice what IS present today rather than what has been present before. The clinician who sees the same client is not the same clinician; the client who is seen is not the same client.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Standalone. M16 Curiosity (8Cs) is equivalent. Consider: Beginner's_Mind \u2194 Curiosity_as_Self_Marker (M16)."
+    },
+    {
+      "rule_name": "Clinician State Affects Client",
+      "rule_category": "Clinician_Presence",
+      "if_condition": "IF clinician's internal state demonstrably affects client's state in real-time AND client's nervous system responds to clinician's state",
+      "then_directive": "THEN recognize Mutual Arising in clinical field. If clinician state is destabilizing client, pause and self-regulate first. If clinician state is stabilizing client, maintain embodied presence as primary intervention. Co-regulation is occurring.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Clinician Self-Energy as Co-Regulator (M16)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Clinician Boredom or Disconnection",
+      "rule_category": "Clinician_Presence",
+      "if_condition": "IF clinician feels bored, disconnected, or going-through-motions during session AND clinician has lost embodied presence AND session feels mechanical",
+      "then_directive": "THEN identify Clinician_Observer_Lost. Pause. Take three breaths. Return to body. Ask: what is actually present in this room right now? Re-establish presence before continuing. This IS the intervention. May be mirroring client's disconnect or clinician's own burnout.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "clinician_activation_management (M18)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "No Meditation Teaching",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF PT recognizes client would benefit from formal meditation practice",
+      "then_directive": "THEN the PT does NOT teach meditation or formal Buddhist practice. The PT observes attachment, resistance, and spontaneity patterns and adjusts the clinical environment. If formal meditation practice is indicated, refer to appropriate resource or recommend self-study materials.",
+      "override_level": "Required",
+      "interacts_with_rule": "Meditation Homework Contraindications (M22)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "No Buddhist Terminology With Clients",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF PT using Buddhist/Watts concepts for clinical reasoning",
+      "then_directive": "THEN Buddhist terminology (Dukkha, Anicca, Anatta, Wu Wei, Prapanca, Sunyata) is for clinician reasoning, NOT client-facing communication, UNLESS client is Phase 5-6 Behavior Phase with established integration capacity. Use simple terms: 'Notice how that changes' rather than 'This is Anicca'.",
+      "override_level": "Required",
+      "interacts_with_rule": "Winnicott_Language_For_Clinician_Only (M21)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "No Philosophizing During Sessions",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF session time could be used discussing Buddhist concepts vs applying them through movement",
+      "then_directive": "THEN the PT does NOT philosophize during sessions. Awareness principles are applied through movement, not discussion. The PT creates conditions for observer capacity through movement experience, not verbal instruction. Movement is the medium.",
+      "override_level": "Required",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Scope rule \u2014 standalone by design. No cross-module interaction needed."
+    },
+    {
+      "rule_name": "No Paradoxical Instructions to Let Go",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF clinician tempted to suggest client 'let go' or 'stop resisting'",
+      "then_directive": "THEN the PT does NOT suggest client 'let go' or 'stop resisting'. These are paradoxical instructions that increase resistance per Backwards Law. Instead: 'What do you notice in that tension?' or 'I'm curious what that bracing is trying to do.' Create conditions, do not instruct release.",
+      "override_level": "Required",
+      "interacts_with_rule": "Backwards Law Detection",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Observation Informs Environment Not Interpretation",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF clinician notices attachment, resistance, or spontaneity patterns",
+      "then_directive": "THEN the PT observes attachment, resistance, spontaneity patterns and adjusts clinical environment accordingly. The PT does NOT interpret patterns to client or provide Buddhist framework education. Observation informs how clinician creates conditions, not what clinician says about client's experience.",
+      "override_level": "Required",
+      "interacts_with_rule": "PT_Does_Not_Do_Psychotherapy (M21)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Buddhist Concepts for Clinician Reasoning Only",
+      "rule_category": "Scope_Boundary",
+      "if_condition": "IF Buddhist concepts (attachment, resistance, impermanence, observer) being used in clinical context",
+      "then_directive": "THEN Buddhist concepts are for clinician reasoning, NOT client-facing teaching. The clinician uses these lenses to understand what they observe and adjust intervention approach. The client experiences the result (conditions that support observer capacity, reduced resistance) without needing to understand the framework.",
+      "override_level": "Required",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Scope rule \u2014 standalone by design. Parallel: Winnicott_Language_For_Clinician_Only (M21) already listed as related."
+    },
+    {
+      "rule_name": "Kylie Attachment Language Recognition",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF client communication in scheduling interactions shows attachment language (urgent timeline demands, catastrophizing about appointments, rigid requirements)",
+      "then_directive": "THEN Kylie recognizes potential attachment pattern influencing administrative communication. Note pattern for clinician awareness. Maintain consistent, predictable communication tone. Do not engage with urgency escalation. Reflect impermanence gently if appropriate: 'Let's see what options are available for this week.'",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Kylie_Holding_Environment_Extension (M21)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Kylie Progress Communication Impermanence",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF Kylie communicating with client about progress or treatment",
+      "then_directive": "THEN use language that reflects impermanence without teaching Buddhist concepts. Avoid reinforcing fixed narrative: 'Your next session with Lance' rather than 'Your ongoing treatment for your back condition.' Model process orientation in administrative communication.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Cross-agent rule \u2014 Kylie does not have module-level rules to reference. Link to Kylie v5.1 tone guidelines instead."
+    },
+    {
+      "rule_name": "Coach Lance Attachment Pattern Recognition",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF Coach recognizes Lance's own attachment patterns activating (attachment to client outcomes, attachment to specific techniques, resistance to client's pace)",
+      "then_directive": "THEN apply Backwards Law to self: the more Lance tries to force outcome, the more it recedes. Guide return to Non-Attachment to Outcome. Remind: 'Your job is to create conditions, not to produce results. What would wu wei look like here?'",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Coach_Personal_Charge_Recognition (M24)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Coach Lance Resistance Recognition",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF Coach detects Lance's own resistance patterns (resistance to client presentation, resistance to slow progress, resistance to uncertainty)",
+      "then_directive": "THEN guide Lance to apply observer stance to own resistance. 'What are you resisting about this client's process? What would happen if you dropped the resistance?' Practice what is taught: observe resistance without adding resistance to resistance.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Coach_Messenger_Identification (M24)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Coach Wu Wei in Personal Practice",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF Coach supporting Lance's personal movement practice or self-care",
+      "then_directive": "THEN model wu wei principles. When Lance's personal practice becomes effortful or goal-driven, reflect Backwards Law. Support spontaneous gesture over rigid protocol. Lance's own embodiment of wu wei affects clinical presence.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "NOT IN SOURCE",
+      "source_module": "M25_Watts",
+      "cross_link_note": "Cross-agent rule. Consider linking to Coach_Effortless_Effort_Framing (M24) if M24 Coach rules exist."
+    },
+    {
+      "rule_name": "Intake Suffering vs Pain Recognition",
+      "rule_category": "Cross_Agent",
+      "if_condition": "IF intake language shows suffering indicators beyond pain description (catastrophizing, permanent identity language, extensive narrative about sensation, story disproportionate to reported symptoms)",
+      "then_directive": "THEN flag for clinician awareness of probable suffering (resistance layer) on top of pain (sensation). Note whether intake language shows capacity to describe sensation separately from story about sensation. This informs initial session approach regarding observer capacity building.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Intake_Charge_Language_Recognition (M24) | Intake_False_Self_Detection (M21)",
+      "source_module": "M25_Watts",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Attachment Pattern Ventral State Check",
+      "rule_category": "Attachment_Detection",
+      "if_condition": "IF attachment pattern detected (outcome, diagnosis, timeline, method) AND autonomic state assessment needed",
+      "then_directive": "THEN check M9 autonomic state. Attachment patterns intensify with sympathetic activation. If client in Amber state, attachment may be fear-driven Manager attempting control. Address autonomic regulation before directly addressing attachment pattern. Attachment work requires sufficient ventral regulation.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Sympathetic State Detection (M9) | Manager Detection Protocol (M16)",
+      "source_module": "M25_Watts+M9",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Resistance Physical With Protector Layer",
+      "rule_category": "Resistance_Detection",
+      "if_condition": "IF physical resistance detected (bracing, guarding, breath holding) AND M16 Protector permission question indicates protective function",
+      "then_directive": "THEN integrate M16 and M25 approaches. Physical bracing may be Protector (M16) AND resistance layer (M25). Use M16 to get Protector permission, use M25 to reduce mental proliferation about the bracing. Do not force release without Protector permission even if resistance pattern visible.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Manager Detection Protocol (M16) | Protector Permission Mandate (M16)",
+      "source_module": "M25_Watts+M16",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Observer Capacity Requires Ventral",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF assessing observer capacity AND autonomic state not yet confirmed",
+      "then_directive": "THEN verify M9 ventral state before confirming observer capacity. True observer capacity (Bare Attention) requires ventral vagal regulation. Apparent observer capacity in sympathetic or dorsal state may be dissociation (dorsal) or Manager performing observer (sympathetic). Use M9 markers plus M16 Feel Towards test.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Ventral State Detection (M9) | Self-Energy Prerequisite Gate (M16) | M9\u00d7M16 Feel Towards Gate Active in M22 Context",
+      "source_module": "M25_Watts+M9+M16",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Spontaneity Requires Play State",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF wu wei or spontaneity markers being assessed AND M9/M19 state not confirmed",
+      "then_directive": "THEN verify M9 ventral state with M19 PLAY system accessible. Wu Wei (effortless action) maps to ventral vagal state with PLAY system online. FEAR inhibits PLAY inhibits spontaneity. RAGE suppresses the flow quality of wu wei. Address autonomic state and affective system before expecting spontaneity.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "PLAY Dominant Green Routing (M9+M19) | Fear Inhibits Play Gate (M9+M19)",
+      "source_module": "M25_Watts+M9+M19",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Impermanence Application With Parts",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF client shows attachment to fixed identity AND M16 parts assessment indicates Exile carrying identity burden",
+      "then_directive": "THEN integrate M16 and M25 approaches. Fixed identity narrative may be Exile burden (M16) that impermanence reframe alone cannot address. Get Protector permission before introducing impermanence concepts. Unburdening Exile may naturally allow impermanence recognition to emerge. Do not force impermanence reframe on burdened Exile.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Burden vs Structural Differentiation (M16) | Exile Work Sequence Enforcement (M16)",
+      "source_module": "M25_Watts+M16",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Suffering Layer With Affective System",
+      "rule_category": "Suffering_Differentiation",
+      "if_condition": "IF suffering exceeds pain AND M19 affective system assessment indicates PANIC/GRIEF dominant",
+      "then_directive": "THEN integrate M19 and M25 approaches. Suffering on top of pain may be PANIC/GRIEF activation creating despair narrative. CARE system engagement (M19) reduces PANIC/GRIEF which reduces suffering layer. Suffering differentiation work requires PANIC/GRIEF to be settled first. Cannot parse pain from suffering while PANIC/GRIEF flooding system.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "PANIC/GRIEF Dominant Red Routing (M9+M19) | CARE Inhibits PANIC/GRIEF (M19)",
+      "source_module": "M25_Watts+M19",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Holding Environment Enables Observer Development",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF observer capacity building work AND M21 holding environment status not assessed",
+      "then_directive": "THEN verify M21 holding environment is intact. Observer capacity develops within holding. Without adequate holding, client cannot risk the vulnerability of witnessing without controlling. Broken holding triggers False Self control which blocks observer development. Establish holding before expecting observer capacity.",
+      "override_level": "Recommended",
+      "interacts_with_rule": "Holding_Intact_Detection (M21) | Holding_Broken_Settle_Routing (M21)",
+      "source_module": "M25_Watts+M21",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Wu Wei Parallels Going On Being",
+      "rule_category": "Spontaneity_Detection",
+      "if_condition": "IF wu wei markers detected AND M21 developmental status being assessed",
+      "then_directive": "THEN recognize Wu Wei and Winnicott's Going-On-Being describe the same phenomenological state. Both require environment that does not impinge. Over-cueing, excessive correction, or too-rapid progression disrupts both wu wei and going-on-being. Protect both through Winnicott holding principles.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Going_On_Being_Pacing (M21) | True_Self_Hold_Space_Routing (M21)",
+      "source_module": "M25_Watts+M21",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Bare Attention Maps to CI Stone 6",
+      "rule_category": "Observer_Cultivation",
+      "if_condition": "IF teaching or assessing Bare Attention capacity",
+      "then_directive": "THEN recognize Bare Attention and CI Stone 6 (bring into bodily experience) are the same intervention. Both direct attention to present-moment sensation without adding interpretation. Use Stone 6 language to operationalize Bare Attention: 'What do you actually FEEL in your body right now?'",
+      "override_level": "Advisory",
+      "interacts_with_rule": "ci_stepping_stone_6 (M18) | Present-Moment Remembering via Stone 6 (M22)",
+      "source_module": "M25_Watts+M18",
+      "cross_link_note": ""
+    },
+    {
+      "rule_name": "Whirlpool Pattern Supports Unburdening",
+      "rule_category": "Impermanence_Application",
+      "if_condition": "IF client has completed M16 unburdening work AND ready for Phase 5-6 integration",
+      "then_directive": "THEN Whirlpool Pattern can support integration of unburdening. After Exile unburdened, Whirlpool metaphor helps client understand they are a process not a fixed thing. Can now hold: 'I had those burdens AND I am also the flowing awareness that can release them.' Sequential: M16 unburdening THEN M25 impermanence reframe.",
+      "override_level": "Advisory",
+      "interacts_with_rule": "Temporal Self-Metaphor Readiness (M22)",
+      "source_module": "M25_Watts+M16+M22",
+      "cross_link_note": ""
+    }
+  ],
+  "phase5_decision_trees": {
+    "Phase5_DecisionTree": [
+      {
+        "observation": "Client reports trying hard to relax but body becomes more tense during session",
+        "if_check": "Ask client to rate their effort level. Observe if breathing becomes more shallow with increased effort. Check for phrases like 'I'm really trying' or 'I should be able to relax by now'",
+        "probable_pattern": "Backwards_Law",
+        "confirmation_markers": "Visible muscle bracing increases with verbal cues about relaxation. Effort level increases with decreased result. Client uses 'should' language about their ability to relax. Breathing becomes more shallow with increased effort",
+        "then_routing": "Reduce_Effort -- Stop all relaxation cuing immediately. Ask client to intentionally explore the tension with curiosity instead of trying to eliminate it. Introduce the Backwards Law concept: 'When you try to stay on the surface, you sink. What happens if we explore this tension instead of fighting it?' Reframe from goal-oriented (achieve relaxation) to process-oriented (notice what is)",
+        "escalation_trigger": "Client becomes distressed or panicked when asked to stop trying to relax, indicating attachment to control is creating existential threat. Escalate_Yellow -- Client cannot reduce effort without panic",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client repeatedly says 'I am my chronic pain' or 'I am a back pain sufferer'",
+        "if_check": "Ask client to describe what they notice in their body right now, in this moment, without using diagnostic labels. Check if client can separate sensation from identity",
+        "probable_pattern": "Attachment_Diagnosis",
+        "confirmation_markers": "Client cannot separate sensation from identity. Uses permanent language ('always', 'never') despite objective variation in symptoms across sessions. Diagnosis has become part of self-concept, not just a sensation",
+        "then_routing": "Reframe_Impermanence -- Introduce the Whirlpool Pattern metaphor: 'You are not the pain\u2014you are the awareness noticing it. The pain is something your system is doing, not what you are.' Guide language shift from 'I am' to 'Right now I notice'. Track sensation changes across the session as evidence of impermanence. Do NOT force language change if client becomes hostile",
+        "escalation_trigger": "Client becomes hostile when improvement is reflected or verbalizes 'I don't know who I am without this pain'. Brokenness narrative is serving protective function. Breaking the narrative threatens sense of self. Escalate_Yellow -- Client needs support to rebuild identity not organized around illness",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client fixates on specific timeline ('I need to be pain-free by summer for my daughter's wedding')",
+        "if_check": "Explore what happens if we shift focus from the future goal to what the body is teaching right now. Check if client can notice present-moment changes without measuring against timeline",
+        "probable_pattern": "Attachment_Outcome",
+        "confirmation_markers": "Client measures every session against the timeline goal rather than noticing present-moment changes. Anxiety increases when progress doesn't match expected trajectory. Cannot hold goal lightly while attending to process",
+        "then_routing": "Observe_Together -- Shift session focus to exploration rather than outcome. Practice noticing what IS happening rather than what SHOULD be happening. Introduce Non-Attachment to Outcome: 'What if we focus on what your body is discovering today, rather than where it needs to be by summer?' Differentiate wanting improvement (healthy) from needing it (attachment)",
+        "escalation_trigger": "Client reports catastrophic thinking about missing the timeline ('If I'm not better by then, my life is ruined'). Timeline attachment creating sympathetic activation that prevents healing. Escalate_Yellow -- Timeline attachment interfering with ability to engage in present-moment treatment",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Movement is rigid, identical repetitions, performed like a test with 'Square Zen' quality",
+        "if_check": "Introduce a novel, low-stakes movement task. Observe if client can explore variations or remains locked in rigid performance. Ask 'Can you find three different ways to do this movement?'",
+        "probable_pattern": "Spontaneity_Absent",
+        "confirmation_markers": "Movement lacks 'wiggliness'. Client asks repeatedly 'Am I doing this right?' or self-corrects constantly. No variation across repetitions. Cannot tolerate unstructured exploration. Movement is mimicry not discovery",
+        "then_routing": "Introduce_Play -- Create exploratory movement context with no 'correct' form. Remove the 'correct' version. Use language like 'What happens if you try it this way?' Remove success/failure framing. Model playful, curious attitude. Ask client to find their own way. Start with very small variations",
+        "escalation_trigger": "Client becomes anxious or distressed without prescribed form or external structure. Cannot tolerate 'wrong' movement without significant distress. False Self structure requires external authority to function. Perfectionism is protecting against shame or failure threat",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client displays observable physical bracing (shoulders elevated, jaw clenched, breath held) that persists despite verbal cuing to release",
+        "if_check": "Ask client 'What might this bracing be trying to do for you right now?' instead of 'Can you let that go?' Check if bracing has positive intent (protection) or is resistance to 'what is'",
+        "probable_pattern": "Resistance_Physical",
+        "confirmation_markers": "Bracing intensifies when client is asked to release it. Client reports feeling 'unsafe' or 'unprotected' when armor softens. Pattern is stable across multiple sessions. Compulsive Armoring present",
+        "then_routing": "Name_Resistance -- Reflect what you observe without judgment: 'I notice your shoulders are lifted and your jaw is tight. I'm curious what that tension is protecting.' Treat Suffering_as_Signal not enemy. Do NOT ask client to 'let go'. Use functionality question: 'What does this guarding do for you?' If answer reveals positive intent (protection, safety), treat as M16 Protector. If answer reveals narrative about how things should be different, treat as M25 resistance",
+        "escalation_trigger": "Any attempt to soften the bracing triggers panic, dissociation, or reports of feeling 'like I'm going to fall apart'. Armor is protecting against trauma activation. Escalate_Red -- Client loses ground. Stop all loading. Restore safety",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client uses catastrophizing language: 'This means I'll never get better' or 'This is proof I'm permanently damaged'",
+        "if_check": "Pause and ask 'What is the actual sensation you're feeling right now, before the thought about what it means?' Check if client can separate raw sensation from meaning-making",
+        "probable_pattern": "Resistance_Mental",
+        "confirmation_markers": "Client cannot separate raw sensation from meaning-making. Story about the sensation is more prominent than the sensation itself. Language of permanence and catastrophe. Prapanca (mental proliferation) smothering raw sensation",
+        "then_routing": "Name_Resistance -- Guide client to parse Felt Sense from Prapanca. Ask 'What is the pure sensation, before the thought about it?' Practice Bare Attention on raw sensation. Use Stone 7 language: 'That's the story about the pain. What do you actually FEEL right now?' Reflect: 'I hear you saying this shouldn't be happening, and it is happening. What if we just notice what IS happening right now?'",
+        "escalation_trigger": "Client cannot access raw sensation at all\u2014completely lost in the narrative. Mental proliferation is creating secondary suffering that exceeds the original pain. Resistance to 'what is' becomes so strong that client cannot engage with present-moment awareness at all",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client reports frustration about being frustrated or shame about feeling anxious ('I shouldn't be so upset about this')",
+        "if_check": "Ask 'What if the frustration is trying to tell you something important?' Explore the positive intent of the emotion. Check if judgment layer is creating more tension than original emotion",
+        "probable_pattern": "Resistance_Secondary",
+        "confirmation_markers": "Client judges their own emotional response. Uses 'should' language about feelings. Secondary loop of self-criticism creates more tension than original emotion. Resistance to the resistance active",
+        "then_routing": "Name_Resistance -- Validate the initial emotion as a signal. Reflect 'It sounds like part of you is frustrated, and another part is judging that frustration. What if we just let the frustrated part be heard?' Interrupt the secondary resistance loop. With compassion: 'I notice a lot of frustration present. I'm wondering what this frustration is protecting you from feeling?' Shift focus from judging the feeling to exploring its Felt Sense in the body",
+        "escalation_trigger": "Self-judgment spiral intensifies despite intervention. Client becomes self-attacking or reports feeling 'disgusted with myself'. Secondary resistance creating more suffering than primary issue. Escalate_Yellow -- Client needs support to interrupt shame cycle",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client can describe sensation without adding story, judgment, or prediction about what it means",
+        "if_check": "Track whether this capacity remains stable when sensation intensifies or whether storytelling returns under load. Test stability under increased sensation intensity",
+        "probable_pattern": "Observer_Present",
+        "confirmation_markers": "Client uses present-tense, descriptive language ('I notice pressure in my lower back'). Can witness sensation changing without needing to fix it. Physiological signs of down-regulation present. Can hold Bare Attention even as sensation challenges",
+        "then_routing": "Continue_Aware -- Acknowledge this capacity explicitly: 'I notice you're able to just be with that sensation without adding a story to it. That's significant.' Continue to support Bare Attention practice. Gradually introduce more challenging sensations to test stability of observer stance. This is Wisdom of Insecurity in practice",
+        "escalation_trigger": "Observer capacity collapses suddenly under seemingly minor stress, suggesting it was a False Self performance rather than genuine integration. Check for dissociation vs genuine observer capacity",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client describes experience as happening TO them as a separate observer ('I watched myself get anxious')",
+        "if_check": "Explore whether this observer stance creates distance and control attempts, or whether it's genuine witnessing. Check if increased effort to observe creates more tension",
+        "probable_pattern": "Observer_Absent",
+        "confirmation_markers": "Client uses language suggesting a separate controller trying to manage experience. Reports feeling 'stuck in a squirrel cage' of self-observation. Increased effort to observe creates more tension. Observer Paradox active",
+        "then_routing": "Name_Resistance -- Introduce the Observer Paradox: 'The eye cannot see itself.' Shift from trying to observe oneself to simply observing sensations. Practice allowing experience rather than supervising it. Ask: 'What happens if you stop trying to watch yourself and just notice the sensations?' Shift focus from self-observation to sensation observation",
+        "escalation_trigger": "Client becomes philosophically distressed when the paradox is introduced ('If I can't control myself, who am I?'). Observer illusion is core to sense of self. Client stuck in 'squirrel cage' of trying to observe themselves. Escalate_Yellow -- May need support to work with existential crisis",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Clinician notices own body tensing, breath shallowing, or sense of urgency to 'fix' this client",
+        "if_check": "Pause. Check: Am I trying to rescue? Am I attached to this client improving to validate my competence? Am I in Observer Stance or fixing mode?",
+        "probable_pattern": "Clinician_Attachment",
+        "confirmation_markers": "Clinician feels more distressed than client about lack of progress. Clinician adds techniques or increases session frequency without clear clinical indication. Clinician loses therapeutic patience. Session feels effortful",
+        "then_routing": "Clinician_Reset -- Stop. Breathe. Return to Observer Stance. Release attachment to outcome. Remember: my job is to create Holding Environment, not to fix. Practice Non-Attachment to Outcome. Stop adding techniques. Return to beginner's mind. Sometimes doing less is more. Practice Bare Attention on own internal state",
+        "escalation_trigger": "Clinician attachment is creating Square Zen approach that is reinforcing client's False Self. Client is performing for clinician rather than exploring genuinely. Over-treatment is creating nocebo effect",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Clinician feels frustrated with client's 'resistance' or pace of change",
+        "if_check": "What am I resisting about this client's process? What timeline or outcome am I attached to? Have I lost Observer Stance?",
+        "probable_pattern": "Clinician_Resistance",
+        "confirmation_markers": "Clinician uses language like 'non-compliant' or 'resistant' about client. Clinician experiences client as 'difficult'. Session feels effortful rather than flowing. Clinician has lost embodied presence",
+        "then_routing": "Clinician_Reset -- Practice Bare Attention on own resistance. Ask 'What is this client's symptom trying to protect?' Return to Therapeutic Patience. Reframe client behavior as signal not enemy. Treat Suffering_as_Signal. Recognize Mutual Arising: clinician state affects client state",
+        "escalation_trigger": "Clinician resistance is creating adversarial dynamic. Client can feel clinician's frustration and is responding with increased guarding. Therapeutic alliance is damaged",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client exhibits unprompted yawning, stretching, postural shifts, or small 'wiggly' movements during session",
+        "if_check": "Note context: did this emerge after a felt shift or moment of settling? Or is it nervous fidgeting? Check if movements appear spontaneous not controlled",
+        "probable_pattern": "Wu_Wei_Emerging",
+        "confirmation_markers": "Movements appear spontaneous, not controlled. Client may not consciously notice them. Often follows a moment of deepened breath or visible softening. Has quality of release rather than effort. Physiological release marker",
+        "then_routing": "Allow -- Do not interrupt or correct. These are spontaneous releases indicating nervous system integration. Create space for them. Silence is intervention. If appropriate, reflect: 'I notice your system is finding its own way.' This is Spontaneous Movement as Health Marker. Do not over-direct",
+        "escalation_trigger": "State collapses suddenly into hypervigilance or freeze \u2014 spontaneous releases tip into overwhelm. Assess window of tolerance.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "During movement exploration, client laughs spontaneously or expresses surprise at unexpected capacity",
+        "if_check": "Assess: is this genuine Play/Fun state (ventral + sympathetic) or nervous laughter (dorsal)? Check for bouncy bounding lightness vs flat affect",
+        "probable_pattern": "Spontaneity_Present",
+        "confirmation_markers": "Movement has exploratory quality. Client is curious rather than self-critical. Novel movement patterns emerge that client 'discovers' rather than performs. Client uses phrases like 'I didn't know I could do that'. Genuine Play state",
+        "then_routing": "Continue_Aware -- Support this state by maintaining playful, exploratory context. Avoid shifting back to corrective or goal-oriented mode. This IS the therapeutic intervention. This is Wu Wei in action. Assess for genuine Play/Fun state vs nervous laughter",
+        "escalation_trigger": "Playful state becomes manic, pressured, or dissociated. Nervous laughter (dorsal) mistaken for genuine play. Reassess M9 state.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client verbalizes that today feels different from yesterday, even if only slightly",
+        "if_check": "Explore: can client track the variation without needing it to mean 'progress' or 'setback'? Check if client can hold change as information rather than verdict",
+        "probable_pattern": "Impermanence_Recognized",
+        "confirmation_markers": "Client notices change as evidence that experience is not fixed. Can hold both improvement and setback as information rather than verdict. Uses language like 'right now' or 'today' rather than 'always'. Anicca awareness emerging",
+        "then_routing": "Continue_Aware -- Reinforce this recognition. Ask 'What does it mean that your experience can change?' Connect to Anicca (impermanence) as path out of stuck identity. This is Wisdom of Insecurity beginning to emerge",
+        "escalation_trigger": "Recognition becomes intellectual bypass \u2014 client uses impermanence framing to avoid felt experience. Check for premature transcendence.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Despite objective improvement visible to clinician, client insists 'nothing has changed' or 'I'm still broken'",
+        "if_check": "Compare objective measures (ROM, strength, function) to client's subjective narrative. Ask what the client uses as evidence of brokenness. Explore secondary gain",
+        "probable_pattern": "Impermanence_Denied",
+        "confirmation_markers": "Client cannot see or dismisses objective change. Narrative of brokenness is more powerful than sensory evidence. Client attached to sick role or diagnosis as identity. Despite objective progress, unchanging narrative persists",
+        "then_routing": "Reframe_Impermanence -- Gently reflect the discrepancy between objective change and unchanging narrative. Ask 'What would it mean if you weren't broken?' Explore secondary gain of brokenness narrative. Do not force reframe if client becomes hostile. If client becomes hostile, brokenness narrative is serving protective function",
+        "escalation_trigger": "Client becomes hostile when improvement is reflected, suggesting brokenness narrative is serving protective function. Breaking the narrative threatens sense of self. Escalate_Yellow -- This requires more than physical therapy. Client needs support to rebuild identity",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client can differentiate between raw sensation ('I feel burning in my hip') and story about sensation ('This means my hip is deteriorating')",
+        "if_check": "Test stability: as sensation intensifies, does client maintain separation between sensation and meaning? Can client identify Prapanca and return to Felt Sense?",
+        "probable_pattern": "Suffering_vs_Pain",
+        "confirmation_markers": "Client can identify Prapanca (mental proliferation) and return to Felt Sense. Can notice 'This is the sensation, and this is what my mind is making it mean.' Reduced catastrophizing. Can differentiate pain (raw sensation) from suffering (resistance/story)",
+        "then_routing": "Continue_Aware -- Reinforce this capacity. Practice Bare Attention on more challenging sensations. Teach client this is core skill for reducing suffering even when pain persists. This is how resistance layer can be reduced to reduce total distress",
+        "escalation_trigger": "Differentiation capacity collapses under intensity. Client loses observer stance. May indicate trauma layer requiring specialist referral.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client reports suffering (distress, catastrophizing, despair) that far exceeds observable physical findings or functional limitation",
+        "if_check": "Assess: is this Prapanca (mental proliferation creating secondary suffering)? Or is there trauma layer not yet visible? Check discrepancy between objective and subjective",
+        "probable_pattern": "Suffering_Exceeds_Findings",
+        "confirmation_markers": "Discrepancy between objective assessment and subjective distress. Client uses language of permanent damage despite reversible findings. Story about pain is more disabling than sensation itself. Suffering (resistance) exceeds pain (sensation)",
+        "then_routing": "Name_Resistance -- Gently reflect the discrepancy. Introduce Pain vs Suffering distinction. Ask 'What is the sensation right now, and what is the story you're telling about it?' Practice parsing the two. Reduce resistance layer to reduce total distress. If suffering level interferes with treatment engagement, flag for interdisciplinary support",
+        "escalation_trigger": "Suffering level interferes with ability to engage in treatment. Client cannot separate from catastrophic narrative enough to explore sensation. Escalate_Yellow -- Flag for interdisciplinary support",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client cannot tolerate even brief pauses or unstructured time, immediately asks 'What should I do next?'",
+        "if_check": "Introduce 30-second pause. Observe client's response to lack of instruction. What happens when external structure is removed?",
+        "probable_pattern": "Spontaneity_Absent",
+        "confirmation_markers": "Client appears anxious without constant direction. Cannot self-organize movement. Needs external authority to validate every action. Performing for clinician rather than exploring. Cannot tolerate unstructured time",
+        "then_routing": "Introduce_Play -- Start with very short unstructured intervals. Ask 'Just notice what your body wants to do for the next 30 seconds.' Gradually increase tolerance for self-directed exploration. Remove success/failure framing. If client becomes panicked, assess for deeper reliance on False Self control",
+        "escalation_trigger": "Client becomes panicked or dissociative when external structure is removed, suggesting deep reliance on False Self control. External structure intolerance indicates Manager unwilling to relinquish supervision",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client makes connection between physical pattern and life pattern ('I hold my breath here just like I do when my boss criticizes me')",
+        "if_check": "Explore: is this genuine bodymind integration or intellectualization? Check if recognition comes with felt shift or just intellectual insight",
+        "probable_pattern": "Observer_Present",
+        "confirmation_markers": "Connection feels embodied, not just cognitive. Client demonstrates awareness of whole-life pattern. Recognition comes with felt shift or release rather than just intellectual insight. Bodymind Unity emerging",
+        "then_routing": "Continue_Aware -- Acknowledge this integration. Ask 'What becomes possible if you bring awareness to this pattern in both contexts?' This is high-level observer capacity. Bodymind Connection present",
+        "escalation_trigger": "Observer capacity collapses suddenly under minor stress, suggesting fragile or Manager-performed awareness rather than genuine Self-presence.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client self-corrects every movement repetition, verbal stream of 'No, that's not right, let me try again'",
+        "if_check": "What happens if we invite the 'wrong' version? Can client tolerate imperfect performance? Is client constantly self-correcting?",
+        "probable_pattern": "Spontaneity_Absent",
+        "confirmation_markers": "Client in perpetual self-supervision mode. Movement is performance for external judgment rather than internal exploration. 'Controlling the Controls' pattern active. Cannot tolerate unstructured exploration",
+        "then_routing": "Introduce_Play -- Remove correctness frame entirely. Ask 'What happens if you intentionally do it wrong?' Use Backwards Law: trying to be perfect creates rigidity. Guide toward Bare Attention on sensation rather than performance. Apply Backwards Law by inviting curiosity about the 'wrong' feeling",
+        "escalation_trigger": "Client cannot tolerate 'wrong' movement without significant distress. Perfectionism is protecting against shame or failure threat",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client moves with fluid, efficient grace\u2014movement appears to happen 'by itself'",
+        "if_check": "This is the goal state. Observe if it remains stable or is fleeting. Check for 'wiggliness' quality",
+        "probable_pattern": "Wu_Wei_Emerging",
+        "confirmation_markers": "Movement has 'wiggliness' quality. Client reports sense of ease or 'it just happened.' No visible effort or self-consciousness. This is Sahaja (spontaneous naturalness). Effortless action present",
+        "then_routing": "Allow -- Do not interrupt with technique or correction. Create space for client to stabilize in this state. If appropriate, reflect: 'This is what we're working toward\u2014this ease.' This IS the intervention",
+        "escalation_trigger": "State collapses suddenly into hypervigilance or freeze \u2014 spontaneous releases tip into overwhelm. Assess window of tolerance.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client reports feeling 'stuck in a squirrel cage'\u2014trying but staying in same place",
+        "if_check": "Explore: what is the client trying to escape? What effort is perpetuating the trap? Is this Dukkha?",
+        "probable_pattern": "Backwards_Law",
+        "confirmation_markers": "Client describes repetitive, effortful, non-productive struggle. More trying creates more stuck-ness. This is Dukkha (chronic frustration) in action. Effort to escape unwanted experience perpetuates it",
+        "then_routing": "Reduce_Effort -- Introduce Backwards Law explicitly. Ask 'What if trying to escape is what keeps you stuck? What happens if you stop trying and just notice what IS?' Paradoxical intention. Apply Backwards Law by inviting curiosity about the 'stuck' feeling instead of trying to escape it",
+        "escalation_trigger": "Client cannot reduce effort without panic. Trying is the only way client knows to manage existential anxiety. Escalate_Yellow -- Client needs support to tolerate not-trying",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client describes 'This should not be happening' about their current experience",
+        "if_check": "What does client believe should be happening instead? What is the resistance to 'what is'? Check for argument with reality",
+        "probable_pattern": "Resistance_Mental",
+        "confirmation_markers": "Client in argument with reality. Uses 'should' language frequently. Cannot accept present-moment experience. Mental resistance creating secondary tension. Resistance to 'what is'",
+        "then_routing": "Name_Resistance -- Reflect: 'I hear you saying this shouldn't be happening, and it is happening. What if we just notice what IS happening right now?' Practice Bare Attention without judgment. Do NOT argue or try to convince client reality is acceptable",
+        "escalation_trigger": "Resistance to 'what is' becomes so strong that client cannot engage with present-moment awareness at all. Stuck in should/shouldn't narrative",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client language shifts from 'I am in pain' to 'I notice pain right now'",
+        "if_check": "Is this genuine dis-identification or parroting clinical language? Check if shift feels embodied not performative",
+        "probable_pattern": "Impermanence_Recognized",
+        "confirmation_markers": "Shift feels embodied not performative. Client demonstrates this understanding through changed relationship to sensation, not just word choice. Less identification with diagnosis. Language shift demonstrates changed relationship",
+        "then_routing": "Continue_Aware -- Reinforce this shift. Connect to Whirlpool Pattern: you are not the pain, you are the awareness noticing it. This is Anatta (no-self) beginning to be realized. This is dis-identification emerging",
+        "escalation_trigger": "Recognition becomes intellectual bypass \u2014 client uses impermanence framing to avoid felt experience. Check for premature transcendence.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client becomes tearful or emotionally vulnerable during physical release",
+        "if_check": "Is this safe processing or overwhelm? Check client's window of tolerance. Is emotion emerging organically with physical release?",
+        "probable_pattern": "Wu_Wei_Emerging",
+        "confirmation_markers": "Emotion emerges organically with physical release. Client remains present and coherent. Tears feel like integration not dysregulation. Compulsive Armoring is releasing. Has quality of release rather than effort",
+        "then_routing": "Allow -- Create space for emotional release. Do not interrupt or fix. Offer embodied presence. Validate: 'Your body is releasing something it's been holding.' This is healing. Do NOT interrupt. These autonomic releases are the body self-regulating",
+        "escalation_trigger": "Emotion shifts from processing to overwhelm. Client dissociates or reports feeling flooded. Window of tolerance exceeded\u2014Settle Track immediately. Escalate_Red -- Stop all loading. Restore safety",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Change in one area (e.g. jaw release) creates visible change elsewhere (e.g. hip ROM improves)",
+        "if_check": "Track: is this mechanical compensation or genuine systemic integration? Does change feel 'wiggly' and organic?",
+        "probable_pattern": "Wu_Wei_Emerging",
+        "confirmation_markers": "Change feels 'wiggly' and organic, not forced. Client notices connection with curiosity. System is self-organizing rather than being manually corrected. Mutual Arising visible in clinical field",
+        "then_routing": "Allow -- Do not over-direct. Let the system continue to self-organize. Reflect the interconnection: 'Notice how softening here affected there.' Embody Non-Attachment to specific technique. Do not force with technique",
+        "escalation_trigger": "State collapses suddenly into hypervigilance or freeze \u2014 spontaneous releases tip into overwhelm. Assess window of tolerance.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client cannot identify any sensation in their body when asked 'What do you notice?'",
+        "if_check": "Is this alexithymia, dissociation, or extreme dorsal shutdown? Can client access any sensory information?",
+        "probable_pattern": "Observer_Absent",
+        "confirmation_markers": "Client reports 'numbness' or 'I don't feel anything.' May be disconnected from Felt Sense entirely. Possible trauma history causing dissociation from body. Cannot access raw sensation",
+        "then_routing": "Settle_Track -- Do not push for sensation awareness. First establish safety. Use external orientation (what do you see/hear?) before internal sensation. Extremely gentle approach to embodiment. Pain reduction via numbing is not healing",
+        "escalation_trigger": "Any attempt to bring awareness into body triggers panic or deeper dissociation. Escalate_Red -- Client needs trauma-informed approach before standard physical therapy",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client performs all movements exactly as demonstrated without variation or exploration",
+        "if_check": "What happens if we introduce 'Can you find three different ways to do this movement?' Does client need external authority?",
+        "probable_pattern": "Spontaneity_Absent",
+        "confirmation_markers": "Client in strict compliance mode. Needs external authority. Cannot self-organize or explore. Movement is mimicry not discovery. Performing for clinician rather than exploring",
+        "then_routing": "Introduce_Play -- Remove the 'correct' version. Ask client to find their own way. Start with very small variations. Goal is to discover client can find solutions, not perform prescribed ones. Remove success/failure framing",
+        "escalation_trigger": "Client becomes anxious or distressed without prescribed form. False Self structure requires external authority to function",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client verbalizes 'I don't know who I am without this pain'",
+        "if_check": "This is profound statement about identity-as-diagnosis. Explore with care: what threatens to be lost if pain resolves? What does pain provide?",
+        "probable_pattern": "Attachment_Diagnosis",
+        "confirmation_markers": "Pain has become central to identity. Client may have secondary gain from sick role. Loss of pain threatens sense of self. This is Anatta (no-self) crisis. Pain has become part of self-concept",
+        "then_routing": "Observe_Together -- Do not rush to fix this. Reflect: 'It sounds like the pain has become part of how you know yourself. That must be confusing.' Explore what pain provides (attention, permission to rest, identity). Move slowly. Use Whirlpool Pattern to support dis-identification after readiness established",
+        "escalation_trigger": "Escalate_Yellow -- This requires more than physical therapy. Client needs support to rebuild identity not organized around illness. Consider referral for psychological support",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client's symptom presentation changes dramatically based on who is in the room (worse with spouse present, better alone with clinician)",
+        "if_check": "What relational dynamic is the symptom serving? Is symptom co-arising with relational context?",
+        "probable_pattern": "Suffering_vs_Pain",
+        "confirmation_markers": "Pain as communication or protection in relationship system. Symptom has relational function beyond tissue state. This is Mutual Arising\u2014symptom co-arises with relational context",
+        "then_routing": "Observe_Together -- Name what you notice gently: 'I notice your symptoms seem different in different contexts. I'm curious what you notice about that.' Do not pathologize. Explore systemic factors. Recognize organism-environment unity",
+        "escalation_trigger": "Escalate_Yellow -- If symptom is maintaining unsafe relationship or client is in abusive dynamic, treatment occurs in context that prevents healing. May need systems-level intervention",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client achieves functional milestone (returns to work, resumes sport) but reports feeling disappointed or empty",
+        "if_check": "Explore: was the goal serving as distraction from something else? What's present now that the pursuit is complete? Did achievement provide expected satisfaction?",
+        "probable_pattern": "Attachment_Outcome",
+        "confirmation_markers": "Goal achievement did not provide expected satisfaction. Client realizes outcome was not the answer. This can be existential crisis or spiritual opening. Attachment to outcome revealed as empty",
+        "then_routing": "Observe_Together -- This is Wisdom of Insecurity moment. Reflect: 'You achieved the goal and something feels unresolved. What's present now?' This may be invitation to deeper inquiry beyond symptom fix. Goal was not the answer",
+        "escalation_trigger": "Escalate_Yellow -- Client experiences existential depression post-goal achievement. May need support to find meaning beyond symptom resolution",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Clinician feels bored, disconnected, or going-through-motions during session",
+        "if_check": "Am I present? Have I lost Observer Stance? Is this my state or am I picking up client's dissociation?",
+        "probable_pattern": "Clinician_Observer_Lost",
+        "confirmation_markers": "Clinician has lost embodied presence. Session feels mechanical. May be mirroring client's disconnect or clinician's own burnout. Therapeutic patience lost",
+        "then_routing": "Clinician_Reset -- Pause. Take three breaths. Return to body. Ask: what is actually present in this room right now? Re-establish presence before continuing. This IS the intervention. Practice beginner's mind. Check if mirroring client or own burnout",
+        "escalation_trigger": "Clinician cannot re-establish presence. Own nervous system dysregulation is interfering with capacity to hold therapeutic space. May need peer consultation or self-care",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client tolerates increasing sensation intensity without moving into catastrophizing or escape behavior",
+        "if_check": "As sensation intensifies, does observer capacity remain stable or does client lose awareness and become identified with sensation?",
+        "probable_pattern": "Observer_Present",
+        "confirmation_markers": "Client maintains Bare Attention even as sensation challenges. Can stay present without fixing or fleeing. This is suffering (resistance) decreasing even if pain (sensation) persists. Observer capacity stable under load",
+        "then_routing": "Continue_Aware -- This is Wisdom of Insecurity in practice. Acknowledge capacity to be with difficult experience. Gradually titrate exposure to more challenging sensations. Reinforce this capacity",
+        "escalation_trigger": "Observer capacity collapses suddenly under minor stress, suggesting fragile or Manager-performed awareness rather than genuine Self-presence.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client reports reduced pain but clinician observes no change in movement quality, bracing patterns, or function",
+        "if_check": "Is this genuine nervous system change or dissociation/numbing? Check if client is embodied or disconnected",
+        "probable_pattern": "Observer_Absent",
+        "confirmation_markers": "Pain reduction without functional change suggests disconnect from body. Client may be dissociating rather than integrating. False Self performance of 'getting better'. Numbing present",
+        "then_routing": "Settle_Track -- Slow down. Re-establish embodied presence. Pain reduction via numbing is not healing. Focus on bringing awareness back into body gently. First establish safety before deeper work",
+        "escalation_trigger": "Client is completely dissociated from body. Pain reduction is dorsal vagal shutdown, not ventral regulation. Escalate_Red -- Any attempt to bring awareness triggers deeper dissociation",
+        "escalation_flag": ""
+      },
+      {
+        "observation": "Client exhibits spontaneous breath deepening, sigh, or yawn during moment of settling",
+        "if_check": "Note context: what just shifted? This is often sign of ventral vagal activation. Is this spontaneous not controlled?",
+        "probable_pattern": "Wu_Wei_Emerging",
+        "confirmation_markers": "Physiological release marker. Sign of nervous system down-regulation. Often follows felt shift or moment of letting go. Spontaneous not controlled. Autonomic release",
+        "then_routing": "Allow -- Do not interrupt. These autonomic releases are the body self-regulating. Create space. Silence is intervention. This is Spontaneous Movement as Health Marker. Let whirlpool turn naturally",
+        "escalation_trigger": "State collapses suddenly into hypervigilance or freeze \u2014 spontaneous releases tip into overwhelm. Assess window of tolerance.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client can maintain playful, exploratory quality to movement across full session",
+        "if_check": "Is this stable Green (ventral + sympathetic Play/Fun) or fleeting? Check for sustained capacity vs momentary state",
+        "probable_pattern": "Spontaneity_Present",
+        "confirmation_markers": "Sustained capacity for exploration without slipping into performance anxiety or control. Movement has 'wiggly' quality throughout. Client in genuine Play state. Wu Wei present",
+        "then_routing": "Continue_Aware -- This is the therapeutic goal achieved. Maintain context that supports this state. This is Wu Wei (effortless action) in movement. Do not shift back to corrective mode",
+        "escalation_trigger": "Playful state becomes manic, pressured, or dissociated. Nervous laughter (dorsal) mistaken for genuine play. Reassess M9 state.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client's breathing deepens or pace slows in response to clinician's calm presence, without verbal cuing",
+        "if_check": "Check if change persists when clinician slightly shifts own state (tests for co-regulation vs coincidence). Is client tracking clinician state?",
+        "probable_pattern": "Observer_Present",
+        "confirmation_markers": "Client's nervous system is responsive to clinician's state. Changes occur without conscious effort from client. Demonstrates Mutual Arising in clinical field. Co-regulation occurring",
+        "then_routing": "Continue_Aware -- Clinician maintains embodied presence. This IS the intervention. Ventral-to-ventral co-regulation is occurring. Clinician's self-regulation is primary therapeutic tool",
+        "escalation_trigger": "Observer capacity collapses suddenly under minor stress, suggesting fragile or Manager-performed awareness rather than genuine Self-presence.",
+        "escalation_flag": "GENERATED \u2014 verify against clinical judgment"
+      },
+      {
+        "observation": "Client asks 'Why isn't this working?' after clinician applies multiple techniques in succession",
+        "if_check": "Is clinician in fixing mode? Has therapeutic patience been lost? Am I over-treating?",
+        "probable_pattern": "Clinician_Attachment",
+        "confirmation_markers": "Clinician has added techniques without creating space for integration. Session feels effortful. Client is mirroring clinician's anxiety about outcome. Over-treatment occurring",
+        "then_routing": "Clinician_Reset -- Stop adding techniques. Return to Non-Attachment to Outcome. Create Holding Environment rather than fixing. Sometimes doing less is more. Practice wu wei for clinician: knowing when to do nothing is the intervention",
+        "escalation_trigger": "Over-treatment is creating nocebo effect. Client's system cannot integrate due to clinician's anxious doing",
+        "escalation_flag": ""
+      }
+    ]
+  },
+  "rule_count": 59,
+  "phase5_count": 38
+}
