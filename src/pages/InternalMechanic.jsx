@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle, BookOpen, UserPlus, UsersRound } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { MODULE_LABELS, MODULE_DESCRIPTIONS, ROLE_LABELS, NS_LABELS, DRIVE_LABELS, QUADRANT_LABELS, PRODUCT_NAME, EXPORT_TITLE } from '../lib/mechanic-labels';
 
 // ============================================
-// Constants
+// Constants (consumer-friendly labels)
 // ============================================
 const ROLE_CONFIG = {
-  protector: { label: 'Protector (Manager)', icon: <Shield size={16} />, color: '#5c7a6f' },
-  exile: { label: 'Exile', icon: <Heart size={16} />, color: '#b06050' },
-  firefighter: { label: 'Firefighter', icon: <Flame size={16} />, color: '#d4843e' },
-  self: { label: 'Self Energy', icon: <Sun size={16} />, color: '#c4a55a' },
+  protector: { label: ROLE_LABELS.protector, icon: <Shield size={16} />, color: '#5c7a6f' },
+  exile: { label: ROLE_LABELS.exile, icon: <Heart size={16} />, color: '#b06050' },
+  firefighter: { label: ROLE_LABELS.firefighter, icon: <Flame size={16} />, color: '#d4843e' },
+  self: { label: ROLE_LABELS.self, icon: <Sun size={16} />, color: '#c4a55a' },
 };
 
 const NS_STATES = {
-  ventral_vagal: { label: 'Ventral Vagal (Safe/Social)', color: '#4caf50' },
-  sympathetic: { label: 'Sympathetic (Fight/Flight)', color: '#ff9800' },
-  dorsal_vagal: { label: 'Dorsal Vagal (Freeze/Shutdown)', color: '#9e9e9e' },
+  ventral_vagal: { label: `${NS_LABELS.green} (Safe/Social)`, color: '#4caf50' },
+  sympathetic: { label: `${NS_LABELS.amber} (Fight/Flight)`, color: '#ff9800' },
+  dorsal_vagal: { label: `${NS_LABELS.red} (Freeze/Shutdown)`, color: '#9e9e9e' },
 };
 
 const UNBURDENING_STEPS = [
@@ -361,6 +362,8 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
   const [dragging, setDragging] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
+  const [viewMode, setViewMode] = useState('free'); // free | constellation
+  const [showIconPicker, setShowIconPicker] = useState(null); // part id being edited
 
   useEffect(() => {
     const updateDims = () => {
@@ -445,7 +448,49 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <span style={{ fontSize: '13px', color: '#888' }}>Drag nodes to arrange. Lines show protection relationships and relationship triggers.</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: '#888' }}>Drag to arrange.</span>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <button style={{ ...s.btn(viewMode === 'free' ? 'primary' : 'ghost'), padding: '4px 10px', fontSize: '11px' }}
+              onClick={() => setViewMode('free')}>Free</button>
+            <button style={{ ...s.btn(viewMode === 'constellation' ? 'primary' : 'ghost'), padding: '4px 10px', fontSize: '11px' }}
+              onClick={() => {
+                setViewMode('constellation');
+                // Auto-layout: Self at center, exiles close, protectors mid-ring, firefighters outer
+                const cx = dimensions.width / 2, cy = dimensions.height / 2;
+                const selfParts = parts.filter(p => p.role === 'self');
+                const exiles = parts.filter(p => p.role === 'exile');
+                const protectors = parts.filter(p => p.role === 'protector');
+                const firefighters = parts.filter(p => p.role === 'firefighter');
+                const layout = async () => {
+                  // Self at center
+                  for (const p of selfParts) await supabase.from('ifs_parts').update({ board_x: cx, board_y: cy }).eq('id', p.id);
+                  // Exiles in inner ring
+                  exiles.forEach(async (p, i) => {
+                    const angle = (2 * Math.PI * i) / (exiles.length || 1) - Math.PI / 2;
+                    await supabase.from('ifs_parts').update({ board_x: cx + 100 * Math.cos(angle), board_y: cy + 100 * Math.sin(angle) }).eq('id', p.id);
+                  });
+                  // Protectors in mid ring
+                  protectors.forEach(async (p, i) => {
+                    const angle = (2 * Math.PI * i) / (protectors.length || 1);
+                    await supabase.from('ifs_parts').update({ board_x: cx + 200 * Math.cos(angle), board_y: cy + 200 * Math.sin(angle) }).eq('id', p.id);
+                  });
+                  // Firefighters in outer ring
+                  firefighters.forEach(async (p, i) => {
+                    const angle = (2 * Math.PI * i) / (firefighters.length || 1) + Math.PI / 4;
+                    await supabase.from('ifs_parts').update({ board_x: cx + 300 * Math.cos(angle), board_y: cy + 300 * Math.sin(angle) }).eq('id', p.id);
+                  });
+                  // Relationships on far edge
+                  relationships.forEach(async (r, i) => {
+                    const angle = (2 * Math.PI * i) / (relationships.length || 1) + Math.PI / 6;
+                    await supabase.from('ifs_relationships').update({ board_x: cx + 380 * Math.cos(angle), board_y: cy + 380 * Math.sin(angle) }).eq('id', r.id);
+                  });
+                  setTimeout(() => { fetchParts(); fetchRelationships(); }, 500);
+                };
+                layout();
+              }}>Constellation</button>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#888' }}>
           {Object.entries(ROLE_CONFIG).map(([k, v]) => (
             <span key={k} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -519,6 +564,18 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
               </text>
             </g>
           ))}
+
+          {/* Constellation rings */}
+          {viewMode === 'constellation' && (
+            <>
+              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={100} fill="none" stroke="rgba(176,96,80,0.08)" strokeWidth="1" strokeDasharray="8,8" />
+              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={200} fill="none" stroke="rgba(92,122,111,0.08)" strokeWidth="1" strokeDasharray="8,8" />
+              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={300} fill="none" stroke="rgba(212,132,62,0.08)" strokeWidth="1" strokeDasharray="8,8" />
+              <text x={dimensions.width / 2 + 105} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(176,96,80,0.3)">{ROLE_LABELS.exile}s</text>
+              <text x={dimensions.width / 2 + 205} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(92,122,111,0.3)">{ROLE_LABELS.protector}s</text>
+              <text x={dimensions.width / 2 + 305} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(212,132,62,0.3)">{ROLE_LABELS.firefighter}s</text>
+            </>
+          )}
 
           {/* Self energy center marker */}
           {parts.length === 0 && (
@@ -1682,6 +1739,7 @@ const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customR
       if (form.is_new_entity && form.entity_name.trim()) {
         const { data: newEntity } = await supabase.from('ifs_entities').insert({
           user_id: userId, name: form.entity_name.trim(), relationship_type: form.relationship_type,
+          is_group: form.is_group_interaction || false,
         }).select().single();
         if (newEntity) { entityId = newEntity.id; fetchEntities(); }
       }
@@ -1756,31 +1814,77 @@ const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customR
       {step === 1 && (
         <div style={s.card}>
           <h3 style={{ fontSize: '18px', marginBottom: '16px' }}>Step 1 — Who is this interaction with?</h3>
+
+          {/* Analysis mode toggle */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <div onClick={() => setForm({ ...form, is_group_interaction: false })}
+              style={{ flex: 1, padding: '12px', borderRadius: '10px', cursor: 'pointer', textAlign: 'center',
+                background: !form.is_group_interaction ? 'rgba(176,96,80,0.1)' : 'rgba(0,0,0,0.03)',
+                border: !form.is_group_interaction ? '2px solid #b06050' : '2px solid transparent' }}>
+              <User size={20} style={{ color: !form.is_group_interaction ? '#b06050' : '#999', margin: '0 auto 4px' }} />
+              <div style={{ fontSize: '13px', fontWeight: !form.is_group_interaction ? 600 : 400 }}>Individual</div>
+              <div style={{ fontSize: '11px', color: '#888' }}>One person</div>
+            </div>
+            <div onClick={() => setForm({ ...form, is_group_interaction: true })}
+              style={{ flex: 1, padding: '12px', borderRadius: '10px', cursor: 'pointer', textAlign: 'center',
+                background: form.is_group_interaction ? 'rgba(90,138,191,0.1)' : 'rgba(0,0,0,0.03)',
+                border: form.is_group_interaction ? '2px solid #5a8abf' : '2px solid transparent' }}>
+              <UsersRound size={20} style={{ color: form.is_group_interaction ? '#5a8abf' : '#999', margin: '0 auto 4px' }} />
+              <div style={{ fontSize: '13px', fontWeight: form.is_group_interaction ? 600 : 400 }}>Group</div>
+              <div style={{ fontSize: '11px', color: '#888' }}>Multiple people</div>
+            </div>
+          </div>
+
           <div style={{ marginBottom: '12px' }}>
             <select style={{ ...s.select, width: '100%' }} value={form.is_new_entity ? '__new__' : form.entity_id}
               onChange={e => {
                 if (e.target.value === '__new__') setForm({ ...form, is_new_entity: true, entity_id: '' });
                 else setForm({ ...form, is_new_entity: false, entity_id: e.target.value });
               }}>
-              <option value="">Select a person...</option>
-              {entities.map(e => <option key={e.id} value={e.id}>{e.name} ({e.relationship_type}) — {e.log_count} logs</option>)}
-              <option value="__new__">+ New person</option>
+              <option value="">Select {form.is_group_interaction ? 'a group' : 'a person'}...</option>
+              {form.is_group_interaction ? (
+                <>
+                  <optgroup label="Groups">
+                    {entities.filter(e => e.is_group).map(e => <option key={e.id} value={e.id}>{e.name} — {e.log_count} logs</option>)}
+                  </optgroup>
+                  <option value="__new__">+ New group</option>
+                </>
+              ) : (
+                <>
+                  <optgroup label="People">
+                    {entities.filter(e => !e.is_group).map(e => <option key={e.id} value={e.id}>{e.name} ({e.relationship_type}) — {e.log_count} logs</option>)}
+                  </optgroup>
+                  <optgroup label="Groups">
+                    {entities.filter(e => e.is_group).map(e => <option key={e.id} value={e.id}>{e.name} (group) — {e.log_count} logs</option>)}
+                  </optgroup>
+                  <option value="__new__">+ New {form.is_group_interaction ? 'group' : 'person'}</option>
+                </>
+              )}
             </select>
           </div>
           {form.is_new_entity && (
             <div style={s.row}>
               <div style={s.col}>
-                <label style={s.label}>Name</label>
-                <input style={s.input} value={form.entity_name} onChange={e => setForm({ ...form, entity_name: e.target.value })} placeholder="Name or identifier" />
+                <label style={s.label}>{form.is_group_interaction ? 'Group Name' : 'Name'}</label>
+                <input style={s.input} value={form.entity_name} onChange={e => setForm({ ...form, entity_name: e.target.value })}
+                  placeholder={form.is_group_interaction ? 'e.g., Willard softball parents' : 'Name or identifier'} />
               </div>
               <div style={s.col}>
-                <label style={s.label}>Relationship</label>
+                <label style={s.label}>Type</label>
                 <select style={{ ...s.select, width: '100%' }} value={form.relationship_type} onChange={e => setForm({ ...form, relationship_type: e.target.value })}>
                   {[...DEFAULT_RELATIONSHIP_TYPES, ...(customRelTypes || []).map(c => c.label)].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
             </div>
           )}
+
+          {/* Group analysis note */}
+          {form.is_group_interaction && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(90,138,191,0.06)', fontSize: '12px', color: '#5a8abf', marginTop: '8px' }}>
+              Group analysis runs the full 9-module pipeline for the group dynamic. Individual members who are already tracked will also have their entity profiles updated.
+            </div>
+          )}
+
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
             <button style={s.btn('primary')} onClick={() => setStep(2)} disabled={!form.entity_id && !form.entity_name.trim()}>
               Next <ChevronRight size={14} />
@@ -2274,8 +2378,8 @@ export default function InternalMechanic() {
   return (
     <div className="main-content" style={s.page}>
       <div style={s.header}>
-        <h1 style={s.title}>The Internal Mechanic</h1>
-        <p style={s.subtitle}>9-module relational intelligence engine — Parts × Nervous System × Belief × Drives × Safety × Empathy × Perspectives × Worldview × Flow</p>
+        <h1 style={s.title}>{PRODUCT_NAME}</h1>
+        <p style={s.subtitle}>Relational intelligence — Nervous System × Parts × Beliefs × Drives × Safety × Empathy × Perspectives × Values × Flow</p>
       </div>
 
       <div style={s.tabs}>
