@@ -61,6 +61,7 @@ const Wishlist = () => {
   const [items, setItems] = useState([]);
   const [projects, setProjects] = useState([]);
   const [tasksByProject, setTasksByProject] = useState({});
+  const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inputText, setInputText] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -73,12 +74,14 @@ const Wishlist = () => {
   const [listening, setListening] = useState(false);
 
   const fetchAll = async () => {
-    const [wishRes, projRes, taskRes] = await Promise.all([
+    const [wishRes, projRes, taskRes, caseRes] = await Promise.all([
       supabase.from('wishlist').select('*').order('created_at', { ascending: false }),
       supabase.from('internal_projects').select('*').order('name'),
       supabase.from('global_tasks').select('*'),
+      supabase.from('task_queue_cases').select('*').order('case_id'),
     ]);
     if (!wishRes.error) setItems(wishRes.data || []);
+    if (!caseRes.error) setCases(caseRes.data || []);
     if (!projRes.error) setProjects(projRes.data || []);
     if (!taskRes.error) {
       const grouped = {};
@@ -480,16 +483,44 @@ const Wishlist = () => {
 
                           {/* Link to case */}
                           <div>
-                            <label style={{ fontSize: '0.68rem', color: '#9e9a97', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', display: 'block' }}>Task Queue Case ID</label>
-                            <input type="text" value={item.linked_case_id || ''} placeholder="e.g. CASE-001"
-                              onChange={(e) => updateItem(item.id, 'linked_case_id', e.target.value || null)}
-                              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.82rem', background: 'rgba(255,255,255,0.6)', width: '200px' }} />
-                            {item.linked_case_id && (
-                              <span style={{ marginLeft: '8px', fontSize: '0.72rem', color: '#7b1fa2', fontWeight: 500 }}>
-                                Linked to {item.linked_case_id}
-                              </span>
-                            )}
+                            <label style={{ fontSize: '0.68rem', color: '#9e9a97', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', display: 'block' }}>Link to Task Queue Case</label>
+                            <select value={item.linked_case_id || ''} onChange={(e) => updateItem(item.id, 'linked_case_id', e.target.value || null)}
+                              className="kanban-select" style={{ fontSize: '0.82rem', width: '100%', maxWidth: '500px' }}>
+                              <option value="">— Not linked —</option>
+                              {cases.map(c => (
+                                <option key={c.case_id} value={c.case_id}>{c.case_id} | {c.priority} | {c.title} ({c.status})</option>
+                              ))}
+                            </select>
                           </div>
+
+                          {/* Show linked case details */}
+                          {item.linked_case_id && (() => {
+                            const linkedCase = cases.find(c => c.case_id === item.linked_case_id);
+                            if (!linkedCase) return null;
+                            return (
+                              <div style={{ background: 'rgba(123,31,162,0.06)', padding: '10px 12px', borderRadius: '8px', borderLeft: '3px solid #7b1fa2' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2e2c2a' }}>{linkedCase.case_id}: {linkedCase.title}</span>
+                                  <span style={{ fontSize: '0.65rem', padding: '2px 8px', borderRadius: '4px',
+                                    background: linkedCase.status === 'DONE' ? 'rgba(106,171,110,0.15)' : linkedCase.status === 'IN_PROGRESS' ? 'rgba(176,96,80,0.15)' : 'rgba(0,0,0,0.05)',
+                                    color: linkedCase.status === 'DONE' ? '#2e7d32' : linkedCase.status === 'IN_PROGRESS' ? '#b06050' : '#757575' }}>
+                                    {linkedCase.status}
+                                  </span>
+                                </div>
+                                <p style={{ fontSize: '0.78rem', color: '#6b6764', marginBottom: '6px' }}>{linkedCase.objective}</p>
+                                <div style={{ display: 'flex', gap: '8px', fontSize: '0.68rem' }}>
+                                  <span style={{ padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: '#6b6764' }}>{linkedCase.domain}</span>
+                                  <span style={{ padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: PRIORITY_COLORS[linkedCase.priority] || '#666' }}>{linkedCase.priority}</span>
+                                  <span style={{ padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: '#6b6764' }}>{linkedCase.trigger_type} / {linkedCase.frequency}</span>
+                                  {linkedCase.depends_on?.length > 0 && (
+                                    <span style={{ padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: '#6b6764' }}>
+                                      Depends on: {linkedCase.depends_on.join(', ')}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
 
