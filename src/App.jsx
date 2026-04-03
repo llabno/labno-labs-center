@@ -19,6 +19,7 @@ import StrategicPlaybook from './pages/StrategicPlaybook';
 import WorkHistory from './pages/WorkHistory';
 import ClinicalBlog from './pages/ClinicalBlog';
 import InternalMechanic from './pages/InternalMechanic';
+import CookieConsent from './lib/CookieConsent';
 import Telemetry from './pages/Telemetry';
 import ProjectsTasks from './pages/ProjectsTasks';
 import TaskQueue from './pages/TaskQueue';
