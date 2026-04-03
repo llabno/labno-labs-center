@@ -29,6 +29,7 @@ const UNBURDENING_STEPS = [
 
 const TABS = [
   { id: 'journal', label: 'Journal', icon: <BookOpen size={18} /> },
+  { id: 'insights', label: 'Insights', icon: <Zap size={18} /> },
   { id: 'log', label: 'New Log', icon: <Send size={18} /> },
   { id: 'analysis', label: 'Analysis', icon: <Activity size={18} /> },
   { id: 'entities', label: 'Entities', icon: <User size={18} /> },
@@ -45,15 +46,15 @@ const DEFAULT_RELATIONSHIP_TYPES = [
 ];
 
 const MODULE_NAMES = {
-  m9: 'Polyvagal (NS State)',
-  m16: 'IFS (Parts)',
-  m18: 'Compassionate Inquiry',
-  m19: 'Panksepp (Drives)',
-  m21: 'Winnicott (Holding)',
-  m22: 'Epstein (Ethics Gate)',
-  m23: 'Integral (AQAL)',
-  m20: 'Spiral Dynamics',
-  m25: 'Watts (Wu Wei)',
+  m9: 'Nervous System State',
+  m16: 'Parts Awareness',
+  m18: 'Belief Inquiry',
+  m19: 'Core Drives',
+  m21: 'Relational Safety',
+  m22: 'Empathy Gate',
+  m23: 'Four Perspectives',
+  m20: 'Values & Worldview',
+  m25: 'Natural Flow',
 };
 
 const MODULE_SEQUENCE = ['m9', 'm16', 'm18', 'm19', 'm21', 'm22', 'm23', 'm20', 'm25'];
@@ -220,7 +221,7 @@ const PartsRegistry = ({ parts, setParts, fetchParts, userId }) => {
         </div>
         <div style={s.row}>
           <div style={s.col}>
-            <label style={s.label}>NS State (Polyvagal)</label>
+            <label style={s.label}>Nervous System State</label>
             <select style={{ ...s.select, width: '100%' }} value={form.ns_state || ''} onChange={e => setForm({ ...form, ns_state: e.target.value })}>
               <option value="">Unknown</option>
               {Object.entries(NS_STATES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -1066,6 +1067,159 @@ const RelationshipsTab = ({ relationships, parts, fetchRelationships, userId }) 
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// Insights Dashboard (Cross-Module Intelligence)
+// ============================================
+const InsightsDashboard = ({ userId }) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadInsights = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/mechanic/intelligence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: '{}',
+      });
+      const result = await res.json();
+      if (result.status === 'completed') setData(result);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadInsights(); }, []);
+
+  if (loading) return <div style={s.emptyState}><Loader size={32} style={{ color: '#b06050' }} /><p style={{ marginTop: '12px' }}>Loading insights...</p></div>;
+
+  if (!data) return (
+    <div style={s.emptyState}>
+      <Zap size={48} style={{ color: '#ccc', marginBottom: '12px' }} />
+      <p style={{ fontSize: '16px', marginBottom: '8px' }}>No insights yet</p>
+      <p style={{ fontSize: '13px' }}>Submit journal entries and interaction logs to build intelligence.</p>
+      <button style={{ ...s.btn('primary'), marginTop: '12px' }} onClick={loadInsights}>Load Insights</button>
+    </div>
+  );
+
+  const { heat_map, drive_distribution, contract_links, regulation_capacity, parts_frequency, data_points } = data;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <span style={{ fontSize: '14px', color: '#888' }}>
+          Based on {data_points.analyses} analyses, {data_points.journals} journal entries, {data_points.entities} entities
+        </span>
+        <button style={s.btn('ghost')} onClick={loadInsights}><RefreshCw size={14} /> Refresh</button>
+      </div>
+
+      {/* Relational Heat Map */}
+      {heat_map?.length > 0 && (
+        <div style={s.card}>
+          <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Relational Energy Cost</h3>
+          <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>Which relationships cost the most nervous system energy? (3=overwhelmed, 2=guarded, 1=connected)</p>
+          {heat_map.map((h, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <span style={{ width: '120px', fontSize: '14px', fontWeight: 500 }}>{h.name}</span>
+              <div style={{ flex: 1, height: '24px', borderRadius: '6px', background: 'rgba(0,0,0,0.04)', overflow: 'hidden', position: 'relative' }}>
+                <div style={{
+                  height: '100%', borderRadius: '6px', transition: 'width 0.5s ease',
+                  width: `${(h.avg_cost / 3) * 100}%`,
+                  background: h.avg_cost > 2.3 ? '#d32f2f' : h.avg_cost > 1.6 ? '#ff9800' : '#4caf50',
+                }} />
+              </div>
+              <span style={{ fontSize: '13px', fontWeight: 600, width: '40px', textAlign: 'right',
+                color: h.avg_cost > 2.3 ? '#d32f2f' : h.avg_cost > 1.6 ? '#ff9800' : '#4caf50' }}>
+                {h.avg_cost}
+              </span>
+              <span style={{ fontSize: '11px', color: '#aaa' }}>{h.count} logs</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        {/* Drive Distribution */}
+        {drive_distribution?.length > 0 && (
+          <div style={s.card}>
+            <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Core Drive Distribution</h3>
+            {drive_distribution.map((d, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span style={{ width: '100px', fontSize: '13px' }}>{d.drive}</span>
+                <div style={{ flex: 1, height: '16px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${d.percentage}%`, background: '#b06050', borderRadius: '4px' }} />
+                </div>
+                <span style={{ fontSize: '12px', color: '#888', width: '40px' }}>{d.percentage}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Regulation Capacity */}
+        {regulation_capacity?.total > 0 && (
+          <div style={s.card}>
+            <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Does Writing Help Regulate?</h3>
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#4caf50' }}>{regulation_capacity.improved}</div>
+                <div style={{ fontSize: '11px', color: '#888' }}>Improved</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#999' }}>{regulation_capacity.same}</div>
+                <div style={{ fontSize: '11px', color: '#888' }}>Same</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: '#d32f2f' }}>{regulation_capacity.worsened}</div>
+                <div style={{ fontSize: '11px', color: '#888' }}>Worsened</div>
+              </div>
+            </div>
+            <p style={{ fontSize: '13px', color: regulation_capacity.writing_helps ? '#4caf50' : '#ff9800', fontWeight: 500 }}>
+              {regulation_capacity.writing_helps
+                ? 'Writing tends to move you toward a more connected state.'
+                : 'Writing sometimes activates rather than regulates. That is information, not a problem.'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Parts Frequency */}
+      {parts_frequency?.length > 0 && (
+        <div style={s.card}>
+          <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Most Active Parts</h3>
+          {parts_frequency.slice(0, 8).map((p, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={s.badge(ROLE_CONFIG[p.role]?.color || '#b06050')}>{p.role}</span>
+              <span style={{ fontSize: '14px', fontWeight: 500, flex: 1 }}>{p.name}</span>
+              <span style={{ fontSize: '12px', color: '#888' }}>{p.count}× across {p.entities.length} entities</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Contract-Entity Links */}
+      {contract_links?.length > 0 && (
+        <div style={{ ...s.card, borderLeft: '4px solid #b06050' }}>
+          <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>Contract ↔ Entity Links</h3>
+          <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>Which people activate the same parts that hold your contracts?</p>
+          {contract_links.filter(c => !c.is_released).map((c, i) => (
+            <div key={i} style={{ marginBottom: '12px', padding: '10px', borderRadius: '8px', background: 'rgba(176,96,80,0.04)' }}>
+              <p style={{ fontSize: '13px', color: '#b06050', fontStyle: 'italic' }}>
+                "I will {c.vow}" — sworn to <strong>{c.sworn_to}</strong>
+              </p>
+              {c.held_by_part && <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>Held by: <strong>{c.held_by_part}</strong></p>}
+              {c.entities_activating_part.length > 0 && (
+                <p style={{ fontSize: '12px', color: '#5a8abf', marginTop: '4px' }}>
+                  Also activated by: {c.entities_activating_part.join(', ')}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -2121,7 +2275,7 @@ export default function InternalMechanic() {
     <div className="main-content" style={s.page}>
       <div style={s.header}>
         <h1 style={s.title}>The Internal Mechanic</h1>
-        <p style={s.subtitle}>9-module relational intelligence engine — IFS × Polyvagal × Maté × Panksepp × Winnicott × Spiral × AQAL × Wu Wei</p>
+        <p style={s.subtitle}>9-module relational intelligence engine — Parts × Nervous System × Belief × Drives × Safety × Empathy × Perspectives × Worldview × Flow</p>
       </div>
 
       <div style={s.tabs}>
@@ -2133,6 +2287,7 @@ export default function InternalMechanic() {
       </div>
 
       {activeTab === 'journal' && <JournalTab entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} fetchCustomRelTypes={fetchCustomRelTypes} />}
+      {activeTab === 'insights' && <InsightsDashboard userId={userId} />}
       {activeTab === 'log' && <LogSubmission entities={entities} fetchEntities={fetchEntities} fetchAnalyses={fetchAnalyses} userId={userId} customRelTypes={customRelTypes} />}
       {activeTab === 'analysis' && <AnalysisHistory analyses={analyses} entities={entities} fetchAnalyses={fetchAnalyses} />}
       {activeTab === 'entities' && <EntityProfiles entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} />}
