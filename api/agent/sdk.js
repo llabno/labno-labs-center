@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { execSync } from 'child_process'
+import { logTokenUsage } from '../lib/token-logger.js'
 
 // Claude Agent SDK integration: trigger task execution from dashboard
 // Routing modes:
@@ -16,7 +17,7 @@ function getRouteMode() {
   return 'simulation'
 }
 
-async function executeViaAPI(systemPrompt, userPrompt) {
+async function executeViaAPI(systemPrompt, userPrompt, taskId) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -32,6 +33,16 @@ async function executeViaAPI(systemPrompt, userPrompt) {
     })
   })
   const data = await response.json()
+  if (data.usage) {
+    logTokenUsage({
+      endpoint: '/api/agent/sdk',
+      model: 'claude-sonnet-4-20250514',
+      inputTokens: data.usage.input_tokens,
+      outputTokens: data.usage.output_tokens,
+      taskId,
+      agentName: 'sdk-agent',
+    })
+  }
   return data.content?.[0]?.text || JSON.stringify(data)
 }
 
@@ -113,7 +124,7 @@ Provide:
     if (routeMode === 'local') {
       result = executeViaLocalCLI(systemPrompt, userPrompt)
     } else if (routeMode === 'api') {
-      result = await executeViaAPI(systemPrompt, userPrompt)
+      result = await executeViaAPI(systemPrompt, userPrompt, taskId)
     } else {
       await new Promise(r => setTimeout(r, 1000))
       result = `[Simulation] Analyzed: "${taskTitle}"

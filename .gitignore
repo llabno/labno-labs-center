@@ -1,17 +1,9 @@
-# Vercel
 .vercel
-
-# Supabase
 supabase/.temp/
-
-# Dependencies
 node_modules/
-dist/
 
-# Environment (secrets)
-.env*.local
+# Environment files (never commit credentials)
+.env
+.env.local
+.env.staging
 .env.production
-
-# OS
-.DS_Store
-Thumbs.db

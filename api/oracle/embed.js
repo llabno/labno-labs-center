@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { isLance } from '../lib/auth.js';
+import { logTokenUsage } from '../lib/token-logger.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -59,6 +60,16 @@ export default async function handler(req, res) {
       }
 
       const embData = await embRes.json();
+      if (embData.usage) {
+        logTokenUsage({
+          endpoint: '/api/oracle/embed',
+          model: 'text-embedding-3-small',
+          inputTokens: embData.usage.prompt_tokens || embData.usage.total_tokens || 0,
+          outputTokens: 0,
+          agentName: 'oracle-embed',
+          metadata: { batch_size: batch.length },
+        });
+      }
 
       for (let j = 0; j < batch.length; j++) {
         const embedding = embData.data?.[j]?.embedding;

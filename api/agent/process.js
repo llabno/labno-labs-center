@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { execSync } from 'child_process'
+import { logTokenUsage } from '../lib/token-logger.js'
 
 // Vercel Cron: processes queued agent runs
 // Routing modes:
@@ -33,7 +34,7 @@ Analyze this task and provide:
 Be concise and actionable.`
 }
 
-async function executeViaAPI(prompt) {
+async function executeViaAPI(prompt, taskId) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -48,6 +49,16 @@ async function executeViaAPI(prompt) {
     })
   })
   const data = await response.json()
+  if (data.usage) {
+    logTokenUsage({
+      endpoint: '/api/agent/process',
+      model: 'claude-sonnet-4-20250514',
+      inputTokens: data.usage.input_tokens,
+      outputTokens: data.usage.output_tokens,
+      taskId,
+      agentName: 'process-agent',
+    })
+  }
   return data.content?.[0]?.text || 'No response from Claude API'
 }
 
@@ -106,6 +117,21 @@ export default async function handler(req, res) {
   const results = []
 
   for (const run of queuedRuns) {
+    // Re-check if the associated task is blocked before processing
+    if (run.task_id) {
+      const { data: task } = await supabase
+        .from('global_tasks')
+        .select('is_blocked, title')
+        .eq('id', run.task_id)
+        .single()
+
+      if (task?.is_blocked) {
+        console.log(`Skipping blocked task: ${task.title || run.task_title}`)
+        results.push({ id: run.id, status: 'skipped', reason: 'blocked' })
+        continue
+      }
+    }
+
     // Mark as running
     await supabase.from('agent_runs')
       .update({ status: 'running', started_at: new Date().toISOString() })
@@ -118,7 +144,7 @@ export default async function handler(req, res) {
       if (routeMode === 'local') {
         result = executeViaLocalCLI(prompt)
       } else if (routeMode === 'api') {
-        result = await executeViaAPI(prompt)
+        result = await executeViaAPI(prompt, run.task_id)
       } else {
         await new Promise(r => setTimeout(r, 1500))
         result = executeSimulation(run)

@@ -5,6 +5,29 @@ import { supabase } from '../lib/supabase';
 const METHOD_ICONS = { email: Mail, call: Phone, text: MessageSquare };
 const METHOD_COLORS = { email: '#1565c0', call: '#2e7d32', text: '#7b1fa2' };
 
+const EMAIL_TEMPLATES = [
+  {
+    name: 'Wellness Check-In',
+    subject: 'How are you feeling? — Movement Solutions',
+    body: `Hi {name},\n\nIt's been a while since your last visit and I wanted to check in. How are you feeling? If any of your symptoms have returned or you're dealing with something new, we're here to help.\n\nWould you like to schedule a follow-up? I have some openings this week.\n\nBest,\nLance Labno, PT\nMovement Solutions`,
+  },
+  {
+    name: 'New Program Announcement',
+    subject: 'Something new at Movement Solutions',
+    body: `Hi {name},\n\nWe've launched some exciting new programs since your last visit and I thought you might be interested.\n\nWhether you're looking to improve mobility, reduce pain, or optimize performance — we have something that fits.\n\nWant to learn more? Just reply to this email or give us a call.\n\nBest,\nLance Labno, PT\nMovement Solutions`,
+  },
+  {
+    name: 'Referral Ask',
+    subject: 'Know someone who could use our help?',
+    body: `Hi {name},\n\nI hope you've been doing well since we last worked together. If you know anyone — a friend, family member, or colleague — who's dealing with pain or mobility issues, I'd love to help them too.\n\nReferrals are the best compliment we can receive. Thank you for trusting us with your care.\n\nBest,\nLance Labno, PT\nMovement Solutions`,
+  },
+  {
+    name: 'Quick Re-engagement',
+    subject: 'Checking in — {name}',
+    body: `Hi {name},\n\nJust a quick note to see how you're doing. It's been a while and I want to make sure you're still on track with your goals.\n\nIf you'd like to come back in for a tune-up session, I have availability this week. No commitment needed.\n\nBest,\nLance`,
+  },
+];
+
 const Reactivation = () => {
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +36,7 @@ const Reactivation = () => {
   const [editingMessage, setEditingMessage] = useState({});
   const [sending, setSending] = useState({});
   const [commLog, setCommLog] = useState([]);
+  const [scoring, setScoring] = useState(false);
 
   const fetchQueue = async () => {
     setLoading(true);
@@ -162,6 +186,21 @@ const Reactivation = () => {
             <div style={{ fontSize: '0.75rem', color: '#888' }}>{s.label}</div>
           </div>
         ))}
+        <button onClick={async () => {
+          setScoring(true);
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            await fetch('/api/reactivation/score', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+            await fetchQueue();
+          } catch (e) { console.error('Scoring failed:', e); }
+          setScoring(false);
+        }} className="glass-panel"
+          style={{ padding: '0.75rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#b06050', border: 'none', background: 'rgba(176,96,80,0.06)', fontWeight: 600, fontSize: '0.8rem' }}>
+          {scoring ? <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} /> Scoring...</> : <><AlertTriangle size={14} /> Rescore Leads</>}
+        </button>
         <button onClick={() => { fetchQueue(); fetchCommLog(); }} className="glass-panel"
           style={{ padding: '0.75rem 1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: '#666', border: 'none', background: 'rgba(255,255,255,0.5)' }}>
           <RefreshCw size={16} /> Refresh
@@ -214,7 +253,27 @@ const Reactivation = () => {
                       {/* Expanded Detail */}
                       {isExpanded && (
                         <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                          {/* Suggested Message */}
+                          {/* Template Selector */}
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <label style={{ fontSize: '0.7rem', color: '#999', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Template</label>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {EMAIL_TEMPLATES.map(tpl => (
+                                <button
+                                  key={tpl.name}
+                                  onClick={() => setEditingMessage(prev => ({ ...prev, [item.id]: tpl.body.replace(/\{name\}/g, item.lead_name?.split(' ')[0] || 'there') }))}
+                                  style={{
+                                    padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer',
+                                    border: '1px solid rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.7)', color: '#444',
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  {tpl.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Message */}
                           <div style={{ marginBottom: '0.75rem' }}>
                             <label style={{ fontSize: '0.7rem', color: '#999', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>Message</label>
                             <textarea

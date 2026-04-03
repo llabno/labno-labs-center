@@ -33,6 +33,29 @@ Labno Labs Center ("Mission Control") is the internal operations dashboard for L
 | MOSO agents (Chief, Coach, etc.) | Gemini | Free (Google AI Studio) |
 | Local dev Oracle | Claude via CLI | Pro subscription (included) |
 
+### Smart Model Routing (use for all new API work)
+Before calling any AI model, run the task through the model router to pick the cheapest model that meets quality:
+- **Use `/api/lib/model-router.js`** in all API endpoints — it scores tasks on 5 dimensions and returns the optimal model
+- **Use `/api/lib/token-logger.js`** after every AI call — it logs tokens + cost to `token_usage_log`
+- **Use `/optimize-context`** in Claude Code to condense PDFs/docs/screenshots before injecting into prompts
+
+#### Quick reference: which model for which job
+| Task Type | Tier | Model | Cost/M input |
+|-----------|------|-------|-------------|
+| Reformat, classify, template fill | 0 nano | Gemini Flash-Lite | FREE |
+| Summarize, simple extraction, Q&A | 1 budget | Haiku / GPT-4o-mini | $0.15-0.80 |
+| Code gen, clinical condense, analysis | 2 mid | Sonnet / Gemini Pro | $1-5 |
+| HIPAA, architecture, safety-critical | 3 frontier | Opus / o3 | $10-15 |
+
+#### Document-to-context pipeline
+When injecting document content into prompts, always condense first:
+```bash
+# From any Claude Code terminal:
+/optimize-context
+# Or run directly:
+python "/Users/lancelabno/Library/CloudStorage/GoogleDrive-lance.labno@movement-solutions.com/My Drive/0 Antigravity/Workflow Capture/scripts/run_pipeline.py" --input <FILE> --budget 5000
+```
+
 ## Tech Stack
 - **Frontend:** React 18 + React Router 6 (SPA)
 - **Build:** Vite 5

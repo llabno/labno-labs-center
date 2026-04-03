@@ -74,6 +74,15 @@ const ClinicalBlog = () => {
     await fetchPosts();
   };
 
+  const publishAllDrafts = async () => {
+    const drafts = posts.filter(p => p.status === 'draft');
+    if (drafts.length === 0) return;
+    const now = new Date().toISOString();
+    const ids = drafts.map(p => p.id);
+    await supabase.from('blog_posts').update({ status: 'published', published_at: now }).in('id', ids);
+    await fetchPosts();
+  };
+
   const sc = (status) => status === 'published'
     ? { bg: 'rgba(106,171,110,0.15)', color: '#6aab6e' }
     : { bg: 'rgba(196,154,64,0.15)', color: '#c49a40' };
@@ -115,7 +124,15 @@ const ClinicalBlog = () => {
 
           {/* Post List */}
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#2e2c2a', marginBottom: '12px' }}>All Posts ({posts.length})</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#2e2c2a' }}>All Posts ({posts.length})</h3>
+              {posts.filter(p => p.status === 'draft').length > 0 && (
+                <button onClick={publishAllDrafts}
+                  style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid rgba(106,171,110,0.3)', background: 'rgba(106,171,110,0.1)', color: '#6aab6e', fontSize: '0.78rem', fontWeight: 500, cursor: 'pointer' }}>
+                  Publish All Drafts ({posts.filter(p => p.status === 'draft').length})
+                </button>
+              )}
+            </div>
             {loading ? <p style={{ color: '#8a8682', fontSize: '0.85rem' }}>Loading...</p>
             : posts.length === 0 ? <p style={{ color: '#8a8682', fontSize: '0.85rem' }}>No posts yet. Generate your first one above.</p>
             : <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -10,19 +10,12 @@ export const config = { maxDuration: 60 }
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
 
-  // Auth gate: verify Bearer token and restrict to Lance only
-  const authHeader = req.headers.authorization
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authentication required' })
-  }
-
-  const anonClient = createClient(
-    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
-  )
-  const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.split(' ')[1])
-  if (authError || !user || !isLance(user.email)) {
-    return res.status(403).json({ error: 'Access denied. Lance-only endpoint.' })
+  // When called by Vercel cron, verify CRON_SECRET
+  if (req.query.cron === 'true') {
+    const cronAuth = req.headers.authorization
+    if (cronAuth !== `Bearer ${process.env.CRON_SECRET}`) {
+      return res.status(401).json({ error: 'Invalid cron secret' })
+    }
   }
 
   const supabase = createClient(

@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Terminal, Activity, Cpu, Circle, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-// No mock data — only real agent_runs and moso_syncs from Supabase
-const MOCK_FEED = [];
-
 const TERMINAL_LINES = [
   { text: '$ claude --model opus-4 --task "index SOPs"', color: '#8be9fd' },
   { text: 'Connecting to workspace...', color: '#6272a4' },
@@ -26,10 +23,14 @@ const TERMINAL_LINES = [
   { text: '$ _', color: '#50fa7b' },
 ];
 
-const AGENTS = [
-  { name: 'Claude Code', desc: 'SOP indexing, code commits, test generation', status: 'running', color: '#50fa7b', statusLabel: 'Running', tasks: 47, uptime: '6h 12m' },
-  { name: 'Exercise Scraper', desc: 'PhysioPedia, ExRx crawling and CSV export', status: 'idle', color: '#f1fa8c', statusLabel: 'Idle', tasks: 12, uptime: '2h 05m' },
-  { name: 'Lead Gen Agent', desc: 'Apollo enrichment, outbound sequencing', status: 'stopped', color: '#ff5555', statusLabel: 'Stopped', tasks: 8, uptime: '0m' },
+// Agent definitions — status/tasks derived from real agent_runs data at render time
+const AGENT_DEFS = [
+  { name: 'Claude Code', desc: 'SOP indexing, code commits, test generation', routes: ['local', 'api'] },
+  { name: 'Sniper Agent', desc: 'Clinical blog generation, HIPAA stripping', routes: ['api'] },
+  { name: 'Data Quality', desc: 'CRM hygiene checks, dedup, HIPAA compliance', routes: ['cron'] },
+  { name: 'Reactivation', desc: 'Inactive patient scoring, outreach queue', routes: ['cron', 'manual'] },
+  { name: 'Backup', desc: 'Weekly database export for disaster recovery', routes: ['cron'] },
+  { name: 'Telemetry', desc: 'PostHog geo aggregation into Supabase', routes: ['cron'] },
 ];
 
 const MOSO_AGENTS = [
@@ -87,13 +88,32 @@ const Autonomous = () => {
     return '#ff5555';
   };
 
-  // Merge real runs with mock feed
-  const realFeedEntries = agentRuns.map(r => ({
+  // Build feed from real agent_runs
+  const combinedFeed = agentRuns.map(r => ({
     time: new Date(r.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-    msg: `${r.status === 'queued' ? 'Queued' : r.status === 'completed' ? 'Completed' : 'Processing'}: ${r.task_title}${r.project_name ? ` (${r.project_name})` : ''}`,
+    msg: `${r.status === 'queued' ? 'Queued' : r.status === 'completed' ? 'Completed' : r.status === 'failed' ? 'Failed' : 'Processing'}: ${r.task_title}${r.project_name ? ` (${r.project_name})` : ''}`,
     status: r.status === 'completed' ? 'success' : r.status === 'queued' ? 'warning' : r.status === 'failed' ? 'error' : 'success'
-  }));
-  const combinedFeed = [...realFeedEntries, ...MOCK_FEED].slice(0, 15);
+  })).slice(0, 15);
+
+  // Derive live agent status from recent runs
+  const deriveAgentStatus = (agentDef) => {
+    const keywords = agentDef.name.toLowerCase().split(' ');
+    const related = agentRuns.filter(r => {
+      const title = (r.task_title || '').toLowerCase();
+      const route = (r.agent_route || '').toLowerCase();
+      return keywords.some(k => title.includes(k)) || agentDef.routes.some(rt => route === rt);
+    });
+    const running = related.find(r => r.status === 'running' || r.status === 'queued');
+    const lastCompleted = related.find(r => r.status === 'completed');
+    const tasks = related.length;
+    if (running) return { status: 'running', color: '#8be9fd', label: 'Running', tasks };
+    if (lastCompleted) {
+      const hoursAgo = (Date.now() - new Date(lastCompleted.created_at).getTime()) / 3600000;
+      if (hoursAgo < 1) return { status: 'recent', color: '#50fa7b', label: 'Active', tasks };
+      if (hoursAgo < 24) return { status: 'idle', color: '#f1fa8c', label: 'Idle', tasks };
+    }
+    return { status: 'stopped', color: '#6272a4', label: tasks > 0 ? 'Idle' : 'No Runs', tasks };
+  };
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', background: 'linear-gradient(180deg, #12121e 0%, #1a1a2e 100%)', borderRadius: '20px', color: '#e0dfe6' }}>
@@ -181,43 +201,43 @@ const Autonomous = () => {
             <Cpu size={16} color="#8be9fd" /> Active Agents
           </h3>
 
-          {AGENTS.map((agent, i) => (
-            <div key={i} style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '14px',
-              padding: '1.25rem',
-              borderLeft: `3px solid ${agent.color}`,
-              transition: 'all 0.25s ease',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <span style={{
-                  width: '10px', height: '10px', borderRadius: '50%',
-                  background: agent.color,
-                  boxShadow: `0 0 8px ${agent.color}66`,
-                  animation: agent.status === 'running' ? 'pulse-dot 2s ease-in-out infinite' : 'none',
-                }} />
-                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#e8e6f0' }}>{agent.name}</span>
+          {AGENT_DEFS.map((agentDef, i) => {
+            const live = deriveAgentStatus(agentDef);
+            return (
+              <div key={i} style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '14px',
+                padding: '1.25rem',
+                borderLeft: `3px solid ${live.color}`,
+                transition: 'all 0.25s ease',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    background: live.color,
+                    boxShadow: `0 0 8px ${live.color}66`,
+                    animation: live.status === 'running' ? 'pulse-dot 2s ease-in-out infinite' : 'none',
+                  }} />
+                  <span style={{ fontSize: '0.95rem', fontWeight: 600, color: '#e8e6f0' }}>{agentDef.name}</span>
+                </div>
+                <p style={{ fontSize: '0.78rem', color: '#7a789a', marginBottom: '10px', lineHeight: 1.4 }}>{agentDef.desc}</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: '0.68rem', fontWeight: 600,
+                    padding: '3px 8px', borderRadius: '10px',
+                    background: `${live.color}18`, color: live.color,
+                    textTransform: 'uppercase', letterSpacing: '0.04em',
+                  }}>
+                    {live.label}
+                  </span>
+                  <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', color: '#8a88a0' }}>
+                    {live.tasks} runs
+                  </span>
+                </div>
               </div>
-              <p style={{ fontSize: '0.78rem', color: '#7a789a', marginBottom: '10px', lineHeight: 1.4 }}>{agent.desc}</p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{
-                  fontSize: '0.68rem', fontWeight: 600,
-                  padding: '3px 8px', borderRadius: '10px',
-                  background: `${agent.color}18`, color: agent.color,
-                  textTransform: 'uppercase', letterSpacing: '0.04em',
-                }}>
-                  {agent.statusLabel}
-                </span>
-                <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', color: '#8a88a0' }}>
-                  {agent.tasks} tasks
-                </span>
-                <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', color: '#8a88a0' }}>
-                  {agent.uptime}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Routing Mode indicator */}
           <div style={{

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket, GitBranch, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const COLUMNS = ['backlog', 'triage', 'in_progress', 'review', 'blocked', 'completed'];
@@ -55,6 +55,7 @@ const Dashboard = () => {
   const [collapsedBoards, setCollapsedBoards] = useState({});
   const [executingTasks, setExecutingTasks] = useState({});
   const [viewMode, setViewMode] = useState('tier');
+  const [showBlockingView, setShowBlockingView] = useState(false);
   const kanbanRef = useRef(null);
 
   const executeTask = async (task, projectName) => {
@@ -79,6 +80,7 @@ const Dashboard = () => {
   };
 
   const [liveStats, setLiveStats] = useState({ leads: 0, activePipeline: 0, sops: 0 });
+  const [revenueStats, setRevenueStats] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -94,13 +96,31 @@ const Dashboard = () => {
         sops: sops.count || 0,
       });
     };
+    const fetchRevenue = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/lemon-squeezy', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` }
+        });
+        const data = await res.json();
+        if (data.configured) setRevenueStats(data);
+      } catch (err) {
+        console.error('Revenue fetch failed:', err);
+      }
+    };
     fetchStats();
+    fetchRevenue();
   }, []);
 
   const stats = [
     { title: 'Total CRM Contacts', value: liveStats.leads.toLocaleString(), link: '/crm' },
     { title: 'Active Clinical Pipeline', value: liveStats.activePipeline.toLocaleString(), link: '/crm' },
     { title: 'Oracle SOPs Loaded', value: liveStats.sops.toLocaleString(), link: '/oracle' },
+    ...(revenueStats ? [
+      { title: 'Revenue (Month)', value: `$${revenueStats.revenue.month.toLocaleString()}`, link: '/studio' },
+      { title: 'Orders (Month)', value: revenueStats.orders.month.toLocaleString(), link: '/studio' },
+    ] : []),
   ];
 
   const fetchData = async () => {
@@ -244,6 +264,104 @@ ${COLUMNS.map(col => `
     return result;
   };
 
+  // Derive all tasks flat list and blocking tiers
+  const allTasks = Object.entries(tasksByProject).flatMap(([projId, cols]) =>
+    Object.values(cols).flat().map(t => ({ ...t, _projectName: (projects.find(p => p.id === t.project_id) || {}).name || '' }))
+  );
+
+  const allTaskTitleMap = {};
+  allTasks.forEach(t => { allTaskTitleMap[t.title] = t; });
+
+  const buildBlockingData = () => {
+    const tasksWithDeps = allTasks.filter(t => t.depends_on && t.depends_on.length > 0);
+    const titleToTask = allTaskTitleMap;
+
+    // Compute tier for each task: Tier 1 = no deps, Tier 2 = deps only on Tier 1, etc.
+    const tierCache = {};
+    const getTier = (title, visited = new Set()) => {
+      if (tierCache[title] !== undefined) return tierCache[title];
+      const task = titleToTask[title];
+      if (!task || !task.depends_on || task.depends_on.length === 0) {
+        tierCache[title] = 1;
+        return 1;
+      }
+      if (visited.has(title)) return 1; // cycle guard
+      visited.add(title);
+      let maxDepTier = 0;
+      for (const dep of task.depends_on) {
+        maxDepTier = Math.max(maxDepTier, getTier(dep, new Set(visited)));
+      }
+      tierCache[title] = maxDepTier + 1;
+      return tierCache[title];
+    };
+
+    tasksWithDeps.forEach(t => getTier(t.title));
+
+    // Enrich each task with dep status
+    const enriched = tasksWithDeps.map(t => {
+      const deps = (t.depends_on || []).map(depTitle => {
+        const depTask = titleToTask[depTitle];
+        const isCompleted = depTask ? depTask.column_id === 'completed' : false;
+        return { title: depTitle, found: !!depTask, completed: isCompleted };
+      });
+      const allDepsComplete = deps.every(d => d.completed);
+      const someDepsComplete = deps.some(d => d.completed);
+      const status = allDepsComplete ? 'ready' : someDepsComplete ? 'partial' : 'blocked';
+      return { ...t, _deps: deps, _status: status, _tier: tierCache[t.title] || 1 };
+    });
+
+    // Sort by tier then status
+    enriched.sort((a, b) => a._tier - b._tier || (a._status === 'blocked' ? -1 : 1));
+
+    // Group by tier
+    const tiers = {};
+    enriched.forEach(t => {
+      if (!tiers[t._tier]) tiers[t._tier] = [];
+      tiers[t._tier].push(t);
+    });
+
+    // Critical path: find longest chain
+    const chainLength = (title, visited = new Set()) => {
+      if (visited.has(title)) return 0;
+      visited.add(title);
+      const task = titleToTask[title];
+      if (!task || !task.depends_on || task.depends_on.length === 0) return 1;
+      let max = 0;
+      for (const dep of task.depends_on) {
+        max = Math.max(max, chainLength(dep, new Set(visited)));
+      }
+      return max + 1;
+    };
+    let criticalPath = [];
+    let maxChain = 0;
+    allTasks.forEach(t => {
+      const len = chainLength(t.title);
+      if (len > maxChain) {
+        maxChain = len;
+        // Trace back the path
+        const path = [];
+        let current = t.title;
+        while (current) {
+          path.push(current);
+          const ct = titleToTask[current];
+          if (!ct || !ct.depends_on || ct.depends_on.length === 0) break;
+          // pick the dep with the longest chain
+          let best = null, bestLen = 0;
+          for (const dep of ct.depends_on) {
+            const dl = chainLength(dep);
+            if (dl > bestLen) { bestLen = dl; best = dep; }
+          }
+          current = best;
+        }
+        criticalPath = path;
+      }
+    });
+
+    return { tiers, criticalPath: new Set(criticalPath), total: enriched.length };
+  };
+
+  const blockingData = showBlockingView ? buildBlockingData() : null;
+
   if (loading) return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a8682' }}>Loading dashboard...</div>
   );
@@ -290,6 +408,13 @@ ${COLUMNS.map(col => `
           style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
         >
           <ListFilter size={13} /> Show Backlog Overview
+        </button>
+        <button
+          className={`filter-pill${showBlockingView ? ' active' : ''}`}
+          onClick={() => setShowBlockingView(prev => !prev)}
+          style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+        >
+          <GitBranch size={13} /> Blocking View
         </button>
       </div>
 
@@ -455,7 +580,14 @@ ${COLUMNS.map(col => `
                           {data[col].map(t => (
                             <div key={t.id} className={`task-card glass-panel${executingTasks[t.id] ? ' task-executing' : ''}`} style={{ background: 'rgba(255,255,255,0.55)', ...(colStyles[col] || {}), padding: '1rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h4 style={{ fontSize: '0.9rem', flex: 1 }}>{t.title}</h4>
+                                <div style={{ flex: 1 }}>
+                                  <h4 style={{ fontSize: '0.9rem' }}>{t.title}</h4>
+                                  {t.is_blocked && (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.65rem', fontWeight: 600, color: '#c0392b', background: 'rgba(192,57,43,0.08)', padding: '1px 6px', borderRadius: '4px', marginTop: '3px' }}>
+                                      <AlertCircle size={10} /> Blocked
+                                    </span>
+                                  )}
+                                </div>
                                 <button
                                   onClick={e => { e.stopPropagation(); executeTask(t, board.name); }}
                                   title="Execute with Agent"
@@ -579,6 +711,117 @@ ${COLUMNS.map(col => `
                 </div>
               );
             })
+          )}
+        </div>
+      )}
+
+      {/* Blocking / Dependency View */}
+      {showBlockingView && blockingData && (
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <h3 style={{ color: '#2e2c2a', fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <GitBranch size={18} color="#b06050" /> Dependency Graph
+          </h3>
+          <p style={{ color: '#6b6764', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+            {blockingData.total} task{blockingData.total !== 1 ? 's' : ''} with dependencies.
+            {blockingData.criticalPath.size > 0 && <> Critical path highlighted in amber ({blockingData.criticalPath.size} tasks).</>}
+          </p>
+
+          {Object.keys(blockingData.tiers).length === 0 ? (
+            <p style={{ color: '#8a8682', fontSize: '0.9rem' }}>No tasks have dependencies configured.</p>
+          ) : (
+            Object.entries(blockingData.tiers).sort(([a], [b]) => Number(a) - Number(b)).map(([tier, tasks]) => (
+              <div key={tier} style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <span style={{
+                    fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
+                    color: '#6b6764', background: 'rgba(0,0,0,0.04)', padding: '3px 10px', borderRadius: '6px',
+                  }}>
+                    Tier {tier}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#9e9a97' }}>
+                    {Number(tier) === 1 ? 'Depends on base tasks' : `Depends on Tier ${Number(tier) - 1}`}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: `${(Number(tier) - 1) * 24}px` }}>
+                  {tasks.map(t => {
+                    const isCritical = blockingData.criticalPath.has(t.title);
+                    const statusColor = t._status === 'ready' ? '#27ae60' : t._status === 'partial' ? '#c49a40' : '#c0392b';
+                    const statusBg = t._status === 'ready' ? 'rgba(39,174,96,0.06)' : t._status === 'partial' ? 'rgba(196,154,64,0.06)' : 'rgba(192,57,43,0.06)';
+                    const statusLabel = t._status === 'ready' ? 'Ready' : t._status === 'partial' ? 'Partially Unblocked' : 'Blocked';
+                    return (
+                      <div key={t.id} style={{
+                        padding: '12px 16px',
+                        borderRadius: '10px',
+                        background: isCritical ? 'rgba(196,154,64,0.08)' : 'rgba(255,255,255,0.5)',
+                        border: `1px solid ${isCritical ? 'rgba(196,154,64,0.25)' : 'rgba(0,0,0,0.05)'}`,
+                        borderLeft: `3px solid ${statusColor}`,
+                        position: 'relative',
+                      }}>
+                        {/* Connecting line */}
+                        {Number(tier) > 1 && (
+                          <div style={{
+                            position: 'absolute', left: '-16px', top: '50%', width: '16px', height: '1px',
+                            background: 'rgba(0,0,0,0.1)',
+                          }} />
+                        )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+                            {/* Status dot */}
+                            <span style={{
+                              width: '9px', height: '9px', borderRadius: '50%', background: statusColor,
+                              flexShrink: 0, boxShadow: `0 0 0 3px ${statusBg}`,
+                            }} />
+                            <div style={{ minWidth: 0 }}>
+                              <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#2e2c2a', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {t.title}
+                              </span>
+                              <span style={{ fontSize: '0.72rem', color: '#8a8682' }}>
+                                {t._projectName}
+                                {t.assigned_to && <> &middot; {t.assigned_to}</>}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                            {isCritical && (
+                              <span style={{ fontSize: '0.65rem', fontWeight: 600, color: '#c49a40', background: 'rgba(196,154,64,0.12)', padding: '2px 7px', borderRadius: '4px' }}>
+                                Critical Path
+                              </span>
+                            )}
+                            <span style={{ fontSize: '0.68rem', fontWeight: 600, color: statusColor, background: statusBg, padding: '2px 8px', borderRadius: '4px' }}>
+                              {statusLabel}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Dependencies list */}
+                        <div style={{ marginTop: '8px', paddingLeft: '19px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {t._deps.map((dep, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.76rem' }}>
+                              <span style={{
+                                width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0,
+                                background: dep.completed ? '#27ae60' : dep.found ? '#c0392b' : '#9e9a97',
+                              }} />
+                              <span style={{ color: dep.completed ? '#6aab6e' : '#6b6764', textDecoration: dep.completed ? 'line-through' : 'none' }}>
+                                {dep.title}
+                              </span>
+                              {!dep.found && (
+                                <span style={{ fontSize: '0.65rem', color: '#9e9a97', fontStyle: 'italic' }}>(not found)</span>
+                              )}
+                              {dep.completed && (
+                                <CheckCircle size={11} color="#27ae60" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
           )}
         </div>
       )}

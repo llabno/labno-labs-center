@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { logTokenUsage } from '../lib/token-logger.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -83,6 +84,15 @@ Output JSON format ONLY:
     }
 
     const aiResult = await anthropicRes.json();
+    if (aiResult.usage) {
+      logTokenUsage({
+        endpoint: '/api/sniper/generate',
+        model: 'claude-3-5-haiku-20241022',
+        inputTokens: aiResult.usage.input_tokens,
+        outputTokens: aiResult.usage.output_tokens,
+        agentName: 'sniper',
+      });
+    }
     const rawText = aiResult.content?.[0]?.text || '';
 
     let post;

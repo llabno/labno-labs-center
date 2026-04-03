@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { isLance } from '../lib/auth.js';
+import { logTokenUsage } from '../lib/token-logger.js';
+import { checkRateLimit, DEFAULT_LIMITS } from '../lib/rate-limiter.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -90,6 +92,17 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Access denied' });
   }
 
+  // Rate limit: 30 req/min per user for Oracle
+  const { allowed, resetAt } = await checkRateLimit({
+    identifier: userEmail,
+    endpoint: '/api/oracle/ask',
+    ...DEFAULT_LIMITS.oracle,
+  });
+  if (!allowed) {
+    res.setHeader('Retry-After', Math.ceil((resetAt - Date.now()) / 1000));
+    return res.status(429).json({ error: 'Rate limit exceeded. Try again shortly.' });
+  }
+
   try {
     let contextSops = null;
     let searchMethod = 'keyword';
@@ -171,6 +184,15 @@ ${sopContext}
     }
 
     const aiResult = await anthropicRes.json();
+    if (aiResult.usage) {
+      logTokenUsage({
+        endpoint: '/api/oracle/ask',
+        model: 'claude-3-5-haiku-20241022',
+        inputTokens: aiResult.usage.input_tokens,
+        outputTokens: aiResult.usage.output_tokens,
+        agentName: 'oracle',
+      });
+    }
     const answer = aiResult.content?.[0]?.text || 'No response generated.';
 
     return res.json({
