@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle, BookOpen, UserPlus, UsersRound } from 'lucide-react';
+import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle, BookOpen, UserPlus, UsersRound, Clock, Bell, Settings, Target, Dumbbell } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { MODULE_LABELS, MODULE_DESCRIPTIONS, ROLE_LABELS, NS_LABELS, DRIVE_LABELS, QUADRANT_LABELS, PRODUCT_NAME, EXPORT_TITLE } from '../lib/mechanic-labels';
 
@@ -36,6 +36,7 @@ const TABS = [
   { id: 'entities', label: 'Entities', icon: <User size={18} /> },
   { id: 'parts', label: 'Parts Registry', icon: <Brain size={18} /> },
   { id: 'board', label: 'Visual Board', icon: <Eye size={18} /> },
+  { id: 'timetravel', label: 'Time Travel', icon: <Clock size={18} /> },
   { id: 'contracts', label: 'Conscious Contracts', icon: <FileText size={18} /> },
   { id: 'unburdening', label: 'Unburdening', icon: <RefreshCw size={18} /> },
   { id: 'relationships', label: 'Relationships', icon: <Users size={18} /> },
@@ -2310,6 +2311,202 @@ const EntityProfiles = ({ entities, fetchEntities, userId, customRelTypes }) => 
 };
 
 // ============================================
+// Time Travel Tab (Sarah Peyton resonance)
+// ============================================
+const TimeTravelTab = ({ parts, userId }) => {
+  const [sessions, setSessions] = useState([]);
+  const [active, setActive] = useState(null);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [newForm, setNewForm] = useState({ target_age: '', target_memory: '', target_part_id: '' });
+  const messagesEndRef = useRef(null);
+
+  const STEPS = [
+    { id: 'arrival', label: 'Arrive', desc: 'See your younger self' },
+    { id: 'witness', label: 'Witness', desc: 'Let them tell their story' },
+    { id: 'resonance', label: 'Resonate', desc: 'Find the words that land' },
+    { id: 'rewrite', label: 'Rewrite', desc: 'Offer what was needed' },
+    { id: 'return', label: 'Return', desc: 'Bring them to now' },
+    { id: 'integrate', label: 'Integrate', desc: 'Welcome back' },
+  ];
+
+  const fetchSessions = async () => {
+    const { data } = await supabase.from('ifs_time_travel_sessions').select('*').eq('user_id', userId).order('started_at', { ascending: false });
+    if (data) setSessions(data);
+  };
+
+  useEffect(() => { fetchSessions(); }, []);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [active?.messages?.length]);
+
+  const startSession = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/mechanic/time-travel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify(newForm),
+      });
+      const data = await res.json();
+      if (data.sessionId) {
+        const { data: sess } = await supabase.from('ifs_time_travel_sessions').select('*').eq('id', data.sessionId).single();
+        setActive(sess);
+        fetchSessions();
+      }
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const sendMessage = async () => {
+    if (!message.trim() || !active) return;
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/mechanic/time-travel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ sessionId: active.id, message: message.trim() }),
+      });
+      const data = await res.json();
+      setMessage('');
+      // Refresh session
+      const { data: updated } = await supabase.from('ifs_time_travel_sessions').select('*').eq('id', active.id).single();
+      if (updated) setActive(updated);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const advanceStep = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch('/api/mechanic/time-travel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ sessionId: active.id, advanceStep: true, message: '' }),
+      });
+      const { data: updated } = await supabase.from('ifs_time_travel_sessions').select('*').eq('id', active.id).single();
+      if (updated) setActive(updated);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  // Active session view
+  if (active) {
+    const currentIdx = STEPS.findIndex(st => st.id === active.current_step);
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div>
+            <h3 style={{ fontSize: '18px' }}>Time Travel: {active.target_age || 'Past'}</h3>
+            <p style={{ fontSize: '13px', color: '#888' }}>{active.target_memory}</p>
+          </div>
+          <button style={s.btn('ghost')} onClick={() => { setActive(null); fetchSessions(); }}><X size={14} /> Close</button>
+        </div>
+
+        {/* Step progress */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+          {STEPS.map((st, i) => (
+            <div key={st.id} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ height: '6px', borderRadius: '3px', background: i < currentIdx ? '#4caf50' : i === currentIdx ? '#b06050' : 'rgba(0,0,0,0.08)', marginBottom: '4px' }} />
+              <span style={{ fontSize: '10px', color: i === currentIdx ? '#b06050' : '#aaa' }}>{st.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Current step guidance */}
+        <div style={{ ...s.card, background: 'rgba(176,96,80,0.04)', border: '1px solid rgba(176,96,80,0.12)', marginBottom: '12px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#b06050' }}>{STEPS[currentIdx]?.label}</span>
+          <p style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{STEPS[currentIdx]?.desc}</p>
+        </div>
+
+        {/* Messages */}
+        <div style={{ ...s.card, maxHeight: '400px', overflowY: 'auto', padding: '16px' }}>
+          {(active.messages || []).filter(m => m.role !== 'system').map((msg, i) => (
+            <div key={i} style={{ marginBottom: '12px', padding: '10px 14px', borderRadius: '12px',
+              background: msg.role === 'user' ? 'rgba(176,96,80,0.06)' : 'rgba(92,122,111,0.06)',
+              borderLeft: msg.role === 'user' ? '3px solid #b06050' : '3px solid #5c7a6f' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: msg.role === 'user' ? '#b06050' : '#5c7a6f', textTransform: 'uppercase' }}>
+                {msg.role === 'user' ? 'You' : 'Guide'}
+              </span>
+              <p style={{ fontSize: '14px', color: '#444', marginTop: '4px', whiteSpace: 'pre-wrap' }}>{msg.content}</p>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input */}
+        <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+          <textarea style={{ ...s.textarea, minHeight: '50px', flex: 1 }} value={message}
+            onChange={e => setMessage(e.target.value)} placeholder="What do you see? What does your younger self need to say?"
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <button style={s.btn('primary')} onClick={sendMessage} disabled={!message.trim() || loading}>Send</button>
+            <button style={{ ...s.btn('ghost'), color: '#5c7a6f' }} onClick={advanceStep} disabled={loading}>
+              Next <ChevronRight size={13} />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // New session / session list
+  return (
+    <div>
+      <div style={s.card}>
+        <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>Time Travel with Resonance</h3>
+        <p style={{ fontSize: '13px', color: '#888', marginBottom: '16px' }}>
+          Visit a younger version of yourself. Witness what happened. Offer what was needed. Bring them home.
+        </p>
+        <div style={s.row}>
+          <div style={s.col}>
+            <label style={s.label}>How old were you?</label>
+            <input style={s.input} value={newForm.target_age} onChange={e => setNewForm({ ...newForm, target_age: e.target.value })}
+              placeholder="e.g., Age 7, teenager, young adult" />
+          </div>
+          <div style={s.col}>
+            <label style={s.label}>Connected Part (optional)</label>
+            <select style={{ ...s.select, width: '100%' }} value={newForm.target_part_id} onChange={e => setNewForm({ ...newForm, target_part_id: e.target.value })}>
+              <option value="">None</option>
+              {parts.map(p => <option key={p.id} value={p.id}>{p.name} ({ROLE_CONFIG[p.role]?.label})</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{ marginBottom: '12px' }}>
+          <label style={s.label}>What memory are you visiting?</label>
+          <textarea style={s.textarea} value={newForm.target_memory} onChange={e => setNewForm({ ...newForm, target_memory: e.target.value })}
+            placeholder="Brief description — you don't need to tell the whole story here. Just enough to arrive." />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button style={s.btn('primary')} onClick={startSession} disabled={!newForm.target_age.trim() || loading}>
+            {loading ? <Loader size={14} /> : <Clock size={14} />} Begin Time Travel
+          </button>
+        </div>
+      </div>
+
+      {sessions.length > 0 && (
+        <>
+          <h4 style={{ fontSize: '15px', margin: '24px 0 12px' }}>Previous Sessions</h4>
+          {sessions.map(sess => (
+            <div key={sess.id} style={{ ...s.card, cursor: 'pointer' }} onClick={() => setActive(sess)}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={s.badge(sess.status === 'completed' ? '#4caf50' : '#ff9800')}>{sess.status}</span>
+                  <h4 style={{ fontSize: '15px', marginTop: '4px' }}>{sess.target_age} — {sess.target_memory?.slice(0, 60)}</h4>
+                  <p style={{ fontSize: '12px', color: '#999' }}>{new Date(sess.started_at).toLocaleDateString()} — {(sess.messages || []).length} messages</p>
+                </div>
+                <ChevronRight size={20} style={{ color: '#ccc' }} />
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================
 // Main Page Component
 // ============================================
 export default function InternalMechanic() {
@@ -2397,6 +2594,7 @@ export default function InternalMechanic() {
       {activeTab === 'entities' && <EntityProfiles entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} />}
       {activeTab === 'parts' && <PartsRegistry parts={parts} setParts={setParts} fetchParts={fetchParts} userId={userId} />}
       {activeTab === 'board' && <VisualBoard parts={parts} relationships={relationships} fetchParts={fetchParts} fetchRelationships={fetchRelationships} />}
+      {activeTab === 'timetravel' && <TimeTravelTab parts={parts} userId={userId} />}
       {activeTab === 'contracts' && <ConsciousContracts contracts={contracts} parts={parts} fetchContracts={fetchContracts} userId={userId} />}
       {activeTab === 'unburdening' && <UnburdeningFlow parts={parts} sessions={sessions} fetchSessions={fetchSessions} userId={userId} />}
       {activeTab === 'relationships' && <RelationshipsTab relationships={relationships} parts={parts} fetchRelationships={fetchRelationships} userId={userId} customRelTypes={customRelTypes} />}

@@ -20,6 +20,10 @@
     {
       "path": "/api/reactivation/score",
       "schedule": "15 6 * * *"
+    },
+    {
+      "path": "/api/mechanic/journal-reminder",
+      "schedule": "0 */3 * * *"
     }
   ],
   "rewrites": [
