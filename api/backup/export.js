@@ -3,6 +3,7 @@
 // Trigger manually or via cron
 
 import { createClient } from '@supabase/supabase-js'
+import { isLance } from '../lib/auth.js'
 
 export const config = { maxDuration: 60 }
 
@@ -20,7 +21,7 @@ export default async function handler(req, res) {
     process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
   )
   const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.split(' ')[1])
-  if (authError || !user || user.email !== 'lance@labnolabs.com') {
+  if (authError || !user || !isLance(user.email)) {
     return res.status(403).json({ error: 'Access denied. Lance-only endpoint.' })
   }
 

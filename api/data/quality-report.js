@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { isLance } from '../lib/auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
 
   try {
     const { data: { user }, error: authErr } = await supabase.auth.getUser(authHeader.split(' ')[1]);
-    if (authErr || !user || user.email !== 'lance@labnolabs.com') {
+    if (authErr || !user || !isLance(user.email)) {
       return res.status(403).json({ error: 'Only Lance can run clinical data quality reports (HIPAA)' });
     }
 

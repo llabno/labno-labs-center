@@ -79,7 +79,7 @@ def ask_oracle(req: OracleQuery, user_email: str = Depends(verify_token)):
 
 @app.post("/api/oracle/sync")
 def trigger_sync(req: OracleParser, user_email: str = Depends(verify_token)):
-    if user_email != "lance@labnolabs.com":
+    if user_email not in ("lance@labnolabs.com", "lance.labno@movement-solutions.com"):
         raise HTTPException(status_code=403, detail="Unauthorized: Only Admins can sync vectors.")
     
 class LemonSqueezyEvent(BaseModel):

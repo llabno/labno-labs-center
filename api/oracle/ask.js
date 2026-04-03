@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { isLance } from '../lib/auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -31,7 +32,7 @@ async function vectorSearch(queryEmbedding, userEmail) {
     query_embedding: queryEmbedding,
     match_threshold: 0.5,
     match_count: 5,
-    filter_visibility: userEmail === 'lance@labnolabs.com' ? null : 'Public Brain',
+    filter_visibility: isLance(userEmail) ? null : 'Public Brain',
   });
   if (error || !data?.length) return null;
 
@@ -126,7 +127,7 @@ export default async function handler(req, res) {
     const systemPrompt = `You are The Oracle — Labno Labs' internal knowledge assistant. Answer questions based ONLY on the SOPs provided below. If the answer isn't in the SOPs, say so honestly. Be concise and actionable. Reference which SOP(s) you used.
 
 User: ${userEmail}
-Access: ${userEmail === 'lance@labnolabs.com' ? 'Full (Private + Public Brain)' : 'Public Brain only'}
+Access: ${isLance(userEmail) ? 'Full (Private + Public Brain)' : 'Public Brain only'}
 
 --- BEGIN SOPs ---
 ${sopContext}
