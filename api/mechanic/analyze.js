@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { logTokenUsage } from '../lib/token-logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -235,6 +236,16 @@ Analyze this interaction through your module's lens. Return ONLY valid JSON matc
     output: data.usage?.output_tokens || 0,
   };
 
+  if (data.usage) {
+    logTokenUsage({
+      endpoint: '/api/mechanic/analyze',
+      model: 'claude-sonnet-4-6-20250514',
+      inputTokens: tokens.input,
+      outputTokens: tokens.output,
+      agentName: `mechanic-${module}`,
+    });
+  }
+
   // Parse JSON from response
   try {
     // Try to extract JSON from the response
@@ -281,6 +292,16 @@ Output JSON with five keys: my_inside (UL — parts active, Self-led response av
   const data = await response.json();
   const text = data.content?.[0]?.text || '';
   const tokens = { input: data.usage?.input_tokens || 0, output: data.usage?.output_tokens || 0 };
+
+  if (data.usage) {
+    logTokenUsage({
+      endpoint: '/api/mechanic/analyze',
+      model: 'claude-sonnet-4-6-20250514',
+      inputTokens: tokens.input,
+      outputTokens: tokens.output,
+      agentName: 'mechanic-retrospective',
+    });
+  }
 
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
