@@ -1,29 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles, Brain } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles, Brain, Gauge } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
-// Import Pages
-import Dashboard from './pages/Dashboard';
-import Oracle from './pages/Oracle';
-import DualCRM from './pages/DualCRM';
-import AppStudio from './pages/AppStudio';
-import UILibrary from './pages/UILibrary';
-import SettingsPage from './pages/Settings';
+// Eager imports (needed before auth)
 import Login from './pages/Login';
-import Autonomous from './pages/Autonomous';
-import Reactivation from './pages/Reactivation';
-import Strategic from './pages/Strategic';
-import StrategicPlaybook from './pages/StrategicPlaybook';
-import WorkHistory from './pages/WorkHistory';
-import ClinicalBlog from './pages/ClinicalBlog';
-import InternalMechanic from './pages/InternalMechanic';
 import CookieConsent from './lib/CookieConsent';
-import Telemetry from './pages/Telemetry';
-import ProjectsTasks from './pages/ProjectsTasks';
-import TaskQueue from './pages/TaskQueue';
-import Wishlist from './pages/Wishlist';
+
+// Lazy-loaded pages (code-split per route)
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Oracle = lazy(() => import('./pages/Oracle'));
+const DualCRM = lazy(() => import('./pages/DualCRM'));
+const AppStudio = lazy(() => import('./pages/AppStudio'));
+const UILibrary = lazy(() => import('./pages/UILibrary'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
+const Autonomous = lazy(() => import('./pages/Autonomous'));
+const Reactivation = lazy(() => import('./pages/Reactivation'));
+const Strategic = lazy(() => import('./pages/Strategic'));
+const StrategicPlaybook = lazy(() => import('./pages/StrategicPlaybook'));
+const WorkHistory = lazy(() => import('./pages/WorkHistory'));
+const ClinicalBlog = lazy(() => import('./pages/ClinicalBlog'));
+const InternalMechanic = lazy(() => import('./pages/InternalMechanic'));
+const Telemetry = lazy(() => import('./pages/Telemetry'));
+const ProjectsTasks = lazy(() => import('./pages/ProjectsTasks'));
+const TaskQueue = lazy(() => import('./pages/TaskQueue'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Efficiency = lazy(() => import('./pages/Efficiency'));
+
+const PageLoader = () => (
+  <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a8682', padding: '2rem' }}>
+    Loading...
+  </div>
+);
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -58,6 +67,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Internal Mechanic', path: '/mechanic', icon: <Brain size={20} /> },
     { name: 'Projects & Tasks', path: '/projects', icon: <ListChecks size={20} /> },
     { name: 'Telemetry', path: '/telemetry', icon: <BarChart3 size={20} /> },
+    { name: 'Efficiency', path: '/efficiency', icon: <Gauge size={20} /> },
     { name: 'Wishlist', path: '/wishlist', icon: <Sparkles size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
     { name: 'Screenshot to Code', path: null, icon: <Image size={20} />, external: 'https://design-to-code-app.vercel.app' },
@@ -170,6 +180,7 @@ function App() {
         <GlassCursorBlob />
         <CookieConsent />
         <Sidebar user={session.user} onLogout={handleLogout} />
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/oracle" element={<Oracle />} />
@@ -185,10 +196,12 @@ function App() {
           <Route path="/mechanic" element={<InternalMechanic />} />
           <Route path="/projects" element={<ProjectsTasks />} />
           <Route path="/telemetry" element={<Telemetry />} />
+          <Route path="/efficiency" element={<Efficiency />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
+        </Suspense>
       </div>
     </Router>
   );
