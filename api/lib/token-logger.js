@@ -5,7 +5,7 @@ const PRICING = {
   // Anthropic
   'claude-opus-4-6':            { input: 15.00, output: 75.00, cache_read: 1.50,  cache_creation: 18.75 },
   'claude-sonnet-4-6':          { input: 3.00,  output: 15.00, cache_read: 0.30,  cache_creation: 3.75  },
-  'claude-sonnet-4-6-20250514': { input: 3.00,  output: 15.00, cache_read: 0.30,  cache_creation: 3.75  },
+  'claude-sonnet-4-6': { input: 3.00,  output: 15.00, cache_read: 0.30,  cache_creation: 3.75  },
   'claude-sonnet-4-20250514':   { input: 3.00,  output: 15.00, cache_read: 0.30,  cache_creation: 3.75  },
   'claude-haiku-4-5':           { input: 0.80,  output: 4.00,  cache_read: 0.08,  cache_creation: 1.00  },
   'claude-haiku-4-5-20251001':  { input: 0.80,  output: 4.00,  cache_read: 0.08,  cache_creation: 1.00  },

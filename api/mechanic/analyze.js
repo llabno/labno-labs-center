@@ -222,7 +222,7 @@ Analyze this interaction through your module's lens. Return ONLY valid JSON matc
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
@@ -239,7 +239,7 @@ Analyze this interaction through your module's lens. Return ONLY valid JSON matc
   if (data.usage) {
     logTokenUsage({
       endpoint: '/api/mechanic/analyze',
-      model: 'claude-sonnet-4-6-20250514',
+      model: 'claude-sonnet-4-6',
       inputTokens: tokens.input,
       outputTokens: tokens.output,
       agentName: `mechanic-${module}`,
@@ -282,7 +282,7 @@ Output JSON with five keys: my_inside (UL — parts active, Self-led response av
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
@@ -296,7 +296,7 @@ Output JSON with five keys: my_inside (UL — parts active, Self-led response av
   if (data.usage) {
     logTokenUsage({
       endpoint: '/api/mechanic/analyze',
-      model: 'claude-sonnet-4-6-20250514',
+      model: 'claude-sonnet-4-6',
       inputTokens: tokens.input,
       outputTokens: tokens.output,
       agentName: 'mechanic-retrospective',

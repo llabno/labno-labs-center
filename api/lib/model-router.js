@@ -25,7 +25,7 @@ const MODELS = {
   'claude-haiku-4-5-20251001': { tier: 1, tierName: 'budget', provider: 'anthropic', maxContext: 200_000, speed: 'fast'  },
   'gpt-4o-mini':          { tier: 1, tierName: 'budget',   provider: 'openai',    maxContext: 128_000,  speed: 'fast'    },
   // Tier 2: Mid
-  'claude-sonnet-4-6-20250514': { tier: 2, tierName: 'mid', provider: 'anthropic', maxContext: 200_000, speed: 'medium' },
+  'claude-sonnet-4-6': { tier: 2, tierName: 'mid', provider: 'anthropic', maxContext: 200_000, speed: 'medium' },
   'gpt-4o':               { tier: 2, tierName: 'mid',      provider: 'openai',    maxContext: 128_000,  speed: 'medium'  },
   'gemini-2.5-pro':       { tier: 2, tierName: 'mid',      provider: 'google',    maxContext: 1_000_000, speed: 'medium' },
   // Tier 3: Frontier
@@ -149,7 +149,7 @@ export function selectModel({ task, inputTokens = 2000, quality = 'good-enough',
       .sort((a, b) => a.inputRate - b.inputRate);
   }
 
-  const selected = candidates[0] || { model: 'claude-sonnet-4-6-20250514', tier: 2, tierName: 'mid', provider: 'anthropic' };
+  const selected = candidates[0] || { model: 'claude-sonnet-4-6', tier: 2, tierName: 'mid', provider: 'anthropic' };
 
   // Estimate cost for this request
   const outputEstimate = Math.max(500, Math.floor(inputTokens / 4));
