@@ -166,7 +166,7 @@ ${sopContext}
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 800,
         system: systemPrompt,
         messages: [{ role: 'user', content: query }],
@@ -174,8 +174,10 @@ ${sopContext}
     });
 
     if (!anthropicRes.ok) {
+      const errBody = await anthropicRes.text().catch(() => 'unknown');
+      console.error('[oracle/ask] Claude API error:', anthropicRes.status, errBody);
       return res.json({
-        response: `Oracle found ${contextSops.length} matching SOP(s) but AI response failed. Top match: "${contextSops[0]?.title}"`,
+        response: `Oracle found ${contextSops.length} matching SOP(s) but AI response failed (${anthropicRes.status}). Top match: "${contextSops[0]?.title}"`,
         sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
         model: 'fallback',
         searchMethod,
@@ -187,7 +189,7 @@ ${sopContext}
     if (aiResult.usage) {
       logTokenUsage({
         endpoint: '/api/oracle/ask',
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         inputTokens: aiResult.usage.input_tokens,
         outputTokens: aiResult.usage.output_tokens,
         agentName: 'oracle',
@@ -198,7 +200,7 @@ ${sopContext}
     return res.json({
       response: answer,
       sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
-      model: 'claude-3-5-haiku',
+      model: 'claude-haiku-4-5',
       searchMethod,
       sopCount: totalSopCount || contextSops.length,
     });
