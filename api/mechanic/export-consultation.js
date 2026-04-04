@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -30,9 +31,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   const cutoff = new Date(Date.now() - timeRange * 86400000).toISOString();
 
@@ -76,42 +74,33 @@ Format as clean Markdown with these sections:
 Keep language warm, non-clinical, first-person accessible. This is NOT a clinical report.`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2500,
-        system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: `Generate a Peer Consultation Summary for the last ${timeRange} days.\n\nJOURNAL ENTRIES (${(journalRes.data || []).length}):\n${JSON.stringify((journalRes.data || []).map(j => ({
-            date: j.entry_date, period: j.log_period,
-            ns_before: j.ns_state_before, ns_after: j.ns_state_after,
-            entities: j.extracted_entities, parts: j.extracted_parts,
-            themes: j.extracted_themes, summary: j.analysis_result?.summary,
-          })), null, 1)}\n\nANALYSES (${(analysisRes.data || []).length}):\n${JSON.stringify((analysisRes.data || []).map(a => ({
-            entity: (entitiesRes.data || []).find(e => e.id === a.entity_id)?.name,
-            ns: a.m9_polyvagal?.ns_state_confirmed,
-            drive: a.m19_panksepp?.affective_drive_confirmed,
-            parts: a.m16_ifs?.parts_active,
-            triggered: a.m18_compassionate_inquiry?.what_triggered_me,
-            retrospective: a.retrospective,
-          })), null, 1)}\n\nACTIVE PARTS (${(partsRes.data || []).length}):\n${JSON.stringify((partsRes.data || []).map(p => ({
-            name: p.name, role: p.role, triggers: p.triggers, burdens: p.burdens, body: p.body_location,
-          })), null, 1)}\n\nUNRESOLVED CONTRACTS (${(contractsRes.data || []).length}):\n${JSON.stringify((contractsRes.data || []).map(c => ({
-            sworn_to: c.sworn_to, vow: c.vow_action, purpose: c.vow_purpose, cost: c.cost_recognized,
-          })), null, 1)}`
-        }],
-      }),
+    const { text: markdown } = await callAnthropic({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2500,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: `Generate a Peer Consultation Summary for the last ${timeRange} days.\n\nJOURNAL ENTRIES (${(journalRes.data || []).length}):\n${JSON.stringify((journalRes.data || []).map(j => ({
+          date: j.entry_date, period: j.log_period,
+          ns_before: j.ns_state_before, ns_after: j.ns_state_after,
+          entities: j.extracted_entities, parts: j.extracted_parts,
+          themes: j.extracted_themes, summary: j.analysis_result?.summary,
+        })), null, 1)}\n\nANALYSES (${(analysisRes.data || []).length}):\n${JSON.stringify((analysisRes.data || []).map(a => ({
+          entity: (entitiesRes.data || []).find(e => e.id === a.entity_id)?.name,
+          ns: a.m9_polyvagal?.ns_state_confirmed,
+          drive: a.m19_panksepp?.affective_drive_confirmed,
+          parts: a.m16_ifs?.parts_active,
+          triggered: a.m18_compassionate_inquiry?.what_triggered_me,
+          retrospective: a.retrospective,
+        })), null, 1)}\n\nACTIVE PARTS (${(partsRes.data || []).length}):\n${JSON.stringify((partsRes.data || []).map(p => ({
+          name: p.name, role: p.role, triggers: p.triggers, burdens: p.burdens, body: p.body_location,
+        })), null, 1)}\n\nUNRESOLVED CONTRACTS (${(contractsRes.data || []).length}):\n${JSON.stringify((contractsRes.data || []).map(c => ({
+          sworn_to: c.sworn_to, vow: c.vow_action, purpose: c.vow_purpose, cost: c.cost_recognized,
+        })), null, 1)}`
+      }],
+      endpoint: '/api/mechanic/export-consultation',
+      agentName: 'mechanic-consultation',
     });
-
-    const data = await response.json();
-    const markdown = data.content?.[0]?.text || '';
 
     return res.status(200).json({
       status: 'completed',

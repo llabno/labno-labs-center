@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -25,9 +26,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   // Fetch journal entry
   const { data: entry, error: entryErr } = await supabase
@@ -86,23 +84,14 @@ Return ONLY valid JSON:
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: entry.content }],
-      }),
+    const { text } = await callAnthropic({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: entry.content }],
+      endpoint: '/api/mechanic/journal-analyze',
+      agentName: 'mechanic-journal',
     });
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
 
     let analysis;
     try {

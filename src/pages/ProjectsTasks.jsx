@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FolderKanban, CheckSquare, Plus, Calendar, Clock, AlertCircle, ChevronDown, ChevronRight, X, Trash2, Edit3, Users, Target, Filter } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FolderKanban, CheckSquare, Plus, Calendar, Clock, AlertCircle, ChevronDown, ChevronRight, X, Trash2, Edit3, Users, Target, Filter, Search, Briefcase, LayoutGrid } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const STATUS_COLORS = {
@@ -28,23 +28,37 @@ const inferCategory = (name) => {
   return 'all';
 };
 
+const TABS = [
+  { key: 'all', label: 'All Projects', icon: LayoutGrid },
+  { key: 'clients', label: 'Client Projects', icon: Briefcase },
+  { key: 'search', label: 'Search', icon: Search },
+];
+
 const ProjectsTasks = () => {
   const [projects, setProjects] = useState([]);
   const [tasksByProject, setTasksByProject] = useState({});
   const [loading, setLoading] = useState(true);
   const [expandedProject, setExpandedProject] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [ventureFilter, setVentureFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('All');
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [showNewTaskModal, setShowNewTaskModal] = useState(null);
-  const [newProject, setNewProject] = useState({ name: '', status: 'Active', due_date: '', complexity: 1 });
+  const [newProject, setNewProject] = useState({ name: '', status: 'Active', due_date: '', complexity: 1, project_type: 'internal' });
   const [newTask, setNewTask] = useState({ title: '', description: '', assigned_to: 'lance', column_id: 'backlog' });
   const [editingTask, setEditingTask] = useState(null);
+  const [hasProjectTypeColumn, setHasProjectTypeColumn] = useState(true);
 
   const fetchData = async () => {
-    const { data: projData, error: projErr } = await supabase
+    let { data: projData, error: projErr } = await supabase
       .from('internal_projects').select('*').order('due_date', { ascending: true });
+    if (projErr && projErr.message && projErr.message.includes('project_type')) {
+      setHasProjectTypeColumn(false);
+      ({ data: projData, error: projErr } = await supabase
+        .from('internal_projects').select('id,name,status,total_tasks,completed_tasks,due_date,complexity,created_at').order('due_date', { ascending: true }));
+    }
     if (projErr) { console.error('Error fetching projects:', projErr); setLoading(false); return; }
     setProjects(projData || []);
 
@@ -64,17 +78,19 @@ const ProjectsTasks = () => {
 
   const createProject = async () => {
     if (!newProject.name.trim()) return;
-    const { error } = await supabase.from('internal_projects').insert({
+    const insertData = {
       name: newProject.name.trim(),
       status: newProject.status,
       due_date: newProject.due_date || null,
       complexity: Number(newProject.complexity),
       total_tasks: 0,
       completed_tasks: 0,
-    });
+    };
+    if (hasProjectTypeColumn) insertData.project_type = newProject.project_type;
+    const { error } = await supabase.from('internal_projects').insert(insertData);
     if (error) { console.error('Error creating project:', error); return; }
     setShowNewProjectModal(false);
-    setNewProject({ name: '', status: 'Active', due_date: '', complexity: 1 });
+    setNewProject({ name: '', status: 'Active', due_date: '', complexity: 1, project_type: 'internal' });
     if (window.posthog) window.posthog.capture('project_created', { name: newProject.name });
     await fetchData();
   };
@@ -129,16 +145,47 @@ const ProjectsTasks = () => {
 
   const ASSIGNEE_FILTERS = ['All', 'Lance', 'Avery', 'Romy', 'Sarah', 'Agent'];
 
-  const filteredProjects = projects.filter(p => {
-    if (ventureFilter !== 'all' && inferCategory(p.name) !== ventureFilter) return false;
-    if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-    if (assigneeFilter !== 'All') {
-      const projTasks = tasksByProject[p.id] || [];
-      const hasAssignee = projTasks.some(t => (t.assigned_to || '').toLowerCase() === assigneeFilter.toLowerCase());
-      if (!hasAssignee) return false;
-    }
-    return true;
-  });
+  // Search results: matches in project names, task titles, and task descriptions
+  const searchResults = useMemo(() => {
+    if (activeTab !== 'search' || !searchQuery.trim()) return { projects: [], matchingTaskIds: new Set() };
+    const q = searchQuery.toLowerCase();
+    const matchingTaskIds = new Set();
+    const matchedProjectIds = new Set();
+
+    projects.forEach(p => {
+      if (p.name.toLowerCase().includes(q)) matchedProjectIds.add(p.id);
+      (tasksByProject[p.id] || []).forEach(t => {
+        if (t.title.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q)) {
+          matchingTaskIds.add(t.id);
+          matchedProjectIds.add(p.id);
+        }
+      });
+    });
+
+    return {
+      projects: projects.filter(p => matchedProjectIds.has(p.id)),
+      matchingTaskIds,
+    };
+  }, [activeTab, searchQuery, projects, tasksByProject]);
+
+  const filteredProjects = useMemo(() => {
+    // Search tab uses its own results
+    if (activeTab === 'search') return searchResults.projects;
+
+    return projects.filter(p => {
+      // Client tab filter
+      if (activeTab === 'clients' && p.project_type !== 'client') return false;
+      // Venture filter (only on "all" tab)
+      if (activeTab === 'all' && ventureFilter !== 'all' && inferCategory(p.name) !== ventureFilter) return false;
+      if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+      if (assigneeFilter !== 'All') {
+        const projTasks = tasksByProject[p.id] || [];
+        const hasAssignee = projTasks.some(t => (t.assigned_to || '').toLowerCase() === assigneeFilter.toLowerCase());
+        if (!hasAssignee) return false;
+      }
+      return true;
+    });
+  }, [activeTab, projects, tasksByProject, searchResults, ventureFilter, statusFilter, assigneeFilter]);
 
   if (loading) return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a8682' }}>Loading projects...</div>
@@ -163,51 +210,115 @@ const ProjectsTasks = () => {
         </button>
       </div>
 
-      {/* Filters */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
-        <div className="filter-bar">
-          <span className="filter-label">Venture</span>
-          {VENTURE_FILTERS.map(f => (
-            <button key={f.key} className={`filter-pill${ventureFilter === f.key ? ' active' : ''}`}
-              onClick={() => setVentureFilter(f.key)}>{f.label}</button>
-          ))}
-        </div>
-        <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
-        <div className="filter-bar">
-          <span className="filter-label">Status</span>
-          {['all', 'Active', 'Planning', 'Blocked', 'Completed'].map(s => (
-            <button key={s} className={`filter-pill${statusFilter === s ? ' active' : ''}`}
-              onClick={() => setStatusFilter(s)}>
-              {s === 'all' ? 'All' : s}
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: 0 }}>
+        {TABS.map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px',
+              fontSize: '0.88rem', fontWeight: isActive ? 600 : 500,
+              color: isActive ? '#b06050' : '#6b6764', background: 'none', border: 'none',
+              borderBottom: isActive ? '2px solid #b06050' : '2px solid transparent',
+              cursor: 'pointer', transition: 'all 0.2s ease', marginBottom: '-1px',
+            }}>
+              <Icon size={16} /> {tab.label}
+              {tab.key === 'clients' && (
+                <span style={{
+                  fontSize: '0.7rem', fontWeight: 700, background: isActive ? 'rgba(176,96,80,0.12)' : 'rgba(0,0,0,0.05)',
+                  color: isActive ? '#b06050' : '#8a8682', padding: '1px 7px', borderRadius: '10px',
+                }}>{projects.filter(p => p.project_type === 'client').length}</span>
+              )}
             </button>
-          ))}
-        </div>
-        <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
-        <div className="filter-bar">
-          <span className="filter-label">Assignee</span>
-          {ASSIGNEE_FILTERS.map(name => (
-            <button key={name} className={`filter-pill${assigneeFilter === name ? ' active' : ''}`}
-              onClick={() => setAssigneeFilter(name)}>
-              {name}
-            </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
-      {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-        {[
-          { label: 'Active', count: projects.filter(p => p.status === 'Active').length, color: '#6aab6e' },
-          { label: 'Planning', count: projects.filter(p => p.status === 'Planning').length, color: '#5a8abf' },
-          { label: 'Blocked', count: projects.filter(p => p.status === 'Blocked').length, color: '#c49a40' },
-          { label: 'Tasks In Progress', count: Object.values(tasksByProject).flat().filter(t => t.column_id === 'triage' || t.column_id === 'review').length, color: '#b06050' },
-        ].map(card => (
-          <div key={card.label} className="glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: card.color }}>{card.count}</div>
-            <div style={{ fontSize: '0.8rem', color: '#6b6764', fontWeight: 500, marginTop: '4px' }}>{card.label}</div>
+      {/* Search Bar (search tab only) */}
+      {activeTab === 'search' && (
+        <div style={{ position: 'relative' }}>
+          <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8a8682', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search projects, tasks, descriptions..."
+            autoFocus
+            style={{
+              width: '100%', padding: '12px 14px 12px 42px', borderRadius: '12px',
+              border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.95rem', boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)',
+              outline: 'none', transition: 'border-color 0.2s ease',
+            }}
+            onFocus={e => e.target.style.borderColor = 'rgba(176,96,80,0.3)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(0,0,0,0.08)'}
+          />
+          {searchQuery && (
+            <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.78rem', color: '#8a8682' }}>
+              {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Filters (all & clients tabs) */}
+      {activeTab !== 'search' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
+          {activeTab === 'all' && (
+            <>
+              <div className="filter-bar">
+                <span className="filter-label">Venture</span>
+                {VENTURE_FILTERS.map(f => (
+                  <button key={f.key} className={`filter-pill${ventureFilter === f.key ? ' active' : ''}`}
+                    onClick={() => setVentureFilter(f.key)}>{f.label}</button>
+                ))}
+              </div>
+              <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
+            </>
+          )}
+          <div className="filter-bar">
+            <span className="filter-label">Status</span>
+            {['all', 'Active', 'Planning', 'Blocked', 'Completed'].map(s => (
+              <button key={s} className={`filter-pill${statusFilter === s ? ' active' : ''}`}
+                onClick={() => setStatusFilter(s)}>
+                {s === 'all' ? 'All' : s}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+          <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
+          <div className="filter-bar">
+            <span className="filter-label">Assignee</span>
+            {ASSIGNEE_FILTERS.map(name => (
+              <button key={name} className={`filter-pill${assigneeFilter === name ? ' active' : ''}`}
+                onClick={() => setAssigneeFilter(name)}>
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      {activeTab !== 'search' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+          {(() => {
+            const scope = activeTab === 'clients' ? projects.filter(p => p.project_type === 'client') : projects;
+            const scopeTasks = scope.flatMap(p => tasksByProject[p.id] || []);
+            return [
+              { label: 'Active', count: scope.filter(p => p.status === 'Active').length, color: '#6aab6e' },
+              { label: 'Planning', count: scope.filter(p => p.status === 'Planning').length, color: '#5a8abf' },
+              { label: 'Blocked', count: scope.filter(p => p.status === 'Blocked').length, color: '#c49a40' },
+              { label: 'Tasks In Progress', count: scopeTasks.filter(t => t.column_id === 'triage' || t.column_id === 'review').length, color: '#b06050' },
+            ];
+          })().map(card => (
+            <div key={card.label} className="glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 800, color: card.color }}>{card.count}</div>
+              <div style={{ fontSize: '0.8rem', color: '#6b6764', fontWeight: 500, marginTop: '4px' }}>{card.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Projects List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -219,7 +330,7 @@ const ProjectsTasks = () => {
 
         {filteredProjects.map(proj => {
           const stats = getProjectStats(proj.id);
-          const isExpanded = expandedProject === proj.id;
+          const isExpanded = expandedProject === proj.id || (activeTab === 'search' && searchQuery.trim());
           const tasks = tasksByProject[proj.id] || [];
           const statusStyle = STATUS_COLORS[proj.status] || STATUS_COLORS['Active'];
           const progress = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
@@ -236,6 +347,12 @@ const ProjectsTasks = () => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                     <span style={{ fontWeight: 600, fontSize: '1.05rem', color: '#2e2c2a' }}>{proj.name}</span>
+                    {proj.project_type === 'client' && (
+                      <span style={{
+                        fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '10px',
+                        background: 'rgba(90,138,191,0.12)', color: '#4a7aaf', textTransform: 'uppercase', letterSpacing: '0.04em',
+                      }}>Client</span>
+                    )}
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px', borderRadius: '12px',
                       background: statusStyle.bg, color: statusStyle.color, display: 'flex', alignItems: 'center', gap: '4px'
@@ -305,10 +422,14 @@ const ProjectsTasks = () => {
                           </span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {colTasks.map(task => (
+                          {colTasks.map(task => {
+                            const isSearchHit = activeTab === 'search' && searchResults.matchingTaskIds.has(task.id);
+                            return (
                             <div key={task.id} style={{
                               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px',
-                              borderRadius: '10px', background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.5)',
+                              borderRadius: '10px',
+                              background: isSearchHit ? 'rgba(176,96,80,0.06)' : 'rgba(255,255,255,0.45)',
+                              border: isSearchHit ? '1px solid rgba(176,96,80,0.15)' : '1px solid rgba(255,255,255,0.5)',
                               backdropFilter: 'blur(8px)', transition: 'all 0.25s ease',
                               borderLeft: `3px solid ${COLUMN_DOTS[col]}`,
                             }}>
@@ -340,7 +461,8 @@ const ProjectsTasks = () => {
                                 <Trash2 size={14} />
                               </button>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     );
@@ -377,13 +499,22 @@ const ProjectsTasks = () => {
                   placeholder="e.g., Lead Generation Pipeline"
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.9rem', boxSizing: 'border-box', background: 'rgba(255,255,255,0.6)' }} />
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px', fontWeight: 500 }}>Status</label>
-                <select value={newProject.status} onChange={e => setNewProject(p => ({ ...p, status: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
-                  <option value="Active">Active</option>
-                  <option value="Planning">Planning</option>
-                  <option value="Blocked">Blocked</option>
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px', fontWeight: 500 }}>Type</label>
+                  <select value={newProject.project_type} onChange={e => setNewProject(p => ({ ...p, project_type: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
+                    <option value="internal">Internal</option>
+                    <option value="client">Client Project</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px', fontWeight: 500 }}>Status</label>
+                  <select value={newProject.status} onChange={e => setNewProject(p => ({ ...p, status: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
+                    <option value="Active">Active</option>
+                    <option value="Planning">Planning</option>
+                    <option value="Blocked">Blocked</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px', fontWeight: 500 }}>Due Date</label>

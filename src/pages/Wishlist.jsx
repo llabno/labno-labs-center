@@ -42,7 +42,7 @@ const analyzeWishlistItem = (text) => {
   if (t.includes('research') || t.includes('dossier') || t.includes('biography') || t.includes('deep dive')) {
     type = 'Research'; project = 'Personal / Brand'; integration = 'Oracle knowledge base stores research outputs';
   }
-  if (t.includes('clinical') || t.includes('exercise') || t.includes('patient') || t.includes('ns state') || t.includes('polyvagal')) {
+  if (t.includes('clinical') || t.includes('exercise') || t.includes('patient') || t.includes('ns state') || t.includes('nervous system')) {
     type = 'Clinical'; project = 'Clinical Brain'; priority = 'P1 — Core System'; relatedWorkflows.push('Clinical Brain Agent System');
   }
   if (t.includes('automat') || t.includes('kylie') || t.includes('agent') || t.includes('workflow')) {

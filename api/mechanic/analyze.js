@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { logTokenUsage } from '../lib/token-logger.js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -181,7 +181,7 @@ function buildPriorContext(results) {
 // ============================================
 // Run a single module
 // ============================================
-async function runModule(module, log, priorContext, entityProfile, apiKey) {
+async function runModule(module, log, priorContext, entityProfile) {
   const rules = loadRules(module);
   const systemPrompt = MODULE_SYSTEM_PROMPTS[module];
 
@@ -214,41 +214,19 @@ ${phase5Text}
 
 Analyze this interaction through your module's lens. Return ONLY valid JSON matching the output format specified in your system prompt. No markdown, no explanation — just the JSON object.`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 800,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
+  const { text, usage } = await callAnthropic({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 800,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userMessage }],
+    endpoint: '/api/mechanic/analyze',
+    agentName: `mechanic-${module}`,
   });
 
-  const data = await response.json();
-  const text = data.content?.[0]?.text || '';
-  const tokens = {
-    input: data.usage?.input_tokens || 0,
-    output: data.usage?.output_tokens || 0,
-  };
-
-  if (data.usage) {
-    logTokenUsage({
-      endpoint: '/api/mechanic/analyze',
-      model: 'claude-sonnet-4-6',
-      inputTokens: tokens.input,
-      outputTokens: tokens.output,
-      agentName: `mechanic-${module}`,
-    });
-  }
+  const tokens = { input: usage.input_tokens, output: usage.output_tokens };
 
   // Parse JSON from response
   try {
-    // Try to extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return { result: JSON.parse(jsonMatch[0]), tokens };
@@ -261,7 +239,7 @@ Analyze this interaction through your module's lens. Return ONLY valid JSON matc
 // ============================================
 // Generate retrospective (final synthesis)
 // ============================================
-async function generateRetrospective(log, results, entityProfile, apiKey) {
+async function generateRetrospective(log, results, entityProfile) {
   const systemPrompt = `You are the Internal Mechanic's retrospective synthesizer. You combine all 9 module outputs into a Five-Angle Retrospective.
 
 LANGUAGE RULES:
@@ -274,34 +252,16 @@ Output JSON with five keys: my_inside (UL — parts active, Self-led response av
 
   const userMessage = `ALL MODULE RESULTS:\n${JSON.stringify(results, null, 2)}\n\nENTITY: ${log.entity_name || 'Unknown'}\nRAW TEXT:\n${log.raw_text}\n\nSynthesize the Five-Angle Retrospective. Return ONLY valid JSON.`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
+  const { text, usage } = await callAnthropic({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userMessage }],
+    endpoint: '/api/mechanic/analyze',
+    agentName: 'mechanic-retrospective',
   });
 
-  const data = await response.json();
-  const text = data.content?.[0]?.text || '';
-  const tokens = { input: data.usage?.input_tokens || 0, output: data.usage?.output_tokens || 0 };
-
-  if (data.usage) {
-    logTokenUsage({
-      endpoint: '/api/mechanic/analyze',
-      model: 'claude-sonnet-4-6',
-      inputTokens: tokens.input,
-      outputTokens: tokens.output,
-      agentName: 'mechanic-retrospective',
-    });
-  }
+  const tokens = { input: usage.input_tokens, output: usage.output_tokens };
 
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -333,9 +293,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   // Fetch the interaction log
   const { data: log, error: logErr } = await supabase
@@ -381,7 +338,7 @@ export default async function handler(req, res) {
         modules_completed: Object.keys(results),
       }).eq('id', analysis.id);
 
-      const { result, tokens } = await runModule(module, log, priorContext, entityProfile, apiKey);
+      const { result, tokens } = await runModule(module, log, priorContext, entityProfile);
       results[module] = result;
       totalInput += tokens.input;
       totalOutput += tokens.output;
@@ -392,7 +349,7 @@ export default async function handler(req, res) {
     }
 
     // Generate retrospective synthesis
-    const { result: retro, tokens: retroTokens } = await generateRetrospective(log, results, entityProfile, apiKey);
+    const { result: retro, tokens: retroTokens } = await generateRetrospective(log, results, entityProfile);
     totalInput += retroTokens.input;
     totalOutput += retroTokens.output;
 

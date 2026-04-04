@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { execSync } from 'child_process'
-import { logTokenUsage } from '../lib/token-logger.js'
+import { callAnthropic } from '../lib/call-anthropic.js'
 
 // Claude Agent SDK integration: trigger task execution from dashboard
 // Routing modes:
@@ -19,32 +19,16 @@ function getRouteMode() {
 }
 
 async function executeViaAPI(systemPrompt, userPrompt, taskId) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
-    })
+  const { text } = await callAnthropic({
+    model: 'claude-haiku-4-5',
+    max_tokens: 512,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+    endpoint: '/api/agent/sdk',
+    agentName: 'sdk-agent',
+    taskId,
   })
-  const data = await response.json()
-  if (data.usage) {
-    logTokenUsage({
-      endpoint: '/api/agent/sdk',
-      model: 'claude-haiku-4-5-20251001',
-      inputTokens: data.usage.input_tokens,
-      outputTokens: data.usage.output_tokens,
-      taskId,
-      agentName: 'sdk-agent',
-    })
-  }
-  return data.content?.[0]?.text || JSON.stringify(data)
+  return text || 'No response from Claude API'
 }
 
 function executeViaLocalCLI(systemPrompt, userPrompt) {

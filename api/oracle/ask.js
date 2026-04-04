@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { isLance } from '../lib/auth.js';
-import { logTokenUsage } from '../lib/token-logger.js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 import { checkRateLimit, DEFAULT_LIMITS } from '../lib/rate-limiter.js';
 
 const supabase = createClient(
@@ -158,44 +158,28 @@ ${sopContext}
     }
 
     // Call Claude
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+    let answer;
+    try {
+      const { text } = await callAnthropic({
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 800,
         system: systemPrompt,
         messages: [{ role: 'user', content: query }],
-      }),
-    });
-
-    if (!anthropicRes.ok) {
-      const errBody = await anthropicRes.text().catch(() => 'unknown');
-      console.error('[oracle/ask] Claude API error:', anthropicRes.status, errBody);
+        endpoint: '/api/oracle/ask',
+        agentName: 'oracle',
+      });
+      answer = text || 'No response generated.';
+    } catch (apiErr) {
+      // Graceful fallback — return SOP matches even if AI fails
       return res.json({
-        response: `Oracle found ${contextSops.length} matching SOP(s) but AI response failed (${anthropicRes.status}). Top match: "${contextSops[0]?.title}"`,
+        response: `Oracle found ${contextSops.length} matching SOP(s) but AI response failed (${apiErr.errorType || 'UNKNOWN'}). Top match: "${contextSops[0]?.title}"`,
         sources: contextSops.map(s => ({ id: s.id, title: s.title, relevance: s.similarity || s.score || 0 })),
         model: 'fallback',
         searchMethod,
         sopCount: totalSopCount || contextSops.length,
+        error_detail: apiErr.message,
       });
     }
-
-    const aiResult = await anthropicRes.json();
-    if (aiResult.usage) {
-      logTokenUsage({
-        endpoint: '/api/oracle/ask',
-        model: 'claude-haiku-4-5-20251001',
-        inputTokens: aiResult.usage.input_tokens,
-        outputTokens: aiResult.usage.output_tokens,
-        agentName: 'oracle',
-      });
-    }
-    const answer = aiResult.content?.[0]?.text || 'No response generated.';
 
     return res.json({
       response: answer,

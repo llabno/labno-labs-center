@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -31,9 +32,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   // Fetch all journal entries
   const { data: journals } = await supabase
@@ -119,26 +117,17 @@ Return JSON:
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [{
-          role: 'user',
-          content: `JOURNAL ENTRIES (${journalSummary.length}):\n${JSON.stringify(journalSummary, null, 1)}\n\nINTERACTION ANALYSES (${analysisSummary.length}):\n${JSON.stringify(analysisSummary, null, 1)}\n\nENTITIES (${(entities || []).length}):\n${JSON.stringify((entities || []).map(e => ({ name: e.name, type: e.relationship_type, logs: e.log_count })), null, 1)}\n\nAnalyze all temporal, relational, and somatic patterns. Return ONLY valid JSON.`
-        }],
-      }),
+    const { text } = await callAnthropic({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: `JOURNAL ENTRIES (${journalSummary.length}):\n${JSON.stringify(journalSummary, null, 1)}\n\nINTERACTION ANALYSES (${analysisSummary.length}):\n${JSON.stringify(analysisSummary, null, 1)}\n\nENTITIES (${(entities || []).length}):\n${JSON.stringify((entities || []).map(e => ({ name: e.name, type: e.relationship_type, logs: e.log_count })), null, 1)}\n\nAnalyze all temporal, relational, and somatic patterns. Return ONLY valid JSON.`
+      }],
+      endpoint: '/api/mechanic/patterns',
+      agentName: 'mechanic-patterns',
     });
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
 
     let patterns;
     try {

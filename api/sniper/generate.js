@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { logTokenUsage } from '../lib/token-logger.js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -63,37 +63,15 @@ Output JSON format ONLY:
 }`;
 
   try {
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: soap_note }],
-      }),
+    const { text: rawText } = await callAnthropic({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: soap_note }],
+      endpoint: '/api/sniper/generate',
+      agentName: 'sniper',
+      apiKeyOverride: apiKey,
     });
-
-    if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      return res.status(500).json({ error: `Anthropic API error: ${errText.slice(0, 200)}` });
-    }
-
-    const aiResult = await anthropicRes.json();
-    if (aiResult.usage) {
-      logTokenUsage({
-        endpoint: '/api/sniper/generate',
-        model: 'claude-3-5-haiku-20241022',
-        inputTokens: aiResult.usage.input_tokens,
-        outputTokens: aiResult.usage.output_tokens,
-        agentName: 'sniper',
-      });
-    }
-    const rawText = aiResult.content?.[0]?.text || '';
 
     let post;
     try {

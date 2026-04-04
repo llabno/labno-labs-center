@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -28,8 +29,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // Fetch recent data (last 7 days)
   const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -94,21 +93,21 @@ export default async function handler(req, res) {
   };
 
   // Generate natural language briefing if API key available
-  if (apiKey && (analyses.length > 0 || journals.length > 0)) {
+  if (process.env.ANTHROPIC_API_KEY && (analyses.length > 0 || journals.length > 0)) {
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 300,
-          system: `You generate a brief morning check-in for someone's internal state. Be warm, direct, 3-5 sentences max. Use consumer-friendly terms (not clinical jargon). If there's an active pattern to watch for today, name it specifically. If there's an active contract, gently mention it. End with one actionable suggestion.`,
-          messages: [{ role: 'user', content: `Morning briefing data:\n${JSON.stringify(briefing, null, 1)}` }],
-        }),
+      const { text } = await callAnthropic({
+        model: 'claude-haiku-4-5',
+        max_tokens: 300,
+        system: `You generate a brief morning check-in for someone's internal state. Be warm, direct, 3-5 sentences max. Use consumer-friendly terms (not clinical jargon). If there's an active pattern to watch for today, name it specifically. If there's an active contract, gently mention it. End with one actionable suggestion.`,
+        messages: [{ role: 'user', content: `Morning briefing data:\n${JSON.stringify(briefing, null, 1)}` }],
+        endpoint: '/api/mechanic/morning-briefing',
+        agentName: 'mechanic-briefing',
       });
-      const data = await response.json();
-      briefing.narrative = data.content?.[0]?.text || '';
-    } catch {}
+      briefing.narrative = text;
+    } catch (err) {
+      console.error('[morning-briefing] Narrative generation failed:', err.message);
+      briefing.narrative_error = err.message;
+    }
   }
 
   return res.status(200).json({ status: 'completed', briefing });

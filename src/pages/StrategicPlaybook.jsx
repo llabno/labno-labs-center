@@ -113,7 +113,7 @@ const habits = [
     id: "19",
     category: "Systems Architecture",
     title: "Create an Exercise Card Delivery Pipeline from the 189-Exercise Library",
-    body: "The M1 Core Three Workbook extraction is complete — 189 deduplicated exercises with polyvagal NS state classifications and IFS overlays. Build the delivery pipeline: Clinical Brain triggers → card selection → client-facing output. The asset exists; the pipe doesn't yet.",
+    body: "The M1 Core Three Workbook extraction is complete — 189 deduplicated exercises with nervous system state classifications and parts awareness overlays. Build the delivery pipeline: Clinical Brain triggers → card selection → client-facing output. The asset exists; the pipe doesn't yet.",
   },
   {
     id: "20",

@@ -4,7 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { isLance } from '../lib/auth.js';
-import { logTokenUsage } from '../lib/token-logger.js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 export const config = { maxDuration: 60 };
 
@@ -56,37 +56,15 @@ Output JSON format ONLY:
     }
 
     try {
-      const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
-          max_tokens: 2000,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: note }],
-        }),
+      const { text: rawText } = await callAnthropic({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: note }],
+        endpoint: '/api/sniper/batch-generate',
+        agentName: 'sniper-batch',
+        apiKeyOverride: apiKey,
       });
-
-      if (!anthropicRes.ok) {
-        results.push({ status: 'error', reason: 'API error' });
-        continue;
-      }
-
-      const aiResult = await anthropicRes.json();
-      if (aiResult.usage) {
-        logTokenUsage({
-          endpoint: '/api/sniper/batch-generate',
-          model: 'claude-3-5-haiku-20241022',
-          inputTokens: aiResult.usage.input_tokens,
-          outputTokens: aiResult.usage.output_tokens,
-          agentName: 'sniper-batch',
-        });
-      }
-      const rawText = aiResult.content?.[0]?.text || '';
 
       let post;
       try { post = JSON.parse(rawText); } catch {

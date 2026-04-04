@@ -104,27 +104,39 @@ export default async function handler(req, res) {
       });
     }
 
-    // Upsert into reactivation_queue (update score if lead already exists)
-    let upserted = 0;
-    for (const item of scored) {
-      const { data: existing } = await supabase
-        .from('reactivation_queue')
-        .select('id, status')
-        .eq('lead_id', item.lead_id)
-        .limit(1);
+    // Batch upsert into reactivation_queue
+    // First, fetch all existing entries in one query
+    const leadIds = scored.map(s => s.lead_id);
+    const { data: existingEntries } = await supabase
+      .from('reactivation_queue')
+      .select('id, lead_id, status')
+      .in('lead_id', leadIds);
 
-      if (existing?.length > 0) {
-        // Only update if still pending (don't overwrite contacted/archived)
-        if (existing[0].status === 'pending') {
-          await supabase.from('reactivation_queue')
-            .update({ priority_score: item.priority_score, suggested_message: item.suggested_message, scoring_reasons: item.scoring_reasons })
-            .eq('id', existing[0].id);
-          upserted++;
+    const existingMap = new Map((existingEntries || []).map(e => [e.lead_id, e]));
+
+    const toInsert = [];
+    const toUpdate = [];
+
+    for (const item of scored) {
+      const existing = existingMap.get(item.lead_id);
+      if (existing) {
+        if (existing.status === 'pending') {
+          toUpdate.push({ id: existing.id, priority_score: item.priority_score, suggested_message: item.suggested_message, scoring_reasons: item.scoring_reasons });
         }
       } else {
-        await supabase.from('reactivation_queue').insert(item);
-        upserted++;
+        toInsert.push(item);
       }
+    }
+
+    let upserted = 0;
+    if (toInsert.length > 0) {
+      const { error: insertErr } = await supabase.from('reactivation_queue').insert(toInsert);
+      if (!insertErr) upserted += toInsert.length;
+    }
+    for (const update of toUpdate) {
+      const { id, ...fields } = update;
+      const { error: updateErr } = await supabase.from('reactivation_queue').update(fields).eq('id', id);
+      if (!updateErr) upserted++;
     }
 
     // Log

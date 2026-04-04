@@ -38,6 +38,7 @@ const VALID_OUTPUT_TYPES = [
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
+  try {
   // Auth: accept bridge secret OR Supabase bearer token
   const authHeader = req.headers.authorization || ''
   const bridgeSecret = process.env.MOSO_BRIDGE_SECRET
@@ -189,4 +190,7 @@ export default async function handler(req, res) {
     side_effects: sideEffects,
     message: `Synced ${agent}/${output_type} to Dashboard. ${sideEffects.length > 0 ? `Also wrote to: ${sideEffects.join(', ')}` : 'No side effects.'}`
   })
+  } catch (err) {
+    return res.status(500).json({ error: 'Bridge sync failed', detail: err.message })
+  }
 }

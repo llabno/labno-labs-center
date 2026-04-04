@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -33,9 +34,6 @@ export default async function handler(req, res) {
   } else {
     return res.status(401).json({ error: 'Missing authorization' });
   }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
 
   // Create new session or fetch existing
   let session;
@@ -102,23 +100,14 @@ Guidelines:
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 400,
-        system: systemPrompt,
-        messages: anthropicMessages,
-      }),
+    const { text: guideResponse } = await callAnthropic({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: anthropicMessages,
+      endpoint: '/api/mechanic/time-travel',
+      agentName: 'mechanic-time-travel',
     });
-
-    const data = await response.json();
-    const guideResponse = data.content?.[0]?.text || '';
 
     // Save guide response
     messages.push({ role: 'assistant', content: guideResponse, step: currentStep, timestamp: new Date().toISOString() });

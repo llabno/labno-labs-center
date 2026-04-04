@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { logTokenUsage } from '../lib/token-logger.js';
+import { callAnthropic } from '../lib/call-anthropic.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -34,10 +34,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
-  }
+  // API key validated inside callAnthropic
 
   const stepGuidance = STEP_GUIDANCE[currentStep] || '';
 
@@ -69,36 +66,20 @@ Guidelines:
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages: anthropicMessages.slice(-10), // Last 10 messages for context
-      }),
+    const { text } = await callAnthropic({
+      model: 'claude-haiku-4-5',
+      max_tokens: 300,
+      system: systemPrompt,
+      messages: anthropicMessages.slice(-10),
+      endpoint: '/api/mechanic/suggest',
+      agentName: 'mechanic-suggest',
     });
 
-    const data = await response.json();
-    if (data.usage) {
-      logTokenUsage({
-        endpoint: '/api/mechanic/suggest',
-        model: 'claude-haiku-4-5-20251001',
-        inputTokens: data.usage.input_tokens,
-        outputTokens: data.usage.output_tokens,
-        agentName: 'mechanic',
-      });
-    }
-    if (data.content?.[0]?.text) {
-      return res.status(200).json({ suggestion: data.content[0].text });
+    if (text) {
+      return res.status(200).json({ suggestion: text });
     }
     return res.status(500).json({ error: 'No response from model' });
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to get suggestion' });
+    return res.status(500).json({ error: 'Failed to get suggestion', details: err.message });
   }
 }
