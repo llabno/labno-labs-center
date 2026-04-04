@@ -970,7 +970,7 @@ const UnburdeningFlow = ({ parts, sessions, fetchSessions, userId }) => {
           <h4 style={{ fontSize: '15px', marginBottom: '12px' }}>Start a New Session</h4>
           <div style={s.grid}>
             {parts.filter(p => p.role !== 'self').map(part => {
-              const cfg = ROLE_CONFIG[part.role];
+              const cfg = ROLE_CONFIG[part.role] || ROLE_CONFIG.protector;
               return (
                 <div key={part.id} style={{ ...s.card, cursor: 'pointer', borderLeft: `4px solid ${part.color || cfg.color}` }}
                   onClick={() => startSession(part.id)}>
@@ -1096,7 +1096,7 @@ const RelationshipsTab = ({ relationships, parts, fetchRelationships, userId }) 
           <div style={{ ...s.tagInput, gap: '8px' }}>
             {parts.map(part => {
               const isActive = (form.parts_activated || []).includes(part.id);
-              const cfg = ROLE_CONFIG[part.role];
+              const cfg = ROLE_CONFIG[part.role] || ROLE_CONFIG.protector;
               return (
                 <span key={part.id} onClick={() => togglePartActivated(part.id)}
                   style={{ ...s.tag(isActive ? cfg.color : '#ccc'), cursor: 'pointer', opacity: isActive ? 1 : 0.5 }}>
