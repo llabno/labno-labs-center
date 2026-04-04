@@ -42,10 +42,20 @@ const Oracle = () => {
 
   const fetchSops = async () => {
     setLoading(true); setError(null);
-    const { data, error: fetchErr } = await supabase
+    // Try with category column first; fall back without it if column doesn't exist yet
+    let { data, error: fetchErr } = await supabase
       .from('oracle_sops')
       .select('id, title, content, visibility, status, token_count, last_synced, category')
       .order('last_synced', { ascending: false });
+    if (fetchErr && fetchErr.message?.includes('category')) {
+      // category column doesn't exist yet — fetch without it
+      const fallback = await supabase
+        .from('oracle_sops')
+        .select('id, title, content, visibility, status, token_count, last_synced')
+        .order('last_synced', { ascending: false });
+      data = (fallback.data || []).map(d => ({ ...d, category: 'General' }));
+      fetchErr = fallback.error;
+    }
     if (fetchErr) setError(fetchErr.message);
     else setSops(data || []);
     setLoading(false);
@@ -56,11 +66,13 @@ const Oracle = () => {
   // --- Add SOP ---
   const handleAdd = async (e) => {
     e.preventDefault(); setSubmitting(true);
-    const { error: insertErr } = await supabase.from('oracle_sops').insert([{
+    const insertData = {
       title: newSop.title, content: newSop.content, visibility: newSop.visibility,
-      category: newSop.category,
       status: 'Synced', token_count: Math.ceil(newSop.content.length / 4),
-    }]);
+    };
+    // Only include category if column exists (check if any SOP already has it)
+    if (sops.length === 0 || sops[0].category !== undefined) insertData.category = newSop.category;
+    const { error: insertErr } = await supabase.from('oracle_sops').insert([insertData]);
     if (insertErr) { setError(insertErr.message); setSubmitting(false); return; }
     await triggerEmbed();
     setNewSop({ title: '', content: '', visibility: 'Public Brain', category: 'General' });
@@ -76,15 +88,15 @@ const Oracle = () => {
   };
 
   const saveEdit = async () => {
+    const updateData = {
+      title: editData.title, content: editData.content, visibility: editData.visibility,
+      token_count: Math.ceil((editData.content || '').length / 4),
+      last_synced: new Date().toISOString(),
+      embedding: null,
+    };
+    if (sops.length === 0 || sops[0].category !== undefined) updateData.category = editData.category;
     const { error: updateErr } = await supabase.from('oracle_sops')
-      .update({
-        title: editData.title, content: editData.content, visibility: editData.visibility,
-        category: editData.category,
-        token_count: Math.ceil((editData.content || '').length / 4),
-        last_synced: new Date().toISOString(),
-        // Clear embedding so it gets re-generated
-        embedding: null,
-      })
+      .update(updateData)
       .eq('id', editingId);
     if (updateErr) { setError(updateErr.message); return; }
     setEditingId(null);
