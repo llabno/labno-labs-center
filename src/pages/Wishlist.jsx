@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Plus, Send, Folder, Zap, CheckCircle, Clock, AlertCircle, Trash2, Filter, Lightbulb, Link2, Rocket, ExternalLink, Terminal, Mic, MicOff } from 'lucide-react';
+import { Sparkles, Plus, Send, Folder, Zap, CheckCircle, Clock, AlertCircle, Trash2, Filter, Lightbulb, Link2, Rocket, ExternalLink, Terminal, Mic, MicOff, GitBranch } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const TYPE_OPTIONS = ['Tool Stack', 'Website', 'Content', 'Research', 'System Improvement', 'Automation', 'Clinical', 'Business Dev', 'Agent / AI', 'Personal'];
-const STATUS_OPTIONS = ['New Idea', 'Already Exists', 'In Progress', 'Improved', 'Deferred', 'Completed'];
+const STATUS_OPTIONS = ['New Idea', 'Already Exists', 'In Progress', 'Decomposed', 'Improved', 'Deferred', 'Completed'];
 const PRIORITY_OPTIONS = ['P0 — Ship Blocker', 'P1 — Core System', 'P2 — Growth Layer', 'P3 — Nice to Have'];
 
 const TYPE_COLORS = {
@@ -188,6 +188,41 @@ const Wishlist = () => {
       console.error('Dispatch failed:', err);
     }
     setDispatching(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+  };
+
+  const [decomposing, setDecomposing] = useState({});
+  const [decomposeResults, setDecomposeResults] = useState({});
+
+  const decomposeItem = async (item) => {
+    setDecomposing(prev => ({ ...prev, [item.id]: true }));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/agent/decompose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+        body: JSON.stringify({
+          wishlistId: item.id,
+          title: item.raw_text,
+          description: [
+            item.integration_notes || '',
+            item.related_workflows ? `Related: ${item.related_workflows}` : '',
+          ].filter(Boolean).join('\n'),
+          projectName: item.project,
+          projectId: item.linked_project_id || null,
+          autoDispatch: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDecomposeResults(prev => ({ ...prev, [item.id]: data }));
+        await fetchAll();
+      } else {
+        console.error('Decompose failed:', data.error);
+      }
+    } catch (err) {
+      console.error('Decompose failed:', err);
+    }
+    setDecomposing(prev => { const n = { ...prev }; delete n[item.id]; return n; });
   };
 
   const dispatchSelected = async () => {
@@ -540,23 +575,55 @@ const Wishlist = () => {
                             {linkedProject && <><span style={{ color: '#569cd6' }}>Linked Project:</span> {linkedProject.name}{'\n'}</>}
                           </div>
 
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <button onClick={() => decomposeItem(item)} disabled={decomposing[item.id]}
+                              className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px', opacity: decomposing[item.id] ? 0.6 : 1, background: '#1565c0' }}>
+                              <GitBranch size={14} /> {decomposing[item.id] ? 'Decomposing...' : 'Decompose into Tasks'}
+                            </button>
                             <button onClick={() => dispatchToAgent(item)} disabled={dispatching[item.id]}
                               className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px', opacity: dispatching[item.id] ? 0.6 : 1 }}>
-                              <Rocket size={14} /> {dispatching[item.id] ? 'Dispatching...' : 'Send to Agent (Vercel)'}
+                              <Rocket size={14} /> {dispatching[item.id] ? 'Dispatching...' : 'Send Direct (Single Task)'}
                             </button>
                             <button onClick={() => {
                               const prompt = `Wishlist Task: ${item.raw_text}\nType: ${item.type} | Project: ${item.project}\n${item.integration_notes || ''}`;
                               navigator.clipboard.writeText(prompt);
                               alert('Copied to clipboard — paste into Claude Code terminal');
                             }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.08)', background: 'none', cursor: 'pointer', color: '#6b6764', fontSize: '0.8rem' }}>
-                              <Terminal size={14} /> Copy for IDE Terminal
+                              <Terminal size={14} /> Copy for IDE
                             </button>
                           </div>
 
-                          {item.agent_run_id && (
+                          {/* Decomposition results */}
+                          {decomposeResults[item.id] && (
+                            <div style={{ background: 'rgba(21,101,192,0.06)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #1565c0' }}>
+                              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1565c0', marginBottom: '8px' }}>
+                                Decomposed into {decomposeResults[item.id].totalSubtasks} sub-tasks
+                              </div>
+                              {decomposeResults[item.id].subtasks.map((st, idx) => (
+                                <div key={st.id} style={{ fontSize: '0.78rem', color: '#4a4744', padding: '3px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ color: st.is_blocked ? '#e65100' : '#2e7d32', fontWeight: 600 }}>
+                                    {st.is_blocked ? '⏸' : '▶'}
+                                  </span>
+                                  Step {st.step_order}: {st.title}
+                                </div>
+                              ))}
+                              {decomposeResults[item.id].dispatched?.success && (
+                                <div style={{ fontSize: '0.75rem', color: '#2e7d32', marginTop: '6px' }}>
+                                  First task auto-dispatched to agent
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {item.agent_run_id && !decomposeResults[item.id] && (
                             <div style={{ background: 'rgba(106,171,110,0.08)', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #6aab6e', fontSize: '0.8rem', color: '#2e7d32' }}>
                               Agent run active — ID: <code style={{ fontSize: '0.72rem' }}>{item.agent_run_id}</code>
+                            </div>
+                          )}
+
+                          {item.status === 'Decomposed' && !decomposeResults[item.id] && (
+                            <div style={{ background: 'rgba(21,101,192,0.06)', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #1565c0', fontSize: '0.8rem', color: '#1565c0' }}>
+                              Already decomposed — check Projects & Tasks for sub-tasks
                             </div>
                           )}
                         </div>
