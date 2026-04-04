@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { execSync } from 'child_process'
-import { logTokenUsage } from '../lib/token-logger.js'
+import { logTokenUsage, PRICING } from '../lib/token-logger.js'
+import { checkBudget } from '../lib/budget-enforcer.js'
 
 // Vercel Cron: processes queued agent runs
 // Routing modes:
@@ -19,20 +20,59 @@ function getRouteMode() {
   return 'simulation'
 }
 
-function buildAgentPrompt(run) {
+async function buildAgentPrompt(run, supabase) {
+  let siblingContext = ''
+
+  // If this task has a parent, pull completed sibling results for context sharing
+  if (run.task_id) {
+    const { data: thisTask } = await supabase
+      .from('global_tasks')
+      .select('parent_task_id, step_order')
+      .eq('id', run.task_id)
+      .single()
+
+    if (thisTask?.parent_task_id) {
+      // Get completed sibling tasks and their agent run results
+      const { data: siblings } = await supabase
+        .from('global_tasks')
+        .select('id, title, step_order')
+        .eq('parent_task_id', thisTask.parent_task_id)
+        .eq('column_id', 'completed')
+        .order('step_order', { ascending: true })
+
+      if (siblings && siblings.length > 0) {
+        const siblingIds = siblings.map(s => s.id)
+        const { data: siblingRuns } = await supabase
+          .from('agent_runs')
+          .select('task_id, task_title, result')
+          .in('task_id', siblingIds)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: true })
+
+        if (siblingRuns && siblingRuns.length > 0) {
+          siblingContext = '\n\n## Prior Steps Completed\n' +
+            siblingRuns.map(r =>
+              `### ${r.task_title}\n${(r.result || '').substring(0, 500)}`
+            ).join('\n\n')
+        }
+      }
+    }
+  }
+
   return `You are an autonomous agent working on a task for Labno Labs.
 
 Task: ${run.task_title}
 Project: ${run.project_name || 'Unassigned'}
 Context: ${run.context || 'None'}
+${siblingContext}
 
-Analyze this task and provide:
-1. A brief plan of action (3-5 steps)
-2. Any blockers or dependencies
-3. Estimated complexity (low/medium/high)
-4. Recommended next steps
+Execute this task. Provide:
+1. What you did (concrete actions taken)
+2. Results and outputs
+3. Any issues encountered
+4. What the next step should be
 
-Be concise and actionable.`
+Respond with actionable results, not plans. Be concise.`
 }
 
 async function executeViaAPI(prompt, taskId) {
@@ -88,6 +128,63 @@ Complexity: Medium
 Route: Set AGENT_ROUTE=local (free, uses Claude Pro) or AGENT_ROUTE=api (paid, uses API key).`
 }
 
+/**
+ * Auto-chain: After a sub-task completes, refresh blocked status
+ * and auto-dispatch the next unblocked sibling task.
+ * This is how agents "talk to each other" — output from step N
+ * becomes context for step N+1 via buildAgentPrompt's sibling injection.
+ */
+async function autoChainNext(supabase, completedTaskId, projectName, req) {
+  try {
+    // Get the completed task to find its parent
+    const { data: completedTask } = await supabase
+      .from('global_tasks')
+      .select('parent_task_id, title')
+      .eq('id', completedTaskId)
+      .single()
+
+    if (!completedTask?.parent_task_id) return // Not a sub-task, nothing to chain
+
+    // Mark this task as completed so refresh_blocked_status() picks it up
+    await supabase.from('global_tasks')
+      .update({ column_id: 'completed' })
+      .eq('id', completedTaskId)
+
+    // Refresh blocked status for all tasks (triggers the DB function)
+    await supabase.rpc('refresh_blocked_status')
+
+    // Find the next unblocked sibling that hasn't been dispatched yet
+    const { data: nextTask } = await supabase
+      .from('global_tasks')
+      .select('id, title, step_order, description')
+      .eq('parent_task_id', completedTask.parent_task_id)
+      .eq('is_blocked', false)
+      .in('column_id', ['backlog'])
+      .order('step_order', { ascending: true })
+      .limit(1)
+      .single()
+
+    if (!nextTask) return // No more tasks to chain
+
+    // Auto-dispatch the next task
+    const baseUrl = `https://${req.headers.host}`
+    fetch(`${baseUrl}/api/agent/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        taskId: nextTask.id,
+        taskTitle: nextTask.title,
+        projectName: projectName || 'Unassigned',
+        context: nextTask.description || '',
+      }),
+    }).catch(err => console.error('Auto-chain dispatch failed:', err.message))
+
+    console.log(`[auto-chain] Dispatched next task: "${nextTask.title}" (step ${nextTask.step_order})`)
+  } catch (err) {
+    console.error('[auto-chain] Error:', err.message)
+  }
+}
+
 export default async function handler(req, res) {
   // Verify cron secret or allow manual trigger
   const authHeader = req.headers.authorization
@@ -133,6 +230,37 @@ export default async function handler(req, res) {
       }
     }
 
+    // Budget enforcement — check before spending any tokens
+    if (routeMode === 'api') {
+      const prompt = await buildAgentPrompt(run, supabase)
+      const estimatedInputTokens = Math.ceil(prompt.length / 4)
+      const model = 'claude-haiku-4-5-20251001'
+      const rates = PRICING[model] || { input: 0.80, output: 4.00 }
+      const estimatedCost = (estimatedInputTokens * rates.input + 512 * rates.output) / 1_000_000
+
+      const budgetCheck = await checkBudget({
+        agentName: run.agent_name || 'process-agent',
+        estimatedCostUsd: estimatedCost,
+      })
+
+      if (!budgetCheck.allowed) {
+        console.warn(`[process] Budget blocked for run ${run.id}: ${budgetCheck.reason}`)
+        await supabase.from('agent_runs')
+          .update({
+            status: 'failed',
+            error: `Budget enforcement: ${budgetCheck.reason}`,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', run.id)
+        results.push({ id: run.id, status: 'budget_blocked', reason: budgetCheck.reason })
+        continue
+      }
+
+      if (budgetCheck.alert) {
+        console.warn(`[process] ${budgetCheck.alertMessage}`)
+      }
+    }
+
     // Mark as running
     await supabase.from('agent_runs')
       .update({ status: 'running', started_at: new Date().toISOString() })
@@ -140,7 +268,7 @@ export default async function handler(req, res) {
 
     try {
       let result
-      const prompt = buildAgentPrompt(run)
+      const prompt = await buildAgentPrompt(run, supabase)
 
       if (routeMode === 'local') {
         result = executeViaLocalCLI(prompt)
@@ -168,6 +296,10 @@ export default async function handler(req, res) {
         await supabase.from('global_tasks')
           .update({ column_id: 'review' })
           .eq('id', run.task_id)
+
+        // Auto-chain: if this task is a sub-task, refresh blocked status
+        // and queue the next unblocked sibling
+        await autoChainNext(supabase, run.task_id, run.project_name, req)
       }
 
       results.push({ id: run.id, status: 'completed', route: routeMode })

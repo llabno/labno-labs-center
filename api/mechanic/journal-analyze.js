@@ -123,6 +123,59 @@ Return ONLY valid JSON:
       }
     }
 
+    // ── Auto-create entities from journal extraction ──
+    const newEntityRecords = [];
+    if (analysis.entities?.length > 0) {
+      for (const extracted of analysis.entities) {
+        if (!extracted.name) continue;
+        const alreadyExists = (existingEntities || []).find(
+          ex => ex.name.toLowerCase() === extracted.name.toLowerCase()
+        );
+        if (alreadyExists) {
+          matchedEntityIds.push(alreadyExists.id);
+        } else {
+          // Auto-create the entity
+          const { data: newEnt } = await supabase.from('ifs_entities').insert({
+            user_id: userId,
+            name: extracted.name,
+            relationship_type: extracted.relationship_guess || 'other',
+            is_group: extracted.is_group || false,
+            notes: `Auto-detected from journal entry`,
+            log_count: 1,
+            confidence_level: 'low',
+          }).select().single();
+          if (newEnt) {
+            matchedEntityIds.push(newEnt.id);
+            newEntityRecords.push(newEnt);
+          }
+        }
+      }
+    }
+
+    // ── Auto-create parts from journal extraction ──
+    if (analysis.parts?.length > 0) {
+      const { data: existingParts } = await supabase
+        .from('ifs_parts')
+        .select('id, name, role')
+        .eq('user_id', userId);
+      const existingPartNames = new Set((existingParts || []).map(p => p.name.toLowerCase()));
+
+      for (const detected of analysis.parts) {
+        if (!detected.name || existingPartNames.has(detected.name.toLowerCase())) continue;
+        await supabase.from('ifs_parts').insert({
+          user_id: userId,
+          name: detected.name,
+          role: detected.role || 'protector',
+          ns_state: analysis.ns_state_read === 'green' ? 'ventral_vagal'
+            : analysis.ns_state_read === 'amber' ? 'sympathetic'
+            : analysis.ns_state_read === 'red' ? 'dorsal_vagal' : null,
+          notes: `Auto-detected from journal entry`,
+          is_active: true,
+        });
+        existingPartNames.add(detected.name.toLowerCase());
+      }
+    }
+
     // Update journal entry with analysis
     await supabase.from('ifs_journal_entries').update({
       extracted_entities: analysis.entities || [],
@@ -138,9 +191,8 @@ Return ONLY valid JSON:
       status: 'completed',
       analysis,
       matched_entities: matchedEntityIds.length,
-      new_entities: (analysis.entities || []).filter(e =>
-        !existingEntities?.find(ex => ex.name.toLowerCase() === e.name?.toLowerCase())
-      ),
+      new_entities: newEntityRecords,
+      auto_created: true,
     });
 
   } catch (err) {

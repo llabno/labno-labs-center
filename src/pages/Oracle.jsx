@@ -51,8 +51,22 @@ const Oracle = () => {
       title: newSop.title, content: newSop.content, visibility: newSop.visibility,
       status: 'Pending Approval', token_count: Math.ceil(newSop.content.length / 4),
     }]);
-    if (insertErr) setError(insertErr.message);
-    else { setNewSop({ title: '', content: '', visibility: 'Private Brain (Internal Only)' }); setShowForm(false); await fetchSops(); }
+    if (insertErr) { setError(insertErr.message); setSubmitting(false); return; }
+
+    // Auto-trigger embedding for the new SOP (best-effort, won't block UI)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        fetch('/api/oracle/embed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        }); // fire-and-forget
+      }
+    } catch { /* embedding is optional — keyword search still works */ }
+
+    setNewSop({ title: '', content: '', visibility: 'Private Brain (Internal Only)' });
+    setShowForm(false);
+    await fetchSops();
     setSubmitting(false);
   };
 

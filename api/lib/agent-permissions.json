@@ -1,0 +1,167 @@
+{
+  "$schema": "Agent Permission Matrix — defines which tools each agent can access",
+  "$notes": "Claude Code in dev mode is EXEMPT from this matrix (unrestricted). All other agents must go through the syscall gate.",
+
+  "agents": {
+    "mechanic": {
+      "description": "IFS/relational intelligence analysis — 9-module pipeline",
+      "model_tier": "mid",
+      "preferred_model": "claude-sonnet-4-6",
+      "tools_allowed": [
+        "read_supabase_table:ifs_interaction_logs",
+        "read_supabase_table:ifs_entities",
+        "read_supabase_table:ifs_analysis_results",
+        "write_supabase_table:ifs_analysis_results",
+        "write_supabase_table:ifs_entities",
+        "call_ai_api:anthropic",
+        "call_ai_api:google"
+      ],
+      "tools_denied": [
+        "bash_exec",
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record"
+      ],
+      "budget_per_run_usd": 0.50,
+      "budget_daily_usd": 3.00,
+      "max_tokens_per_call": 4096
+    },
+
+    "sniper": {
+      "description": "Blog content generation from clinical notes",
+      "model_tier": "budget",
+      "preferred_model": "claude-haiku-4-5-20251001",
+      "tools_allowed": [
+        "read_supabase_table:oracle_sops",
+        "read_supabase_table:moso_sync_log",
+        "write_supabase_table:blog_posts",
+        "call_ai_api:anthropic",
+        "call_ai_api:google"
+      ],
+      "tools_denied": [
+        "bash_exec",
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record",
+        "read_supabase_table:moso_clinical_leads"
+      ],
+      "budget_per_run_usd": 0.10,
+      "budget_daily_usd": 1.00,
+      "max_tokens_per_call": 2048
+    },
+
+    "concierge": {
+      "description": "Internal dispatch — routes tasks between agents, manages project setup",
+      "model_tier": "budget",
+      "preferred_model": "claude-haiku-4-5-20251001",
+      "tools_allowed": [
+        "read_supabase_table:internal_projects",
+        "read_supabase_table:global_tasks",
+        "read_supabase_table:agent_runs",
+        "write_supabase_table:agent_runs",
+        "write_supabase_table:global_tasks",
+        "spawn_agent:mechanic",
+        "spawn_agent:sniper",
+        "call_ai_api:anthropic"
+      ],
+      "tools_denied": [
+        "bash_exec",
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record",
+        "read_supabase_table:moso_clinical_leads",
+        "spawn_agent:concierge"
+      ],
+      "budget_per_run_usd": 0.05,
+      "budget_daily_usd": 0.50,
+      "max_tokens_per_call": 1024
+    },
+
+    "kylie": {
+      "description": "External AI phone receptionist — handles inbound calls",
+      "model_tier": "budget",
+      "preferred_model": "gemini-2.0-flash",
+      "tools_allowed": [
+        "read_supabase_table:moso_clinical_leads",
+        "read_supabase_table:labno_consulting_leads",
+        "write_supabase_table:moso_clinical_leads",
+        "write_supabase_table:labno_consulting_leads",
+        "call_ai_api:google",
+        "send_sms:ringcentral"
+      ],
+      "tools_denied": [
+        "bash_exec",
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record",
+        "spawn_agent:*",
+        "call_ai_api:anthropic"
+      ],
+      "budget_per_run_usd": 0.02,
+      "budget_daily_usd": 0.50,
+      "max_tokens_per_call": 512
+    },
+
+    "process-agent": {
+      "description": "Generic task processor dispatched by cron",
+      "model_tier": "budget",
+      "preferred_model": "claude-haiku-4-5-20251001",
+      "tools_allowed": [
+        "read_supabase_table:global_tasks",
+        "read_supabase_table:internal_projects",
+        "write_supabase_table:agent_runs",
+        "call_ai_api:anthropic"
+      ],
+      "tools_denied": [
+        "bash_exec",
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record"
+      ],
+      "budget_per_run_usd": 0.10,
+      "budget_daily_usd": 2.00,
+      "max_tokens_per_call": 512
+    },
+
+    "security-sweep": {
+      "description": "Weekly dependency audit agent — Monday AM CVE scanner",
+      "model_tier": "nano",
+      "preferred_model": "gemini-flash-lite",
+      "tools_allowed": [
+        "read_filesystem:package.json",
+        "read_filesystem:package-lock.json",
+        "bash_exec:npm_audit_only",
+        "call_ai_api:google"
+      ],
+      "tools_denied": [
+        "write_filesystem",
+        "git_push",
+        "send_email",
+        "delete_supabase_record",
+        "call_ai_api:anthropic"
+      ],
+      "budget_per_run_usd": 0.01,
+      "budget_daily_usd": 0.05,
+      "max_tokens_per_call": 1024
+    }
+  },
+
+  "global_rules": {
+    "claude_code_dev_exempt": true,
+    "max_monthly_budget_usd": 25.00,
+    "budget_alert_threshold_pct": 80,
+    "hard_stop_threshold_pct": 95,
+    "never_allowed_for_any_agent": [
+      "auto_schedule_calendar",
+      "send_email_as_lance",
+      "modify_patient_data_without_review",
+      "delete_supabase_records",
+      "git_force_push"
+    ]
+  }
+}

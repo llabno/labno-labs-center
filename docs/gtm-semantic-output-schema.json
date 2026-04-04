@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labno.com/schemas/gtm-semantic-output.json",
+  "title": "GTM Signal Extraction Semantic Output",
+  "description": "Structured output schema for the Slang AI semantic parsing engine. When an LLM processes a raw review (App Store, G2, Capterra) or job posting, it must output data conforming to this schema.",
+  "type": "object",
+  "required": [
+    "source_type",
+    "source_id",
+    "company_name",
+    "signals",
+    "overall_sentiment",
+    "urgency_indicators",
+    "competitive_mentions"
+  ],
+  "properties": {
+    "source_type": {
+      "type": "string",
+      "enum": ["app_review", "b2b_review", "job_posting"],
+      "description": "The origin category of the raw input. app_review = App Store / Google Play. b2b_review = G2, Capterra, TrustRadius. job_posting = LinkedIn, Indeed, Greenhouse, etc."
+    },
+    "source_id": {
+      "type": "string",
+      "description": "External identifier for the review or posting (e.g., G2 review ID, App Store review ID, job posting URL slug). Used for deduplication."
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Resolved company name after normalization (e.g., 'Salesforce' not 'SFDC' or 'salesforce.com'). For app reviews this is the app publisher; for job postings this is the hiring company."
+    },
+    "signals": {
+      "type": "array",
+      "description": "Array of pain-point signals extracted from the source text. A single review may contain multiple distinct signals.",
+      "items": {
+        "type": "object",
+        "required": [
+          "pain_point",
+          "pain_point_category",
+          "severity",
+          "proposed_solution",
+          "labno_service_match",
+          "confidence_score",
+          "evidence_quote",
+          "nfr_categories",
+          "reviewer_seniority"
+        ],
+        "properties": {
+          "pain_point": {
+            "type": "string",
+            "description": "A concise, specific description of the pain point extracted from the text. Should be actionable and concrete, not vague (e.g., 'API rate limits cause batch imports to fail above 10K records' not 'API issues')."
+          },
+          "pain_point_category": {
+            "type": "string",
+            "enum": [
+              "api_limit_exhaustion",
+              "post_sale_chaos",
+              "bulk_data_failure",
+              "support_delay",
+              "manual_data_entry",
+              "integration_failure",
+              "reporting_gap",
+              "frontend_tech_debt",
+              "ux_debt",
+              "infrastructure_debt",
+              "workflow_automation_need",
+              "ai_readiness"
+            ],
+            "description": "Canonical pain-point category from the Labno GTM taxonomy. api_limit_exhaustion: hitting API rate/volume caps. post_sale_chaos: onboarding/implementation failures after contract signing. bulk_data_failure: inability to handle large data operations. support_delay: slow vendor support response. manual_data_entry: repetitive human data entry that should be automated. integration_failure: broken or missing integrations between systems. reporting_gap: inability to generate needed reports or dashboards. frontend_tech_debt: outdated or poorly maintained UI code. ux_debt: poor user experience causing friction. infrastructure_debt: outdated servers, databases, or cloud setup. workflow_automation_need: manual multi-step processes that should be automated. ai_readiness: company signals interest in AI but lacks capability."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "description": "Severity of the pain point. critical: business is losing revenue or customers. high: significant operational friction, workarounds required daily. medium: noticeable inefficiency, occasional workarounds. low: minor annoyance, nice-to-fix."
+          },
+          "proposed_solution": {
+            "type": "string",
+            "description": "A specific, actionable solution recommendation from Labno Labs' service catalog. Should reference concrete deliverables (e.g., 'Build a middleware API gateway with rate-limit pooling and retry logic' not 'fix the API')."
+          },
+          "labno_service_match": {
+            "type": "string",
+            "enum": [
+              "ai_medical_assistant",
+              "docquest",
+              "paindrain",
+              "ai_squads",
+              "custom_mvp",
+              "revops_automation",
+              "agentic_chatbot",
+              "cloud_migration",
+              "workflow_api"
+            ],
+            "description": "The Labno Labs service offering best suited to address this pain point. ai_medical_assistant: clinical AI assistant for healthcare. docquest: document processing and extraction. paindrain: pain assessment and tracking platform. ai_squads: dedicated AI engineering teams. custom_mvp: rapid MVP development. revops_automation: revenue operations automation. agentic_chatbot: autonomous AI chatbot systems. cloud_migration: infrastructure modernization. workflow_api: custom API and workflow integration."
+          },
+          "confidence_score": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Confidence that this signal accurately represents the reviewer's pain point and that the proposed service match is correct. 0.9-1.0: explicit statement with clear evidence. 0.7-0.89: strong inference from context. 0.5-0.69: moderate inference, some ambiguity. Below 0.5: weak signal, speculative."
+          },
+          "evidence_quote": {
+            "type": "string",
+            "description": "Exact verbatim text from the source review or posting that supports this signal classification. Must be a direct quote, not a paraphrase."
+          },
+          "nfr_categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "performance",
+                "scalability",
+                "reliability",
+                "availability",
+                "security",
+                "compliance",
+                "usability",
+                "accessibility",
+                "maintainability",
+                "portability",
+                "interoperability",
+                "observability",
+                "cost_efficiency",
+                "data_integrity",
+                "latency"
+              ]
+            },
+            "description": "Non-functional requirement categories that this pain point maps to. A signal can map to multiple NFR categories (e.g., an API rate limit issue maps to both 'scalability' and 'performance')."
+          },
+          "reviewer_seniority": {
+            "type": "string",
+            "enum": [
+              "c_suite",
+              "vp",
+              "director",
+              "manager",
+              "senior_ic",
+              "junior",
+              "unknown"
+            ],
+            "description": "Inferred seniority level of the reviewer or job posting target. c_suite: CEO, CTO, CIO, COO, CFO. vp: Vice President. director: Director level. manager: Manager level. senior_ic: Senior individual contributor (Staff Engineer, Principal, etc.). junior: Junior or entry-level. unknown: cannot be determined from available information."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "overall_sentiment": {
+      "type": "number",
+      "minimum": -1.0,
+      "maximum": 1.0,
+      "description": "Overall sentiment score of the source text. -1.0 = extremely negative. 0.0 = neutral. 1.0 = extremely positive. For job postings, this reflects the implied sentiment about the company's current technical state (e.g., 'rewrite our legacy system' = negative)."
+    },
+    "urgency_indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Verbatim phrases from the source text that indicate time pressure or urgency (e.g., 'we need this yesterday', 'critical blocker', 'losing customers because of', 'ASAP', 'before Q3')."
+    },
+    "competitive_mentions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of competitor products, platforms, or vendors mentioned in the source text. Normalized to canonical names (e.g., 'Salesforce' not 'SF' or 'SFDC')."
+    }
+  },
+  "additionalProperties": false
+}

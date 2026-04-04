@@ -358,7 +358,7 @@ const PartsRegistry = ({ parts, setParts, fetchParts, userId }) => {
 // ============================================
 // Visual Board Tab (SVG-based parts map)
 // ============================================
-const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) => {
+const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelationships, fetchEntities }) => {
   const svgRef = useRef(null);
   const [dragging, setDragging] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -399,12 +399,34 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
     }
   }, [parts.length, dimensions]);
 
+  // Auto-layout entities that have no position
+  useEffect(() => {
+    const ents = entities || [];
+    const needsLayout = ents.filter(e => !e.board_x && !e.board_y);
+    if (needsLayout.length > 0 && ents.length > 0) {
+      const cx = dimensions.width / 2;
+      const cy = dimensions.height / 2;
+      const radius = Math.min(cx, cy) * 0.8;
+      const updates = ents.map((e, i) => {
+        if (e.board_x && e.board_y) return null;
+        const angle = (2 * Math.PI * i) / ents.length + Math.PI / 3;
+        return { id: e.id, x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+      }).filter(Boolean);
+      updates.forEach(async (u) => {
+        await supabase.from('ifs_entities').update({ board_x: u.x, board_y: u.y }).eq('id', u.id);
+      });
+      if (updates.length) fetchEntities?.();
+    }
+  }, [(entities || []).length, dimensions]);
+
   const handleMouseDown = (e, id, type = 'part') => {
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
     pt.x = e.clientX; pt.y = e.clientY;
     const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-    const item = type === 'part' ? parts.find(p => p.id === id) : relationships.find(r => r.id === id);
+    const item = type === 'part' ? parts.find(p => p.id === id)
+      : type === 'entity' ? (entities || []).find(en => en.id === id)
+      : relationships.find(r => r.id === id);
     setDragOffset({ x: svgP.x - (item?.board_x || 0), y: svgP.y - (item?.board_y || 0) });
     setDragging({ id, type });
   };
@@ -417,9 +439,10 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
     const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
     const newX = svgP.x - dragOffset.x;
     const newY = svgP.y - dragOffset.y;
-    const table = dragging.type === 'part' ? 'ifs_parts' : 'ifs_relationships';
+    const table = dragging.type === 'part' ? 'ifs_parts' : dragging.type === 'entity' ? 'ifs_entities' : 'ifs_relationships';
     supabase.from(table).update({ board_x: newX, board_y: newY }).eq('id', dragging.id).then(() => {
       if (dragging.type === 'part') fetchParts();
+      else if (dragging.type === 'entity') fetchEntities?.();
       else fetchRelationships();
     });
   }, [dragging, dragOffset]);
@@ -486,7 +509,12 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
                     const angle = (2 * Math.PI * i) / (relationships.length || 1) + Math.PI / 6;
                     await supabase.from('ifs_relationships').update({ board_x: cx + 380 * Math.cos(angle), board_y: cy + 380 * Math.sin(angle) }).eq('id', r.id);
                   });
-                  setTimeout(() => { fetchParts(); fetchRelationships(); }, 500);
+                  // Entities on outer-most edge
+                  (entities || []).forEach(async (ent, i) => {
+                    const angle = (2 * Math.PI * i) / ((entities || []).length || 1) + Math.PI / 3;
+                    await supabase.from('ifs_entities').update({ board_x: cx + 420 * Math.cos(angle), board_y: cy + 420 * Math.sin(angle) }).eq('id', ent.id);
+                  });
+                  setTimeout(() => { fetchParts(); fetchRelationships(); fetchEntities?.(); }, 500);
                 };
                 layout();
               }}>Constellation</button>
@@ -502,6 +530,10 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '10px', height: '10px', borderRadius: '4px', background: '#6b8e9b', display: 'inline-block' }} />
             Person
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '4px', background: '#5a8abf', display: 'inline-block', border: '1px dashed #5a8abf' }} />
+            Entity
           </span>
         </div>
       </div>
@@ -565,6 +597,23 @@ const VisualBoard = ({ parts, relationships, fetchParts, fetchRelationships }) =
               </text>
             </g>
           ))}
+
+          {/* Entity nodes (from analysis/journal extraction) */}
+          {(entities || []).map(ent => {
+            const confColor = ent.confidence_level === 'high' ? '#4caf50' : ent.confidence_level === 'medium' ? '#ff9800' : '#999';
+            return (
+              <g key={`ent-${ent.id}`} style={{ cursor: 'grab' }} onMouseDown={(e) => handleMouseDown(e, ent.id, 'entity')}>
+                <rect x={(ent.board_x || 0) - 50} y={(ent.board_y || 0) - 18} width="100" height="36" rx="6"
+                  fill={`${ent.color || '#5a8abf'}15`} stroke={ent.color || '#5a8abf'} strokeWidth="1.5" strokeDasharray="4,2" />
+                <text x={ent.board_x || 0} y={(ent.board_y || 0) - 2} textAnchor="middle" fontSize="11" fontWeight="600"
+                  fill={ent.color || '#5a8abf'}>{ent.name}</text>
+                <text x={ent.board_x || 0} y={(ent.board_y || 0) + 10} textAnchor="middle" fontSize="9" fill="#999">
+                  {ent.relationship_type || 'entity'} • {ent.log_count || 0}
+                </text>
+                <circle cx={(ent.board_x || 0) + 45} cy={(ent.board_y || 0) - 14} r="4" fill={confColor} />
+              </g>
+            );
+          })}
 
           {/* Constellation rings */}
           {viewMode === 'constellation' && (
@@ -1290,7 +1339,7 @@ const InsightsDashboard = ({ userId }) => {
 // ============================================
 // Journal Tab (free-flow diary + entity extraction)
 // ============================================
-const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCustomRelTypes }) => {
+const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCustomRelTypes, refreshAll }) => {
   const [entries, setEntries] = useState([]);
   const [writing, setWriting] = useState(false);
   const [content, setContent] = useState('');
@@ -1344,19 +1393,10 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
       const data = await res.json();
       if (data.status === 'completed') {
         fetchEntries();
-        // Offer to create new entities
-        if (data.new_entities?.length > 0) {
-          for (const ne of data.new_entities) {
-            if (confirm(`New person detected: "${ne.name}" (${ne.relationship_guess}). Add to your entities?`)) {
-              await supabase.from('ifs_entities').insert({
-                user_id: userId, name: ne.name,
-                relationship_type: ne.relationship_guess || 'other',
-                is_group: ne.is_group || false,
-              });
-              fetchEntities();
-            }
-          }
-        }
+        // Entities and parts are now auto-created by the API
+        // Refresh all tabs so parts registry, visual board, etc. update
+        if (refreshAll) refreshAll();
+        else fetchEntities();
       }
     } catch (err) { console.error('Journal analysis error:', err); }
     setAnalyzing(null);
@@ -1720,7 +1760,7 @@ const JournalTab = ({ entities, fetchEntities, userId, customRelTypes, fetchCust
 // ============================================
 // Log Submission Tab (5-step intake from Gem)
 // ============================================
-const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customRelTypes }) => {
+const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customRelTypes, refreshAll }) => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     entity_id: '', entity_name: '', relationship_type: 'other', is_new_entity: false,
@@ -1763,7 +1803,9 @@ const LogSubmission = ({ entities, fetchEntities, fetchAnalyses, userId, customR
       });
       const data = await res.json();
       setResult(data);
-      fetchAnalyses();
+      // Refresh all tabs — analysis auto-creates parts and updates entities
+      if (refreshAll) refreshAll();
+      else fetchAnalyses();
     } catch (err) {
       console.error('Submit error:', err);
     }
@@ -2555,18 +2597,23 @@ export default function InternalMechanic() {
     if (data) setCustomRelTypes(data);
   };
 
+  // Refresh all data across tabs — call after any analysis completes
+  const refreshAll = () => {
+    fetchParts();
+    fetchEntities();
+    fetchAnalyses();
+    fetchRelationships();
+    fetchContracts();
+    fetchSessions();
+    fetchCustomRelTypes();
+  };
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
         setUserId(session.user.id);
-        fetchParts();
-        fetchContracts();
-        fetchRelationships();
-        fetchSessions();
-        fetchEntities();
-        fetchAnalyses();
-        fetchCustomRelTypes();
+        refreshAll();
       }
     };
     init();
@@ -2587,13 +2634,13 @@ export default function InternalMechanic() {
         ))}
       </div>
 
-      {activeTab === 'journal' && <JournalTab entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} fetchCustomRelTypes={fetchCustomRelTypes} />}
+      {activeTab === 'journal' && <JournalTab entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} fetchCustomRelTypes={fetchCustomRelTypes} refreshAll={refreshAll} />}
       {activeTab === 'insights' && <InsightsDashboard userId={userId} />}
-      {activeTab === 'log' && <LogSubmission entities={entities} fetchEntities={fetchEntities} fetchAnalyses={fetchAnalyses} userId={userId} customRelTypes={customRelTypes} />}
+      {activeTab === 'log' && <LogSubmission entities={entities} fetchEntities={fetchEntities} fetchAnalyses={fetchAnalyses} userId={userId} customRelTypes={customRelTypes} refreshAll={refreshAll} />}
       {activeTab === 'analysis' && <AnalysisHistory analyses={analyses} entities={entities} fetchAnalyses={fetchAnalyses} />}
       {activeTab === 'entities' && <EntityProfiles entities={entities} fetchEntities={fetchEntities} userId={userId} customRelTypes={customRelTypes} />}
       {activeTab === 'parts' && <PartsRegistry parts={parts} setParts={setParts} fetchParts={fetchParts} userId={userId} />}
-      {activeTab === 'board' && <VisualBoard parts={parts} relationships={relationships} fetchParts={fetchParts} fetchRelationships={fetchRelationships} />}
+      {activeTab === 'board' && <VisualBoard parts={parts} relationships={relationships} entities={entities} fetchParts={fetchParts} fetchRelationships={fetchRelationships} fetchEntities={fetchEntities} />}
       {activeTab === 'timetravel' && <TimeTravelTab parts={parts} userId={userId} />}
       {activeTab === 'contracts' && <ConsciousContracts contracts={contracts} parts={parts} fetchContracts={fetchContracts} userId={userId} />}
       {activeTab === 'unburdening' && <UnburdeningFlow parts={parts} sessions={sessions} fetchSessions={fetchSessions} userId={userId} />}

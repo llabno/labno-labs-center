@@ -413,6 +413,35 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── Auto-create parts from M16 detection ──
+    // If the analysis detected parts, ensure they exist in ifs_parts
+    if (results.m16?.parts_active?.length > 0) {
+      // Fetch existing parts for this user
+      const { data: existingParts } = await supabase
+        .from('ifs_parts')
+        .select('id, name, role')
+        .eq('user_id', userId);
+
+      const existingNames = new Set((existingParts || []).map(p => p.name.toLowerCase()));
+
+      for (const detected of results.m16.parts_active) {
+        if (!detected.name || existingNames.has(detected.name.toLowerCase())) continue;
+        // Auto-create the part
+        await supabase.from('ifs_parts').insert({
+          user_id: userId,
+          name: detected.name,
+          role: detected.role || 'protector',
+          description: detected.protective_function || null,
+          ns_state: results.m9?.ns_state_confirmed === 'green' ? 'ventral_vagal'
+            : results.m9?.ns_state_confirmed === 'amber' ? 'sympathetic'
+            : results.m9?.ns_state_confirmed === 'red' ? 'dorsal_vagal' : null,
+          notes: `Auto-detected from interaction log with ${log.entity_name}`,
+          is_active: true,
+        });
+        existingNames.add(detected.name.toLowerCase());
+      }
+    }
+
     // Update entity profile
     let entityUpdate = null;
     if (log.entity_id && results.m22?.feel_towards_gate === 'pass') {

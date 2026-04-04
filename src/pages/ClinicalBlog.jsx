@@ -42,8 +42,7 @@ const ClinicalBlog = () => {
           title: post.title,
           slug: post.slug || post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
           excerpt: post.excerpt || '',
-          content: post.markdown_body,
-          author: 'Lance Labno, DPT',
+          markdown_body: post.markdown_body,
           category: post.category || 'Clinical Pearls',
           status: 'draft',
           published_at: null
@@ -183,9 +182,9 @@ const ClinicalBlog = () => {
             {selectedPost.excerpt && (
               <p style={{ fontSize: '0.9rem', color: '#6b6764', fontStyle: 'italic', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{selectedPost.excerpt}</p>
             )}
-            <div style={{ fontSize: '0.88rem', color: '#2e2c2a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selectedPost.content || 'No content body.'}</div>
+            <div style={{ fontSize: '0.88rem', color: '#2e2c2a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{selectedPost.markdown_body || 'No content body.'}</div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.05)', fontSize: '0.75rem', color: '#9e9a97' }}>
-              <span>{selectedPost.author}</span><span>|</span><span>{selectedPost.category}</span>
+              <span>Lance Labno, DPT</span><span>|</span><span>{selectedPost.category}</span>
               {selectedPost.published_at && <><span>|</span><span>Published {new Date(selectedPost.published_at).toLocaleDateString()}</span></>}
             </div>
           </div>

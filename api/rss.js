@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await supabase
       .from('blog_posts')
-      .select('title, slug, excerpt, content, author, published_at, category')
+      .select('title, slug, excerpt, markdown_body, published_at, category')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(20)

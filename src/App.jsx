@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles, Activity } from 'lucide-react';
+import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIcon, Terminal, Inbox, Compass, Map, Clock, FileText, Image, BarChart3, ListChecks, Sparkles, Activity, Brain } from 'lucide-react';
 import { supabase } from './lib/supabase';
 import './index.css';
 
@@ -23,6 +23,7 @@ import ProjectsTasks from './pages/ProjectsTasks';
 import TaskQueue from './pages/TaskQueue';
 import Wishlist from './pages/Wishlist';
 import ResourceMonitor from './pages/ResourceMonitor';
+import InternalMechanic from './pages/InternalMechanic';
 
 // The interactive background blob follower
 const GlassCursorBlob = () => {
@@ -58,6 +59,7 @@ const Sidebar = ({ user, onLogout }) => {
     { name: 'Telemetry', path: '/telemetry', icon: <BarChart3 size={20} /> },
     { name: 'Wishlist', path: '/wishlist', icon: <Sparkles size={20} /> },
     { name: 'Resource Monitor', path: '/resources', icon: <Activity size={20} /> },
+    { name: 'Internal Mechanic', path: '/mechanic', icon: <Brain size={20} /> },
     { name: 'Autonomous Systems', path: '/autonomous', icon: <Terminal size={20} /> },
     { name: 'Screenshot to Code', path: null, icon: <Image size={20} />, external: 'https://design-to-code-app.vercel.app' },
   ];
@@ -184,6 +186,7 @@ function App() {
           <Route path="/telemetry" element={<Telemetry />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/resources" element={<ResourceMonitor />} />
+          <Route path="/mechanic" element={<InternalMechanic />} />
           <Route path="/autonomous" element={<Autonomous />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>

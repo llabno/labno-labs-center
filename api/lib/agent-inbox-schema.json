@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "labno-agent-inbox-schema-v1",
+  "description": "JSON schemas for the filesystem-backed agent communication system. Based on Claude Code architecture primitives.",
+
+  "definitions": {
+    "message": {
+      "type": "object",
+      "required": ["id", "from", "to", "type", "content", "timestamp"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid", "description": "Unique message ID" },
+        "from": { "type": "string", "description": "Sending agent name (e.g., 'concierge', 'mechanic')" },
+        "to": { "type": "string", "description": "Receiving agent name" },
+        "type": {
+          "type": "string",
+          "enum": ["task_request", "task_result", "status_update", "shutdown", "idle", "error", "budget_alert"],
+          "description": "Message type determines how the receiver processes it"
+        },
+        "content": { "type": "string", "description": "The message payload (prompt, result, or status text)" },
+        "task_id": { "type": "string", "format": "uuid", "description": "FK to global_tasks if applicable" },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "normal", "low"],
+          "default": "normal"
+        },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "model_used": { "type": "string" },
+            "tokens_used": { "type": "integer" },
+            "cost_usd": { "type": "number" },
+            "retry_count": { "type": "integer", "default": 0 }
+          }
+        }
+      }
+    },
+
+    "inbox": {
+      "type": "object",
+      "required": ["agent", "messages", "last_polled"],
+      "properties": {
+        "agent": { "type": "string", "description": "Agent name this inbox belongs to" },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/message" },
+          "description": "Ordered queue of unprocessed messages (FIFO)"
+        },
+        "last_polled": { "type": "string", "format": "date-time" },
+        "status": {
+          "type": "string",
+          "enum": ["active", "idle", "processing", "shutdown"],
+          "default": "idle"
+        }
+      }
+    },
+
+    "task_state": {
+      "type": "object",
+      "required": ["id", "subject", "status", "owner", "created_at"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "team": { "type": "string", "description": "Team name this task belongs to" },
+        "subject": { "type": "string", "description": "Short task title" },
+        "description": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "assigned", "running", "completed", "failed", "blocked"],
+          "default": "pending"
+        },
+        "owner": { "type": "string", "description": "Agent assigned to this task" },
+        "dependencies": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "description": "Task IDs that must complete before this task can start"
+        },
+        "result": { "type": "string", "description": "Output from the executing agent" },
+        "tokens_consumed": { "type": "integer", "default": 0 },
+        "cost_usd": { "type": "number", "default": 0 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "checkpoint": {
+          "type": "object",
+          "description": "Last known good state for crash recovery",
+          "properties": {
+            "step": { "type": "integer" },
+            "context_snapshot": { "type": "string" },
+            "checkpointed_at": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+
+    "team_config": {
+      "type": "object",
+      "required": ["name", "leader", "members"],
+      "properties": {
+        "name": { "type": "string" },
+        "leader": { "type": "string", "description": "Agent name of the Leader (orchestrator)" },
+        "members": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "All agent names in this team (leader + teammates)"
+        },
+        "budget_usd": { "type": "number", "description": "Total budget for this team session" },
+        "budget_remaining_usd": { "type": "number" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "session_checkpoint": {
+      "type": "object",
+      "required": ["agent", "session_id", "state"],
+      "properties": {
+        "agent": { "type": "string" },
+        "session_id": { "type": "string", "format": "uuid" },
+        "state": {
+          "type": "string",
+          "enum": ["active", "paused", "crashed", "completed"]
+        },
+        "current_task_id": { "type": "string", "format": "uuid" },
+        "context_summary": { "type": "string", "description": "Compressed context for resume" },
+        "messages_processed": { "type": "integer" },
+        "total_cost_usd": { "type": "number" },
+        "last_checkpoint_at": { "type": "string", "format": "date-time" },
+        "crash_count": { "type": "integer", "default": 0 }
+      }
+    }
+  }
+}

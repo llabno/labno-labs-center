@@ -22,9 +22,9 @@ const VENTURE_FILTERS = [
 
 const inferCategory = (name) => {
   const n = (name || '').toLowerCase();
-  if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization')) return 'clinical';
-  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting')) return 'consulting';
-  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center')) return 'apps';
+  if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization') || n.includes('reactivation')) return 'clinical';
+  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting') || n.includes('agent infrastructure') || n.includes('agent security') || n.includes('cybernetic') || n.includes('plumbing') || n.includes('labno')) return 'consulting';
+  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('app studio')) return 'apps';
   return 'all';
 };
 
