@@ -155,6 +155,14 @@ const DualCRM = () => {
   // Similar leads (fetched from Supabase)
   const [similarLeads, setSimilarLeads] = useState([]);
 
+  // Activity timeline
+  const [leadActivity, setLeadActivity] = useState([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
+
+  // Next action
+  const [nextAction, setNextAction] = useState({ text: '', date: '' });
+  const [savingAction, setSavingAction] = useState(false);
+
   const getColumns = useCallback(() => {
     const cols = activeTab === 'moso' ? MOSO_COLUMNS : LABNO_COLUMNS;
     const key = activeTab === 'moso' ? 'moso' : 'labno';
@@ -201,6 +209,37 @@ const DualCRM = () => {
       setSimilarLeads([]);
     }
   }, [selectedLead?.id, activeTab]);
+
+  // Fetch activity timeline + next action when detail opens
+  useEffect(() => {
+    if (!selectedLead) { setLeadActivity([]); setNextAction({ text: '', date: '' }); return; }
+    setLoadingActivity(true);
+    supabase.from('communication_log')
+      .select('id, comm_type, direction, subject, body, status, created_at')
+      .eq('lead_id', selectedLead.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => { setLeadActivity(data || []); setLoadingActivity(false); });
+
+    // Load next action fields from the lead itself
+    setNextAction({
+      text: selectedLead.next_action || '',
+      date: selectedLead.next_action_date || '',
+    });
+  }, [selectedLead?.id]);
+
+  const saveNextAction = async () => {
+    if (!selectedLead) return;
+    setSavingAction(true);
+    const isMoso = activeTab === 'moso';
+    const table = isMoso ? 'moso_clinical_leads' : 'labno_consulting_leads';
+    await supabase.from(table).update({
+      next_action: nextAction.text || null,
+      next_action_date: nextAction.date || null,
+    }).eq('id', selectedLead.id);
+    logAudit('next_action_update', table, selectedLead.id, { next_action: nextAction.text, next_action_date: nextAction.date });
+    setSavingAction(false);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -705,6 +744,58 @@ const DualCRM = () => {
             ))}
           </div>
         )}
+
+        {/* Next Action */}
+        <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1rem' }}>
+          <h4 style={{ fontSize: '0.8rem', color: '#999', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Calendar size={13} /> Next Action
+          </h4>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <input type="text" value={nextAction.text} onChange={e => setNextAction(p => ({ ...p, text: e.target.value }))}
+              placeholder="e.g. Call back, Send proposal, Follow up..."
+              style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.82rem' }} />
+            <input type="date" value={nextAction.date} onChange={e => setNextAction(p => ({ ...p, date: e.target.value }))}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.82rem', width: '140px' }} />
+            <button onClick={saveNextAction} disabled={savingAction}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: 'none', background: '#b06050', color: '#fff', cursor: 'pointer', fontSize: '0.78rem', opacity: savingAction ? 0.6 : 1 }}>
+              {savingAction ? '...' : 'Save'}
+            </button>
+          </div>
+          {nextAction.date && new Date(nextAction.date) < new Date() && (
+            <div style={{ fontSize: '0.72rem', color: '#c62828', marginTop: '4px' }}>Overdue</div>
+          )}
+        </div>
+
+        {/* Activity Timeline */}
+        <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1rem' }}>
+          <h4 style={{ fontSize: '0.8rem', color: '#999', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Activity size={13} /> Activity ({leadActivity.length})
+          </h4>
+          {loadingActivity ? (
+            <div style={{ fontSize: '0.82rem', color: '#aaa' }}>Loading...</div>
+          ) : leadActivity.length === 0 ? (
+            <div style={{ fontSize: '0.82rem', color: '#aaa' }}>No activity recorded yet.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' }}>
+              {leadActivity.map(a => (
+                <div key={a.id} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    background: a.comm_type === 'email' ? 'rgba(176,96,80,0.1)' : a.comm_type === 'call' ? 'rgba(46,125,50,0.1)' : 'rgba(21,101,192,0.1)' }}>
+                    {a.comm_type === 'email' ? <Mail size={12} color="#b06050" /> : a.comm_type === 'call' ? <Phone size={12} color="#2e7d32" /> : <Activity size={12} color="#1565c0" />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 500, color: '#333' }}>
+                      {a.comm_type === 'email' ? 'Email' : a.comm_type === 'call' ? 'Call' : a.comm_type === 'text' ? 'Text' : a.comm_type}
+                      {a.subject && `: ${a.subject}`}
+                    </div>
+                    {a.body && <div style={{ fontSize: '0.72rem', color: '#888', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px' }}>{a.body}</div>}
+                  </div>
+                  <span style={{ fontSize: '0.68rem', color: '#bbb', whiteSpace: 'nowrap' }}>{new Date(a.created_at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div style={{ fontSize: '0.75rem', color: '#bbb', marginTop: 'auto', paddingTop: '1rem' }}>
           ID: {lead.client_id || lead.id?.slice(0, 8)} · Source: {lead.source || '—'} · Created: {new Date(lead.created_at).toLocaleDateString()}
