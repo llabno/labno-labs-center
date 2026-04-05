@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sun, Calendar, ListChecks, Bell, Zap, Clock, ArrowRight, FileText, MessageSquare, CheckCircle, AlertTriangle, Sparkles, PhoneCall, Bot, AlertCircle, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { supabase } from '../lib/supabase';
 
@@ -233,6 +234,7 @@ export default function TodayView() {
   return (
     <div className="main-content" style={{ maxWidth: '960px', margin: '0 auto' }}>
       <Breadcrumbs />
+      <PageGuide pageKey="today" />
 
       {/* Good Morning Header */}
       <div className="glass-panel" style={{ padding: '28px 32px', marginBottom: '20px', background: 'linear-gradient(135deg, rgba(176,96,80,0.06), rgba(196,154,64,0.04))' }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, AlertTriangle, CheckCircle, Shield, FolderOpen, FileText, Zap, RefreshCw, ChevronDown, ChevronUp, Copy, Play, Clock, Loader, DollarSign } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import { supabase } from '../lib/supabase';
 
 // ── Static analysis of Claude Code token consumption ──────────────────────────
@@ -488,6 +489,7 @@ const ResourceMonitor = () => {
         <p style={{ color: '#6b6764', fontSize: '0.88rem', margin: '4px 0 0' }}>
           Claude Code token usage audit — reduce overhead to run Claude Max efficiently
         </p>
+        <PageGuide pageKey="resources" />
       </div>
 
       {/* Summary Cards */}

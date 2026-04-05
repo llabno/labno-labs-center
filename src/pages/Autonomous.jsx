@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink, Eye, EyeOff, MessageSquare, Send, Bot } from 'lucide-react';
+import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink, Eye, EyeOff, MessageSquare, Send, Bot, RotateCcw, Trash2 } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
@@ -104,6 +105,8 @@ const Autonomous = () => {
   const [submittingFollowUp, setSubmittingFollowUp] = useState({});
   const [processingQueue, setProcessingQueue] = useState(false);
   const [processResult, setProcessResult] = useState(null);
+  const [retryingFailed, setRetryingFailed] = useState(false);
+  const [clearingErrors, setClearingErrors] = useState(false);
 
   const FOLLOW_UP_QUESTIONS = [
     'Was this output what you expected?',
@@ -167,6 +170,52 @@ const Autonomous = () => {
     setProcessingQueue(false);
     setTimeout(() => setProcessResult(null), 5000);
   }, []);
+
+  // Count routing-related failures for button labels
+  const routingFailedRuns = useMemo(() =>
+    agentRuns.filter(r => r.status === 'failed' && r.error && (/AGENT_ROUTE/i.test(r.error) || /not configured/i.test(r.error))),
+    [agentRuns]
+  );
+  const clearableErrorRuns = useMemo(() =>
+    agentRuns.filter(r => r.status === 'failed' && r.error && (/AGENT_ROUTE/i.test(r.error) || /simulation/i.test(r.error) || /not configured/i.test(r.error))),
+    [agentRuns]
+  );
+
+  const retryFailedRuns = useCallback(async () => {
+    if (routingFailedRuns.length === 0) return;
+    setRetryingFailed(true);
+    try {
+      const ids = routingFailedRuns.map(r => r.id);
+      await supabase.from('agent_runs').update({ status: 'queued', error: null }).in('id', ids);
+      // Refresh runs
+      const { data: runs } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+      if (runs) setAgentRuns(runs);
+      // Immediately trigger processing
+      try { await fetch('/api/agent/process', { method: 'GET' }); } catch (_) {}
+      // Refresh again after processing
+      const { data: runs2 } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+      if (runs2) setAgentRuns(runs2);
+    } catch (err) {
+      console.error('Retry failed:', err);
+    }
+    setRetryingFailed(false);
+  }, [routingFailedRuns]);
+
+  const clearOldErrors = useCallback(async () => {
+    if (clearableErrorRuns.length === 0) return;
+    const confirmed = window.confirm(`This removes ${clearableErrorRuns.length} routing error(s) from history. Continue?`);
+    if (!confirmed) return;
+    setClearingErrors(true);
+    try {
+      const ids = clearableErrorRuns.map(r => r.id);
+      await supabase.from('agent_runs').delete().in('id', ids);
+      const { data: runs } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+      if (runs) setAgentRuns(runs);
+    } catch (err) {
+      console.error('Clear errors failed:', err);
+    }
+    setClearingErrors(false);
+  }, [clearableErrorRuns]);
 
   useEffect(() => {
     const fetchRuns = async () => {
@@ -238,7 +287,8 @@ const Autonomous = () => {
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#e8e6f0', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Activity size={22} color="#8be9fd" /> Autonomous Systems <InfoTooltip text={PAGE_INFO.autonomous} color="#e8e6f0" />
       </h1>
-      <p style={{ fontSize: '0.85rem', color: '#6272a4', marginBottom: '1.5rem' }}>Real-time monitoring of background agents and automated pipelines.</p>
+      <p style={{ fontSize: '0.85rem', color: '#6272a4', marginBottom: '0.75rem' }}>Real-time monitoring of background agents and automated pipelines.</p>
+      <PageGuide pageKey="autonomous" />
 
       {/* Nothing to see yet callout */}
       {!hasRuns && (
@@ -286,6 +336,26 @@ const Autonomous = () => {
               {processingQueue ? <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} /> : <Zap size={11} />}
               {processingQueue ? 'Processing...' : 'Process Queue Now'}
             </button>
+            {routingFailedRuns.length > 0 && (
+              <button
+                onClick={retryFailedRuns}
+                disabled={retryingFailed}
+                style={{ padding: '5px 12px', borderRadius: '8px', border: '1px solid rgba(255,184,108,0.3)', cursor: retryingFailed ? 'not-allowed' : 'pointer', fontSize: '0.72rem', fontWeight: 600, background: retryingFailed ? 'rgba(255,184,108,0.08)' : 'rgba(255,184,108,0.12)', color: '#ffb86c', display: 'flex', alignItems: 'center', gap: '5px', opacity: retryingFailed ? 0.6 : 1 }}
+              >
+                {retryingFailed ? <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} /> : <RotateCcw size={11} />}
+                {retryingFailed ? 'Retrying...' : `Retry ${routingFailedRuns.length} Failed`}
+              </button>
+            )}
+            {clearableErrorRuns.length > 0 && (
+              <button
+                onClick={clearOldErrors}
+                disabled={clearingErrors}
+                style={{ padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', cursor: clearingErrors ? 'not-allowed' : 'pointer', fontSize: '0.68rem', fontWeight: 600, background: clearingErrors ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.06)', color: '#6272a4', display: 'flex', alignItems: 'center', gap: '4px', opacity: clearingErrors ? 0.6 : 1 }}
+              >
+                {clearingErrors ? <Loader size={10} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={10} />}
+                {clearingErrors ? 'Clearing...' : 'Clear Old Errors'}
+              </button>
+            )}
             {processResult && (
               <span style={{ fontSize: '0.68rem', color: processResult.error ? '#ff5555' : '#50fa7b', marginLeft: '4px' }}>
                 {processResult.error ? `Error: ${processResult.error}` : `Processed ${processResult.processed || 0} run(s) via ${processResult.route || '?'}`}

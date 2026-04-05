@@ -6,6 +6,7 @@ import {
   DollarSign, Brain, Layers
 } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import { supabase } from '../lib/supabase';
 import { logSchedulerRun, logAgentDispatched, logTaskScheduled, logActivity } from '../lib/activity-logger';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -724,6 +725,7 @@ const WorkPlanner = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <Breadcrumbs />
+      <PageGuide pageKey="planner" />
       {confirmAction && <ConfirmDialog message={confirmAction.message} detail={confirmAction.detail} onConfirm={confirmAction.onConfirm} onCancel={() => setConfirmAction(null)} />}
 
       {/* Page Header */}

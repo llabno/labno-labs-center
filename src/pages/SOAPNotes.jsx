@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { FileText, Clock, Plus, CheckCircle, AlertTriangle, Activity, ChevronDown, ChevronRight, Search, Save, X, Zap, Send, Dumbbell, Mic, MicOff, Clipboard } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity-logger';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -352,6 +353,7 @@ const SOAPNotes = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <Breadcrumbs />
+      <PageGuide pageKey="soap" />
 
       {clientSelected && brief.client_name && (
         <ClientHealthWidget clientName={brief.client_name} />

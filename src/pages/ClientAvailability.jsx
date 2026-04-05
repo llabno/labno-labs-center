@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, Sun, Plane, Star, Plus, Save, X, CheckCircle, Trash2, Edit3, Link2, Copy, ExternalLink } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import PageGuide from '../components/PageGuide';
 import { supabase } from '../lib/supabase';
 import Breadcrumbs from '../components/Breadcrumbs';
 
@@ -307,6 +308,7 @@ const ClientAvailability = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <Breadcrumbs />
+      <PageGuide pageKey="availability" />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
