@@ -88,6 +88,26 @@ export default function NotificationBell() {
     setLoading(false);
   }
 
+  // Inject highlight keyframes once
+  useEffect(() => {
+    if (document.getElementById('notification-highlight-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'notification-highlight-styles';
+    style.textContent = `
+      @keyframes notification-highlight {
+        0%, 100% { outline-color: rgba(176,96,80,0.2); box-shadow: 0 0 8px rgba(176,96,80,0.1); }
+        50% { outline-color: rgba(176,96,80,0.8); box-shadow: 0 0 24px rgba(176,96,80,0.4); }
+      }
+      @keyframes notification-here-fade {
+        0% { opacity: 0; transform: translateY(4px); }
+        15% { opacity: 1; transform: translateY(0); }
+        85% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-4px); }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   function handleNavigate(path, highlight) {
     setOpen(false);
     navigate(path);
@@ -97,25 +117,59 @@ export default function NotificationBell() {
         const el = document.querySelector(`[data-highlight="${highlight}"]`);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.style.transition = 'box-shadow 0.3s, outline 0.3s';
-          el.style.outline = '2px solid #b06050';
-          el.style.boxShadow = '0 0 20px rgba(176,96,80,0.3)';
+          el.style.outline = '2px solid rgba(176,96,80,0.8)';
+          el.style.borderRadius = '8px';
+          el.style.animation = 'notification-highlight 1s ease-in-out 3';
+          // After pulse animation ends (3s), clean up and show "Here" label
           setTimeout(() => {
             el.style.outline = 'none';
             el.style.boxShadow = '';
+            el.style.animation = '';
+            // Add floating "Here" label
+            const hereLabel = document.createElement('span');
+            hereLabel.textContent = '\u2190 Here';
+            hereLabel.style.cssText = `
+              position: absolute;
+              top: 4px;
+              right: -54px;
+              font-size: 0.72rem;
+              font-weight: 600;
+              color: #b06050;
+              background: rgba(255,255,255,0.92);
+              border: 1px solid rgba(176,96,80,0.25);
+              border-radius: 6px;
+              padding: 2px 8px;
+              pointer-events: none;
+              animation: notification-here-fade 2s ease-in-out forwards;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+              z-index: 9999;
+            `;
+            // Ensure parent is positioned for absolute placement
+            const origPosition = el.style.position;
+            if (!el.style.position || el.style.position === 'static') {
+              el.style.position = 'relative';
+            }
+            el.appendChild(hereLabel);
+            // Remove label after fade animation
+            setTimeout(() => {
+              hereLabel.remove();
+              if (origPosition === '' || origPosition === 'static') {
+                el.style.position = origPosition || '';
+              }
+            }, 2000);
           }, 3000);
         }
-      }, 500); // wait for page to render
+      }, 800); // wait for lazy-loaded page to render
     }
   }
 
   const items = [
-    { label: 'agents need your input', count: notifications.agentNeedsInput, path: '/agent-queue', color: '#d32f2f', highlight: 'agent-needs-input' },
-    { label: 'new tasks in triage', count: notifications.newTasks, path: '/planner?filter=triage', color: '#b06050', highlight: 'triage-section' },
-    { label: 'agent tasks completed', count: notifications.agentCompleted, path: '/autonomous?filter=completed', color: '#2d8a4e', highlight: 'completed-runs' },
-    { label: 'unbilled sessions', count: notifications.unbilledSessions, path: '/billing?filter=unbilled', color: '#ad1457', highlight: 'unbilled-section' },
-    { label: 'blocked tasks', count: notifications.overdueTasks, path: '/planner?filter=blocked', color: '#c49a40', highlight: 'blocked-section' },
-    { label: 'new ideas', count: notifications.newIdeas, path: '/wishlist?filter=new', color: '#9c27b0', highlight: 'new-ideas' },
+    { label: 'agents need your input', destination: 'Agent Queue', count: notifications.agentNeedsInput, path: '/agent-queue', color: '#d32f2f', highlight: 'agent-needs-input' },
+    { label: 'new tasks in triage', destination: 'Work Planner', count: notifications.newTasks, path: '/planner?filter=triage', color: '#b06050', highlight: 'triage-section' },
+    { label: 'agent tasks completed', destination: 'Autonomous', count: notifications.agentCompleted, path: '/autonomous?filter=completed', color: '#2d8a4e', highlight: 'completed-runs' },
+    { label: 'unbilled sessions', destination: 'Billing', count: notifications.unbilledSessions, path: '/billing?filter=unbilled', color: '#ad1457', highlight: 'unbilled-section' },
+    { label: 'blocked tasks', destination: 'Work Planner', count: notifications.overdueTasks, path: '/planner?filter=blocked', color: '#c49a40', highlight: 'blocked-section' },
+    { label: 'new ideas', destination: 'Wishlist', count: notifications.newIdeas, path: '/wishlist?filter=new', color: '#9c27b0', highlight: 'new-ideas' },
   ];
 
   return (
@@ -245,7 +299,7 @@ export default function NotificationBell() {
                     {item.count}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: '#444', fontWeight: 500 }}>
-                    {item.count} {item.label}
+                    {item.count} {item.label} <span style={{ color: '#999', fontWeight: 400 }}>{'\u2192'} {item.destination}</span>
                   </span>
                 </div>
               ))}

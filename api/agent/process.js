@@ -78,7 +78,7 @@ Respond with actionable results, not plans. Be concise.`
 }
 
 async function executeViaAPI(prompt, taskId) {
-  const { text } = await callAnthropic({
+  const { text, usage } = await callAnthropic({
     model: 'claude-haiku-4-5',
     max_tokens: 512,
     messages: [{ role: 'user', content: prompt }],
@@ -86,7 +86,18 @@ async function executeViaAPI(prompt, taskId) {
     agentName: 'process-agent',
     taskId,
   })
-  return text || 'No response from Claude API'
+
+  // Calculate cost using Haiku rates: input $0.80/M, output $4.00/M
+  const inputTokens = usage?.input_tokens || 0
+  const outputTokens = usage?.output_tokens || 0
+  const costUsd = (inputTokens * 0.80 + outputTokens * 4.00) / 1_000_000
+
+  return {
+    text: text || 'No response from Claude API',
+    inputTokens,
+    outputTokens,
+    costUsd,
+  }
 }
 
 function executeViaLocalCLI(prompt) {
@@ -269,12 +280,18 @@ export default async function handler(req, res) {
         } catch (sniperErr) {
           result = `Sniper routing failed: ${sniperErr.message}. Falling back to generic agent.`
           // Fall through to generic processing
-          if (routeMode === 'api') result = await executeViaAPI(prompt, run.task_id)
+          if (routeMode === 'api') {
+            const apiResult = await executeViaAPI(prompt, run.task_id)
+            result = apiResult.text
+            run._tokenMeta = { input: apiResult.inputTokens, output: apiResult.outputTokens, cost_usd: apiResult.costUsd }
+          }
         }
       } else if (routeMode === 'local') {
         result = executeViaLocalCLI(prompt)
       } else if (routeMode === 'api') {
-        result = await executeViaAPI(prompt, run.task_id)
+        const apiResult = await executeViaAPI(prompt, run.task_id)
+        result = apiResult.text
+        run._tokenMeta = { input: apiResult.inputTokens, output: apiResult.outputTokens, cost_usd: apiResult.costUsd }
       } else {
         // No valid route configured — fail the task loudly
         const errorMsg = buildRoutingError(run)
@@ -292,6 +309,12 @@ export default async function handler(req, res) {
 
       // Tag the result with routing info
       result = `[Route: ${routeMode}]\n${result}`
+
+      // Append token usage metadata as JSON block if available
+      if (run._tokenMeta) {
+        const meta = run._tokenMeta
+        result += `\n\n---\n${JSON.stringify({ tokens: { input: meta.input, output: meta.output }, cost_usd: parseFloat(meta.cost_usd.toFixed(6)) })}`
+      }
 
       // Mark completed
       await supabase.from('agent_runs')

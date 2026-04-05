@@ -27,6 +27,21 @@ const ROUTE_LABELS = {
   not_configured: { label: 'Not Configured', color: '#ff5555', desc: 'No AGENT_ROUTE env var set — agent runs will FAIL until configured' },
 };
 
+/**
+ * Parse token usage metadata from the tail of a run result string.
+ * Expected format: \n\n---\n{"tokens":{"input":X,"output":Y},"cost_usd":0.XX}
+ */
+function parseTokenMeta(result) {
+  if (!result) return null;
+  const match = result.match(/\n---\n(\{.*"tokens".*\})\s*$/);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+}
+
 const STATUS_COLORS = {
   queued: '#f1fa8c',
   running: '#8be9fd',
@@ -284,6 +299,15 @@ const Autonomous = () => {
                         <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '2px 8px', borderRadius: '10px', background: `${statusColor}18`, color: statusColor, textTransform: 'uppercase' }}>
                           {run.status}
                         </span>
+                        {(() => {
+                          const meta = parseTokenMeta(run.result);
+                          if (!meta) return null;
+                          return (
+                            <span title={`In: ${meta.tokens.input} / Out: ${meta.tokens.output}`} style={{ fontSize: '0.60rem', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: 'rgba(241,250,140,0.12)', color: '#f1fa8c', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                              ${meta.cost_usd.toFixed(4)}
+                            </span>
+                          );
+                        })()}
                       </div>
                       {isExpanded && (
                         <div style={{ padding: '0 12px 12px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
@@ -301,6 +325,16 @@ const Autonomous = () => {
                               <div style={{ fontSize: '0.75rem', color: '#8a88a0', lineHeight: 1.6 }}>
                                 {run.project_name && <div>Project: {run.project_name}</div>}
                                 <div>Status: <span style={{ color: statusColor }}>{run.status}</span></div>
+                                {(() => {
+                                  const meta = parseTokenMeta(run.result);
+                                  if (!meta) return null;
+                                  return (
+                                    <>
+                                      <div>Tokens: {meta.tokens.input.toLocaleString()} in / {meta.tokens.output.toLocaleString()} out</div>
+                                      <div>Cost: <span style={{ color: '#f1fa8c', fontWeight: 600 }}>${meta.cost_usd.toFixed(4)}</span></div>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>

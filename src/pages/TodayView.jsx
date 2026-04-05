@@ -56,6 +56,7 @@ export default function TodayView() {
   const [pendingCounts, setPendingCounts] = useState({ unbilled: 0, wishlist: 0, overdue: 0, proposals: 0, agentInput: 0, agentFailed: 0, blocked: 0, triage: 0 });
   const [recentActivity, setRecentActivity] = useState([]);
   const [pendingAgentItems, setPendingAgentItems] = useState([]);
+  const [todayAgentSpend, setTodayAgentSpend] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const today = new Date();
@@ -75,6 +76,7 @@ export default function TodayView() {
         loadPendingCounts(),
         loadRecentActivity(),
         loadPendingAgentItems(),
+        loadTodayAgentSpend(),
       ]);
     } catch (err) {
       console.error('TodayView load error:', err);
@@ -153,6 +155,27 @@ export default function TodayView() {
       .order('created_at', { ascending: false })
       .limit(5);
     setPendingAgentItems(data || []);
+  };
+
+  const loadTodayAgentSpend = async () => {
+    const { data } = await supabase
+      .from('agent_runs')
+      .select('result')
+      .eq('status', 'completed')
+      .gte('completed_at', todayStr + 'T00:00:00')
+      .lt('completed_at', todayStr + 'T23:59:59.999');
+
+    let total = 0;
+    for (const run of (data || [])) {
+      if (!run.result) continue;
+      const match = run.result.match(/\n---\n(\{.*"tokens".*\})\s*$/);
+      if (!match) continue;
+      try {
+        const meta = JSON.parse(match[1]);
+        if (meta.cost_usd) total += meta.cost_usd;
+      } catch { /* skip unparseable */ }
+    }
+    setTodayAgentSpend(total);
   };
 
   const loadRecentActivity = async () => {
@@ -390,7 +413,7 @@ export default function TodayView() {
         {/* System Health Quick Glance */}
         <div className="glass-panel" style={{ padding: '20px 24px' }}>
           <SectionHeader icon={Bot} title="Agent Status" color="#5a8abf" />
-          <AgentStatusSummary pendingCounts={pendingCounts} />
+          <AgentStatusSummary pendingCounts={pendingCounts} todayAgentSpend={todayAgentSpend} />
         </div>
       </div>
 
@@ -467,10 +490,18 @@ function QuickActionButton({ icon: Icon, label, to, color, subtitle }) {
   );
 }
 
-function AgentStatusSummary({ pendingCounts }) {
+function AgentStatusSummary({ pendingCounts, todayAgentSpend = 0 }) {
   const hasIssues = pendingCounts.agentInput > 0 || pendingCounts.agentFailed > 0;
   return (
     <div>
+      {/* Today's Agent Spend */}
+      <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(196,154,64,0.06)', border: '1px solid rgba(196,154,64,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#8a8682' }}>Today's Agent Spend</span>
+        <span style={{ fontSize: '1rem', fontWeight: 800, color: todayAgentSpend > 0 ? '#c49a40' : '#6aab6e', fontFamily: 'monospace' }}>
+          ${todayAgentSpend.toFixed(4)}
+        </span>
+      </div>
+
       {hasIssues ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {pendingCounts.agentInput > 0 && (

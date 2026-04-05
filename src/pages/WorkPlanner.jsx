@@ -285,6 +285,7 @@ const WorkPlanner = () => {
   // Simple mode state
   const [selectedTime, setSelectedTime] = useState(30);
   const [triggerFilter, setTriggerFilter] = useState('all');
+  const [showQuickPickHelp, setShowQuickPickHelp] = useState(false);
 
   // Advanced mode state
   const [advancedMode, setAdvancedMode] = useState('quickest'); // 'quickest', 'availability', 'client'
@@ -819,6 +820,45 @@ const WorkPlanner = () => {
               })}
             </div>
           </div>
+
+          {/* QuickPick Help Explainer */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '-8px' }}>
+            <button
+              onClick={() => setShowQuickPickHelp(prev => !prev)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
+                color: '#8a8682', fontSize: '0.78rem', padding: '4px 8px', borderRadius: '6px',
+                transition: 'color 0.15s ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#b06050'}
+              onMouseLeave={e => e.currentTarget.style.color = '#8a8682'}
+            >
+              <HelpCircle size={13} /> {showQuickPickHelp ? 'Hide help' : 'How does this work?'}
+            </button>
+          </div>
+          {showQuickPickHelp && (
+            <div className="glass-panel" style={{ padding: '1rem 1.25rem', fontSize: '0.78rem', color: '#6b6764', lineHeight: '1.55' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#2e2c2a', marginBottom: '8px' }}>QuickPick vs Claude Code Terminal</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <span style={{ background: '#e6f4ea', color: '#1a7f37', fontSize: '0.7rem', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', flexShrink: 0, marginTop: '1px' }}>Haiku</span>
+                  <div>
+                    <strong style={{ color: '#2e2c2a' }}>QuickPick / Work Planner</strong> — Dispatches tasks to the agent pipeline. Uses Claude Haiku (~$0.005-0.02 per run). Results appear in Autonomous tab. Best for: batch processing, background tasks, automated workflows.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <span style={{ background: '#fef3cd', color: '#9a6700', fontSize: '0.7rem', fontWeight: 600, padding: '2px 7px', borderRadius: '4px', flexShrink: 0, marginTop: '1px' }}>Opus</span>
+                  <div>
+                    <strong style={{ color: '#2e2c2a' }}>Claude Code Terminal (IDE)</strong> — Direct conversation with Claude Opus. Uses your Claude Max subscription (rate-limited ~5 requests/hr). Best for: complex coding, debugging, architecture decisions, interactive work.
+                  </div>
+                </div>
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <DollarSign size={12} color="#8a8682" />
+                  <span><strong style={{ color: '#2e2c2a' }}>Cost comparison:</strong> QuickPick runs 100 Haiku tasks for ~$1. One Claude Code terminal session uses ~50K tokens ($0.75 Opus equivalent).</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Task List */}
           <div className="glass-panel" data-highlight="triage-section" style={{ padding: '1.25rem' }}>
