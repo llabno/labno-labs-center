@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, CheckCircle, Clock, Eye, Send, Mail, Calendar, ArrowRight, ExternalLink } from 'lucide-react';
+import { FileText, CheckCircle, Clock, Eye, Send, Mail, Calendar, ArrowRight, ExternalLink, Plus, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 /**
@@ -28,6 +28,11 @@ const ClientPortal = () => {
   const [error, setError] = useState(null);
   const [contactSent, setContactSent] = useState(false);
   const [expandedDoc, setExpandedDoc] = useState(null);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [schedSlots, setSchedSlots] = useState([]);
+  const [schedNote, setSchedNote] = useState('');
+  const [schedSubmitted, setSchedSubmitted] = useState(false);
+  const [newSlot, setNewSlot] = useState({ day: 'Monday', time: 'Morning' });
 
   useEffect(() => {
     const load = async () => {
@@ -254,6 +259,103 @@ const ClientPortal = () => {
               </div>
             </div>
           </button>
+        </div>
+
+        {/* Scheduling Widget */}
+        <div style={{ background: 'rgba(255,255,255,0.7)', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#2e2c2a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <Calendar size={18} color="#5a8abf" /> Share Your Availability
+            </h3>
+            {!schedSubmitted && (
+              <button onClick={() => setShowScheduler(!showScheduler)}
+                style={{ fontSize: '0.78rem', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(90,138,191,0.2)', background: 'rgba(90,138,191,0.06)', color: '#5a8abf', cursor: 'pointer', fontWeight: 600 }}>
+                {showScheduler ? 'Close' : 'Add Times'}
+              </button>
+            )}
+          </div>
+
+          {schedSubmitted ? (
+            <div style={{ textAlign: 'center', padding: '16px' }}>
+              <CheckCircle size={28} color="#2d8a4e" style={{ marginBottom: '8px' }} />
+              <p style={{ fontWeight: 600, color: '#2d8a4e', marginBottom: '4px' }}>Availability submitted!</p>
+              <p style={{ fontSize: '0.78rem', color: '#8a8682' }}>We'll use this to find the best times for your sessions.</p>
+            </div>
+          ) : showScheduler ? (
+            <div>
+              <p style={{ fontSize: '0.78rem', color: '#6b6764', marginBottom: '12px' }}>Tell us when you're typically available. We'll match you with open slots.</p>
+
+              {/* Add slot */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                <select value={newSlot.day} onChange={e => setNewSlot(s => ({ ...s, day: e.target.value }))}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.85rem', background: '#fff' }}>
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select value={newSlot.time} onChange={e => setNewSlot(s => ({ ...s, time: e.target.value }))}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.85rem', background: '#fff' }}>
+                  {['Morning (7-11am)', 'Midday (11am-1pm)', 'Afternoon (1-5pm)', 'Any time'].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <button onClick={() => {
+                  setSchedSlots(prev => [...prev, { ...newSlot, id: Date.now() }]);
+                }} style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: '#5a8abf', color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Plus size={14} /> Add
+                </button>
+              </div>
+
+              {/* Slots list */}
+              {schedSlots.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                  {schedSlots.map(s => (
+                    <span key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', background: 'rgba(90,138,191,0.08)', border: '1px solid rgba(90,138,191,0.15)', fontSize: '0.82rem' }}>
+                      {s.day} · {s.time}
+                      <button onClick={() => setSchedSlots(prev => prev.filter(x => x.id !== s.id))}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d14040', fontSize: '0.72rem', padding: 0 }}>
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Notes */}
+              <textarea value={schedNote} onChange={e => setSchedNote(e.target.value)}
+                placeholder="Any notes? (e.g., 'Not available first week of May', 'Prefer early morning')"
+                rows={2} style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.82rem', resize: 'vertical', marginBottom: '12px', boxSizing: 'border-box' }} />
+
+              {/* Submit */}
+              <button
+                onClick={async () => {
+                  if (schedSlots.length === 0) return;
+                  // Save to client_availability
+                  await supabase.from('client_availability').upsert({
+                    client_name: client.name,
+                    client_type: 'clinical',
+                    preferred_days: [...new Set(schedSlots.map(s => s.day))],
+                    general_preference: schedSlots.some(s => s.time.includes('Morning')) ? 'mornings' : schedSlots.some(s => s.time.includes('Afternoon')) ? 'afternoons' : 'flexible',
+                    scheduling_notes: `Client portal submission: ${schedSlots.map(s => `${s.day} ${s.time}`).join(', ')}. ${schedNote}`.trim(),
+                    updated_at: new Date().toISOString(),
+                  }, { onConflict: 'client_name' }).catch(() => {});
+
+                  // Log the submission
+                  await supabase.from('communication_log').insert({
+                    lead_name: client.name,
+                    comm_type: 'portal_scheduling',
+                    direction: 'inbound',
+                    subject: `${client.name} submitted availability via portal`,
+                    body: `Preferred times: ${schedSlots.map(s => `${s.day} ${s.time}`).join(', ')}. Notes: ${schedNote || 'none'}`,
+                    status: 'pending',
+                  }).catch(() => {});
+
+                  setSchedSubmitted(true);
+                }}
+                disabled={schedSlots.length === 0}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: schedSlots.length > 0 ? '#5a8abf' : 'rgba(0,0,0,0.08)', color: schedSlots.length > 0 ? '#fff' : '#aaa', cursor: schedSlots.length > 0 ? 'pointer' : 'default', fontWeight: 600, fontSize: '0.88rem' }}>
+                Submit Availability ({schedSlots.length} time{schedSlots.length !== 1 ? 's' : ''})
+              </button>
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.82rem', color: '#8a8682' }}>Click "Add Times" to share when you're available for sessions.</p>
+          )}
         </div>
 
         {/* Footer */}

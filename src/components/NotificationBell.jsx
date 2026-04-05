@@ -9,12 +9,15 @@ export default function NotificationBell() {
     newTasks: 0,
     unbilledSessions: 0,
     newIdeas: 0,
+    agentCompleted: 0,
+    agentNeedsInput: 0,
+    overdueTasks: 0,
   });
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
   const navigate = useNavigate();
 
-  const total = notifications.newTasks + notifications.unbilledSessions + notifications.newIdeas;
+  const total = notifications.newTasks + notifications.unbilledSessions + notifications.newIdeas + notifications.agentCompleted + notifications.agentNeedsInput + notifications.overdueTasks;
 
   // Fetch notification counts on mount and every 5 minutes
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function NotificationBell() {
     try {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-      const [tasksRes, soapRes, wishlistRes] = await Promise.all([
+      const [tasksRes, soapRes, wishlistRes, agentCompletedRes, agentInputRes, overdueRes] = await Promise.all([
         supabase
           .from('global_tasks')
           .select('id', { count: 'exact', head: true })
@@ -53,12 +56,31 @@ export default function NotificationBell() {
           .from('wishlist')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'New Idea'),
+        // Agent completions in last 24h
+        supabase
+          .from('agent_runs')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'completed')
+          .gte('completed_at', twentyFourHoursAgo),
+        // Agents needing human input
+        supabase
+          .from('agent_runs')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'needs_input'),
+        // Overdue recurring tasks (blocked or never run)
+        supabase
+          .from('global_tasks')
+          .select('id', { count: 'exact', head: true })
+          .eq('column_id', 'blocked'),
       ]);
 
       setNotifications({
         newTasks: tasksRes.count || 0,
         unbilledSessions: soapRes.count || 0,
         newIdeas: wishlistRes.count || 0,
+        agentCompleted: agentCompletedRes.count || 0,
+        agentNeedsInput: agentInputRes.count || 0,
+        overdueTasks: overdueRes.count || 0,
       });
     } catch (err) {
       console.error('NotificationBell fetch error:', err);
@@ -72,8 +94,11 @@ export default function NotificationBell() {
   }
 
   const items = [
+    { label: 'agents need your input', count: notifications.agentNeedsInput, path: '/agent-queue', color: '#d32f2f' },
     { label: 'new tasks in triage', count: notifications.newTasks, path: '/taskqueue', color: '#b06050' },
+    { label: 'agent tasks completed', count: notifications.agentCompleted, path: '/autonomous', color: '#2d8a4e' },
     { label: 'unbilled sessions', count: notifications.unbilledSessions, path: '/soap', color: '#ad1457' },
+    { label: 'blocked tasks', count: notifications.overdueTasks, path: '/planner', color: '#c49a40' },
     { label: 'new ideas', count: notifications.newIdeas, path: '/wishlist', color: '#9c27b0' },
   ];
 

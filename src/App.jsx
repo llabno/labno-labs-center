@@ -287,7 +287,11 @@ const Sidebar = ({ user, onLogout }) => {
           );
         })}
         <div style={{ marginTop: 'auto' }}>
-          <Link to="/settings" className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`} style={{ marginBottom: '10px' }}>
+          <Link to="/demo" className={`nav-item ${location.pathname === '/demo' ? 'active' : ''}`} style={{ marginBottom: '4px', opacity: 0.7 }}>
+            <Sparkles size={18} style={{ color: '#9c27b0' }} />
+            <span style={{ color: '#9c27b0', fontSize: '0.82rem' }}>Demo Mode</span>
+          </Link>
+          <Link to="/settings" className={`nav-item ${location.pathname === '/settings' ? 'active' : ''}`} style={{ marginBottom: '4px' }}>
             <SettingsIcon size={20} style={{ color: '#555' }} />
             <span style={{ color: '#555' }}>Settings ({displayName})
               <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '1px 5px', borderRadius: '4px', background: getRoleColor(role) + '15', color: getRoleColor(role), marginLeft: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{getRoleLabel(role)}</span>
@@ -295,7 +299,7 @@ const Sidebar = ({ user, onLogout }) => {
           </Link>
           <div className="nav-item" style={{ cursor: 'pointer' }} onClick={onLogout}>
             <LogOut size={20} style={{ color: '#d32f2f' }} />
-            <span style={{ color: '#d32f2f' }}>Sign Out {displayName}</span>
+            <span style={{ color: '#d32f2f', fontSize: '0.82rem' }}>Sign Out</span>
           </div>
         </div>
       </nav>
