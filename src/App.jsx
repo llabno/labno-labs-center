@@ -495,8 +495,12 @@ function AppShell({ session, onLogout }) {
             color: '#fff', textAlign: 'center',
             padding: '6px 16px', fontSize: '0.78rem', fontWeight: 600,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+            flexWrap: 'wrap',
           }}>
-            DEMO MODE — {tierName}
+            <span>DEMO MODE — {tierName}</span>
+            <span style={{ fontSize: '0.68rem', opacity: 0.85, fontWeight: 400 }}>
+              All data is fictional. No real client information is displayed.
+            </span>
             <button onClick={() => { exitDemo(); window.location.href = '/demo'; }} style={{
               background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.4)',
               color: '#fff', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer',
@@ -506,7 +510,7 @@ function AppShell({ session, onLogout }) {
             </button>
           </div>
         )}
-        {isDemo && <Watermark mode="overlay" />}
+        {isDemo && <Watermark mode="overlay" isDemo />}
         {session?.user && <SessionTimer />}
 
         {showOnboarding && <OnboardingWizard onClose={() => setShowOnboarding(false)} />}

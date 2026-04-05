@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket, GitBranch, AlertCircle, CalendarPlus, Sparkles, Send, Mic, MicOff } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket, GitBranch, AlertCircle, CalendarPlus, Sparkles, Send, Mic, MicOff, DollarSign } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -528,6 +528,45 @@ ${COLUMNS.map(col => `
               <span className="stat-value">{s.value}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Cost Overview Summary */}
+      <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <DollarSign size={16} style={{ opacity: 0.7 }} />
+            <span style={{ fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.02em' }}>Cost Overview</span>
+          </div>
+          <Link to="/resources" style={{ fontSize: '0.75rem', opacity: 0.6, textDecoration: 'none', color: 'inherit' }}>
+            See full breakdown <ArrowRight size={11} style={{ verticalAlign: 'middle' }} />
+          </Link>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 16px', fontSize: '0.78rem' }}>
+          {[
+            { page: 'Oracle', cost: 0.01 },
+            { page: 'Proposals', cost: 0.01 },
+            { page: 'Speak Freely', cost: 0.01 },
+            { page: 'Wishlist', cost: 0.01 },
+            { page: 'Calendar', cost: 0.001 },
+          ].map(r => (
+            <div key={r.page} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              <span style={{ opacity: 0.8 }}>{r.page}</span>
+              <span style={{
+                fontWeight: 600,
+                fontSize: '0.72rem',
+                padding: '1px 7px',
+                borderRadius: '6px',
+                background: r.cost > 0.01 ? 'rgba(220,60,60,0.15)' : r.cost >= 0.001 ? 'rgba(200,170,50,0.15)' : 'rgba(80,180,80,0.15)',
+                color: r.cost > 0.01 ? '#e06060' : r.cost >= 0.001 ? '#c0a030' : '#60b060',
+              }}>
+                ~${r.cost.toFixed(3)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: '10px', fontSize: '0.72rem', opacity: 0.5, textAlign: 'right' }}>
+          ~$2.50/mo at current usage
         </div>
       </div>
 

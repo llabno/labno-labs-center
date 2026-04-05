@@ -11,8 +11,10 @@ import React from 'react';
  *   mode     — 'overlay' | 'badge' (default 'overlay')
  *   text     — watermark text (default 'Labno Labs')
  *   opacity  — number (default 0.08 for overlay, 0.3 for badge)
+ *   isDemo   — boolean, when true uses demo-specific text and adds privacy overlay
  */
-const Watermark = ({ mode = 'overlay', text = 'Labno Labs', opacity }) => {
+const Watermark = ({ mode = 'overlay', text = 'Labno Labs', opacity, isDemo = false }) => {
+  const displayText = isDemo ? 'DEMO — labno-labs-center.vercel.app' : text;
   if (mode === 'badge') {
     const badgeOpacity = opacity ?? 0.3;
     return (
@@ -36,7 +38,7 @@ const Watermark = ({ mode = 'overlay', text = 'Labno Labs', opacity }) => {
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         }}
       >
-        Built with {text}
+        Built with {displayText}
       </div>
     );
   }
@@ -44,57 +46,71 @@ const Watermark = ({ mode = 'overlay', text = 'Labno Labs', opacity }) => {
   // Overlay mode — repeating diagonal watermark across the viewport
   const overlayOpacity = opacity ?? 0.08;
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9998,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        opacity: overlayOpacity,
-      }}
-    >
+    <>
+      {isDemo && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9997,
+            pointerEvents: 'none',
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(0.6px)',
+          }}
+        />
+      )}
       <div
         style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: '200vmax',
-          transform: 'translate(-50%, -50%) rotate(-30deg)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '80px',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9998,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+          opacity: overlayOpacity,
         }}
       >
-        {Array.from({ length: 12 }).map((_, row) => (
-          <div
-            key={row}
-            style={{
-              display: 'flex',
-              gap: '120px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {Array.from({ length: 8 }).map((_, col) => (
-              <span
-                key={col}
-                style={{
-                  fontSize: '3rem',
-                  fontWeight: 800,
-                  color: '#2e2c2a',
-                  userSelect: 'none',
-                  letterSpacing: '0.04em',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                }}
-              >
-                {text}
-              </span>
-            ))}
-          </div>
-        ))}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '200vmax',
+            transform: 'translate(-50%, -50%) rotate(-30deg)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '80px',
+          }}
+        >
+          {Array.from({ length: 12 }).map((_, row) => (
+            <div
+              key={row}
+              style={{
+                display: 'flex',
+                gap: '120px',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {Array.from({ length: 8 }).map((_, col) => (
+                <span
+                  key={col}
+                  style={{
+                    fontSize: isDemo ? '1.8rem' : '3rem',
+                    fontWeight: 800,
+                    color: '#2e2c2a',
+                    userSelect: 'none',
+                    letterSpacing: '0.04em',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  }}
+                >
+                  {displayText}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
