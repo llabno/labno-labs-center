@@ -516,6 +516,36 @@ const Autonomous = () => {
                             </div>
                           )}
 
+                          {/* Simulation warning + Re-run button */}
+                          {run.result && run.result.includes('[Route: simulation]') && (
+                            <div style={{ marginTop: '8px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(255,184,108,0.1)', border: '1px solid rgba(255,184,108,0.25)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                                <AlertCircle size={14} color="#ffb86c" />
+                                <span style={{ fontSize: '0.75rem', color: '#ffb86c', fontWeight: 600 }}>This was a SIMULATION — no real work was done</span>
+                              </div>
+                              <p style={{ fontSize: '0.72rem', color: '#8a88a0', margin: '0 0 8px', lineHeight: 1.5 }}>
+                                This ran before AGENT_ROUTE was configured. The output above is fake. Click "Re-run for Real" to queue this task for actual execution via Haiku.
+                              </p>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await supabase.from('agent_runs').insert({
+                                    task_title: run.task_title,
+                                    task_id: run.task_id || null,
+                                    project_name: run.project_name || null,
+                                    status: 'queued',
+                                    context: run.context || `Re-run of simulation: ${run.task_title}`,
+                                  });
+                                  const { data } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+                                  if (data) setAgentRuns(data);
+                                }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', border: 'none', background: 'rgba(139,233,253,0.2)', color: '#8be9fd', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
+                              >
+                                <RotateCcw size={12} /> Re-run for Real
+                              </button>
+                            </div>
+                          )}
+
                           {/* Follow-up Questions for completed runs */}
                           {run.status === 'completed' && (
                             <div style={{ marginTop: '10px' }}>
@@ -527,9 +557,12 @@ const Autonomous = () => {
                                 {showFollowUp[run.id] ? 'Hide Follow-up Questions' : 'Follow-up Questions'}
                               </button>
                               {showFollowUp[run.id] && (
-                                <div style={{ marginTop: '8px', padding: '10px', borderRadius: '8px', background: 'rgba(80,250,123,0.04)', border: '1px solid rgba(80,250,123,0.12)' }}>
+                                <div style={{ marginTop: '8px', padding: '12px', borderRadius: '8px', background: 'rgba(80,250,123,0.04)', border: '1px solid rgba(80,250,123,0.12)' }}>
+                                  <p style={{ fontSize: '0.72rem', color: '#8a88a0', margin: '0 0 10px', lineHeight: 1.5 }}>
+                                    Answer any questions below, then click the green submit button. Your answers will be sent as context for a follow-up agent run.
+                                  </p>
                                   {FOLLOW_UP_QUESTIONS.map((q, qIdx) => (
-                                    <div key={qIdx} style={{ marginBottom: qIdx < FOLLOW_UP_QUESTIONS.length - 1 ? '10px' : 0 }}>
+                                    <div key={qIdx} style={{ marginBottom: '10px' }}>
                                       <label style={{ display: 'block', fontSize: '0.75rem', color: '#c0bdd0', marginBottom: '4px', lineHeight: 1.4 }}>
                                         {qIdx + 1}. {q}
                                       </label>
@@ -539,18 +572,40 @@ const Autonomous = () => {
                                         value={(followUpAnswers[run.id] || {})[qIdx] || ''}
                                         onChange={(e) => handleFollowUpAnswer(run.id, qIdx, e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
-                                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.25)', color: '#e0dfe6', fontSize: '0.75rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.25)', color: '#e0dfe6', fontSize: '0.78rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
                                       />
                                     </div>
                                   ))}
+                                  {/* Submit button — always visible and clearly styled */}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); submitFollowUp(run); }}
                                     disabled={submittingFollowUp[run.id] || !Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())}
-                                    style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '8px', border: 'none', background: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? 'rgba(80,250,123,0.2)' : 'rgba(255,255,255,0.04)', color: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? '#50fa7b' : '#6272a4', cursor: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? 'pointer' : 'not-allowed', fontSize: '0.78rem', fontWeight: 600, opacity: submittingFollowUp[run.id] ? 0.5 : 1 }}
+                                    style={{
+                                      marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px',
+                                      padding: '10px 20px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700,
+                                      border: '2px solid rgba(80,250,123,0.4)',
+                                      background: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())
+                                        ? 'rgba(80,250,123,0.2)' : 'rgba(255,255,255,0.03)',
+                                      color: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())
+                                        ? '#50fa7b' : '#6272a4',
+                                      cursor: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())
+                                        ? 'pointer' : 'default',
+                                      opacity: submittingFollowUp[run.id] ? 0.5 : 1,
+                                      width: '100%', justifyContent: 'center',
+                                    }}
                                   >
-                                    <Send size={12} />
-                                    {submittingFollowUp[run.id] ? 'Submitting...' : 'Submit to Agent Queue'}
+                                    <Send size={14} />
+                                    {submittingFollowUp[run.id] ? 'Submitting...'
+                                      : Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())
+                                        ? 'Submit Answers to Agent Queue'
+                                        : 'Type at least one answer to submit'}
                                   </button>
+                                  {/* Success message */}
+                                  {submittingFollowUp[run.id] === false && !Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) && followUpAnswers[run.id] && Object.keys(followUpAnswers[run.id]).length === 0 && (
+                                    <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '6px', background: 'rgba(80,250,123,0.08)', border: '1px solid rgba(80,250,123,0.2)', fontSize: '0.75rem', color: '#50fa7b', textAlign: 'center' }}>
+                                      Submitted! Check Agent Queue for the follow-up task.
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
