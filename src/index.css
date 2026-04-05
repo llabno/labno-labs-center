@@ -1184,6 +1184,11 @@ body {
 }
 
 /* ========== MOBILE BOTTOM NAV ========== */
+/* Hidden on desktop + tablet — only shows on mobile */
+.mobile-bottom-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .mobile-bottom-nav {
     position: fixed;
