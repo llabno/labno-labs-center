@@ -146,7 +146,7 @@ export default async function handler(req, res) {
 
   // 7. Environment variables check
   checks.env = {
-    AGENT_ROUTE: process.env.AGENT_ROUTE || 'not set (defaults to simulation)',
+    AGENT_ROUTE: process.env.AGENT_ROUTE || 'not set (agent runs will fail until configured)',
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? 'set' : 'MISSING',
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'MISSING',
     CRON_SECRET: process.env.CRON_SECRET ? 'set' : 'MISSING',
@@ -162,6 +162,6 @@ export default async function handler(req, res) {
     timestamp: new Date().toISOString(),
     version: '2.0.0',
     crons_configured: 8,
-    agent_route: process.env.AGENT_ROUTE || 'simulation',
+    agent_route: process.env.AGENT_ROUTE || 'not_configured',
   });
 }

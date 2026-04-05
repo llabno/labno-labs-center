@@ -9,7 +9,7 @@ import { callAnthropic } from '../lib/call-anthropic.js'
 //   AGENT_ROUTE=local  → spawns local Claude CLI (Pro sub, no API cost)
 //   AGENT_ROUTE=api    → uses Anthropic API (paid per-token)
 //   ANTHROPIC_API_KEY set without AGENT_ROUTE → defaults to api
-//   Neither set → simulation mode
+//   Neither set → error (no silent simulation)
 
 export const config = { maxDuration: 60 }
 

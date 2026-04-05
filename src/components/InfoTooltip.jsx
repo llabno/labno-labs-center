@@ -72,7 +72,7 @@ export const PAGE_INFO = {
   telemetry: 'System health, API usage, token consumption, and cost tracking. Monitor all four ventures.',
   resources: 'Server resources, optimization checklist, and performance metrics. Run checks to improve speed.',
   history: 'Activity log of all work done. Sessions, deployments, code changes, and agent tasks.',
-  autonomous: 'AI agent monitoring hub. Shows which background agents are running, their recent activity, results, and routing mode (local CLI vs API vs simulation). If nothing shows in the feed, no agents have been dispatched yet — use QuickPick or SmartScheduler to send tasks to agents.',
+  autonomous: 'AI agent monitoring hub. Shows which background agents are running, their recent activity, results, and routing mode (local CLI vs API). If nothing shows in the feed, no agents have been dispatched yet — use QuickPick or SmartScheduler to send tasks to agents.',
   mechanic: 'Speak Freely — structured self-reflection using IFS, Panksepp, and polyvagal frameworks.',
   soap: 'Clinical session logging. Session Brief (90 sec) → SOAP Note (3 min) → auto-billing + agent tasks.',
   blog: 'Clinical blog generator. Sniper agent drafts posts from SOAP note insights.',

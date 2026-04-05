@@ -218,7 +218,7 @@ validate_env() {
     echo "Agent routing:"
     for var in "${REQUIRED_AGENT[@]}"; do
         if [ -z "${!var:-}" ]; then
-            echo -e "  ${YELLOW}WARNING: $var not set (will default to simulation mode)${NC}"
+            echo -e "  ${YELLOW}WARNING: $var not set (agent runs will FAIL until configured)${NC}"
             WARNINGS=$((WARNINGS + 1))
         else
             echo -e "  ${GREEN}OK: $var = ${!var}${NC}"

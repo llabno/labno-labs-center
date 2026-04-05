@@ -22,7 +22,9 @@ const MOSO_AGENTS = [
 const ROUTE_LABELS = {
   local: { label: 'Local CLI (Pro)', color: '#50fa7b', desc: 'Free — uses Claude Pro subscription' },
   api: { label: 'Vercel API', color: '#f1fa8c', desc: 'Paid — uses ANTHROPIC_API_KEY' },
-  simulation: { label: 'Simulation', color: '#6272a4', desc: 'No AGENT_ROUTE env var set — runs are simulated' },
+  simulation: { label: 'Not Configured', color: '#ff5555', desc: 'No AGENT_ROUTE env var set — agent runs will FAIL until configured' },
+  error: { label: 'Not Configured', color: '#ff5555', desc: 'No AGENT_ROUTE env var set — agent runs will FAIL until configured' },
+  not_configured: { label: 'Not Configured', color: '#ff5555', desc: 'No AGENT_ROUTE env var set — agent runs will FAIL until configured' },
 };
 
 const STATUS_COLORS = {
@@ -35,13 +37,15 @@ const STATUS_COLORS = {
 const Autonomous = () => {
   const [agentRuns, setAgentRuns] = useState([]);
   const [mosoSyncs, setMosoSyncs] = useState([]);
-  const [routeMode, setRouteMode] = useState('simulation');
+  const [routeMode, setRouteMode] = useState('not_configured');
   const [timeRange, setTimeRange] = useState('week');
   const [expandedRun, setExpandedRun] = useState(null);
   const [showOutput, setShowOutput] = useState({});
   const [showFollowUp, setShowFollowUp] = useState({});
   const [followUpAnswers, setFollowUpAnswers] = useState({});
   const [submittingFollowUp, setSubmittingFollowUp] = useState({});
+  const [processingQueue, setProcessingQueue] = useState(false);
+  const [processResult, setProcessResult] = useState(null);
 
   const FOLLOW_UP_QUESTIONS = [
     'Was this output what you expected?',
@@ -88,6 +92,23 @@ const Autonomous = () => {
       if (data) setAgentRuns(data);
     }
   }, [followUpAnswers]);
+
+  const triggerProcessing = useCallback(async () => {
+    setProcessingQueue(true);
+    setProcessResult(null);
+    try {
+      const res = await fetch('/api/agent/process', { method: 'GET' });
+      const data = await res.json();
+      setProcessResult(data);
+      // Refresh runs after processing
+      const { data: runs } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+      if (runs) setAgentRuns(runs);
+    } catch (err) {
+      setProcessResult({ error: err.message });
+    }
+    setProcessingQueue(false);
+    setTimeout(() => setProcessResult(null), 5000);
+  }, []);
 
   useEffect(() => {
     const fetchRuns = async () => {
@@ -199,6 +220,19 @@ const Autonomous = () => {
                 {t.label}
               </button>
             ))}
+            <button
+              onClick={triggerProcessing}
+              disabled={processingQueue}
+              style={{ marginLeft: '8px', padding: '5px 12px', borderRadius: '8px', border: '1px solid rgba(80,250,123,0.25)', cursor: processingQueue ? 'not-allowed' : 'pointer', fontSize: '0.72rem', fontWeight: 600, background: processingQueue ? 'rgba(80,250,123,0.08)' : 'rgba(80,250,123,0.12)', color: '#50fa7b', display: 'flex', alignItems: 'center', gap: '5px', opacity: processingQueue ? 0.6 : 1 }}
+            >
+              {processingQueue ? <Loader size={11} style={{ animation: 'spin 1s linear infinite' }} /> : <Zap size={11} />}
+              {processingQueue ? 'Processing...' : 'Process Queue Now'}
+            </button>
+            {processResult && (
+              <span style={{ fontSize: '0.68rem', color: processResult.error ? '#ff5555' : '#50fa7b', marginLeft: '4px' }}>
+                {processResult.error ? `Error: ${processResult.error}` : `Processed ${processResult.processed || 0} run(s) via ${processResult.route || '?'}`}
+              </span>
+            )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '0.75rem' }}>
               {Object.entries(STATUS_COLORS).map(([key, color]) => (
                 <span key={key} style={{ color, fontWeight: 600 }}>{stats[key]} {key}</span>
