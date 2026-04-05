@@ -525,6 +525,30 @@ function AppShell({ session, onLogout }) {
 
         {/* Global Quick Add (Cmd+K / Ctrl+K) */}
         {showQuickAdd && <QuickAddOverlay onClose={() => setShowQuickAdd(false)} />}
+
+        {/* Mobile Bottom Nav — shown on small screens */}
+        <nav className="mobile-bottom-nav">
+          <Link to="/today" className={location.pathname === '/today' ? 'active' : ''}>
+            <Sun size={20} />
+            <span>Today</span>
+          </Link>
+          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+            <Home size={20} />
+            <span>Home</span>
+          </Link>
+          <Link to="/planner" className={location.pathname === '/planner' ? 'active' : ''}>
+            <Target size={20} />
+            <span>Planner</span>
+          </Link>
+          <Link to="/soap" className={location.pathname === '/soap' ? 'active' : ''}>
+            <Activity size={20} />
+            <span>SOAP</span>
+          </Link>
+          <Link to="/settings" className={location.pathname === '/settings' ? 'active' : ''}>
+            <SettingsIcon size={20} />
+            <span>Settings</span>
+          </Link>
+        </nav>
       </div>
   );
 }
