@@ -119,7 +119,7 @@ export default function NotificationBell() {
   ];
 
   return (
-    <div ref={ref} style={{ position: 'fixed', right: '24px', top: '16px', zIndex: 10000 }}>
+    <div ref={ref} className="notification-bell-container" style={{ position: 'fixed', right: '24px', top: '16px', zIndex: 10000 }}>
       {/* Bell button */}
       <button
         onClick={() => setOpen(!open)}
