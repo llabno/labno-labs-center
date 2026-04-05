@@ -256,9 +256,20 @@ export default async function handler(req, res) {
       }
     }
 
-    // Mark as running
+    // Derive agent name if not already set
+    const agentName = run.agent_name || (() => {
+      const title = (run.task_title || '').toLowerCase()
+      if (title.includes('sniper') || title.includes('blog')) return 'Sniper Agent'
+      if (title.includes('data quality') || title.includes('dedup')) return 'Data Quality'
+      if (title.includes('backup')) return 'Backup'
+      if (title.includes('telemetry') || title.includes('posthog')) return 'Telemetry'
+      if (title.includes('reactivation')) return 'Reactivation'
+      return 'Haiku Agent'
+    })()
+
+    // Mark as running and ensure agent_name is populated
     await supabase.from('agent_runs')
-      .update({ status: 'running', started_at: new Date().toISOString() })
+      .update({ status: 'running', started_at: new Date().toISOString(), agent_name: agentName })
       .eq('id', run.id)
 
     try {
@@ -337,13 +348,25 @@ export default async function handler(req, res) {
       }
 
       // Log to activity_log so Work History picks it up
+      const activityDetails = {
+        run_id: run.id,
+        route: routeMode,
+        task_id: run.task_id,
+        agent_name: agentName,
+      }
+      if (run._tokenMeta) {
+        activityDetails.cost_usd = parseFloat(run._tokenMeta.cost_usd.toFixed(6))
+        activityDetails.tokens_in = run._tokenMeta.input
+        activityDetails.tokens_out = run._tokenMeta.output
+      }
       await supabase.from('activity_log').insert({
-        source_type: 'Task',
-        title: `Agent completed: ${run.task_title}`,
+        source_type: 'Agent',
+        title: `Agent: ${run.task_title}`,
         description: result?.slice(0, 500) || 'No output',
         action: 'agent_completed',
         project: run.project_name || null,
-        details: JSON.stringify({ run_id: run.id, route: routeMode, task_id: run.task_id }),
+        actor: agentName,
+        details: JSON.stringify(activityDetails),
       }).then(() => {}).catch(() => {}) // graceful — table may not exist yet
 
       // If task came from wishlist, auto-mark wishlist item as done

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink, Eye, EyeOff, MessageSquare, Send } from 'lucide-react';
+import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink, Eye, EyeOff, MessageSquare, Send, Bot } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -40,6 +40,49 @@ function parseTokenMeta(result) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Extract agent name from run data: use agent_name field, or infer from task title / result.
+ */
+function deriveAgentName(run) {
+  if (run.agent_name) return run.agent_name;
+  const title = (run.task_title || '').toLowerCase();
+  if (title.includes('sniper') || title.includes('blog')) return 'Sniper Agent';
+  if (title.includes('data quality') || title.includes('dedup')) return 'Data Quality';
+  if (title.includes('backup')) return 'Backup';
+  if (title.includes('telemetry') || title.includes('posthog')) return 'Telemetry';
+  if (title.includes('reactivation')) return 'Reactivation';
+  return 'Haiku Agent';
+}
+
+/**
+ * Parse route mode from [Route: xxx] tag in result text.
+ */
+function parseRouteMode(result) {
+  if (!result) return null;
+  const m = result.match(/\[Route: (\w+)\]/);
+  return m ? m[1] : null;
+}
+
+const ROUTE_BADGE = {
+  api:   { label: 'API', bg: 'rgba(80,250,123,0.15)', color: '#50fa7b' },
+  local: { label: 'Local', bg: 'rgba(139,233,253,0.15)', color: '#8be9fd' },
+  error: { label: 'Error', bg: 'rgba(255,85,85,0.15)', color: '#ff5555' },
+};
+
+/**
+ * Format elapsed seconds into a human-readable duration.
+ */
+function formatElapsed(startedAt, completedAt) {
+  if (!startedAt || !completedAt) return null;
+  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
+  if (ms < 0) return null;
+  const secs = ms / 1000;
+  if (secs < 60) return `${secs.toFixed(1)}s`;
+  const mins = Math.floor(secs / 60);
+  const remSecs = Math.round(secs % 60);
+  return `${mins}m ${remSecs}s`;
 }
 
 const STATUS_COLORS = {
@@ -290,9 +333,37 @@ const Autonomous = () => {
                         <span style={{ fontSize: '0.72rem', color: '#6272a4', fontFamily: 'monospace', minWidth: '90px', flexShrink: 0 }}>
                           {formatTime(run.created_at)}
                         </span>
-                        <span style={{ fontSize: '0.82rem', color: '#d0cfe0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {run.task_title}
+                        <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '2px 7px', borderRadius: '8px', background: 'rgba(189,147,249,0.12)', color: '#bd93f9', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                          <Bot size={10} /> {deriveAgentName(run)}
                         </span>
+                        {run.task_id ? (
+                          <Link to={`/quickpick?task=${run.task_id}`} onClick={(e) => e.stopPropagation()} style={{ fontSize: '0.82rem', color: '#8be9fd', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }} title={`Task: ${run.task_id}`}>
+                            {run.task_title}
+                          </Link>
+                        ) : (
+                          <span style={{ fontSize: '0.82rem', color: '#d0cfe0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {run.task_title}
+                          </span>
+                        )}
+                        {(() => {
+                          const route = parseRouteMode(run.result);
+                          if (!route) return null;
+                          const badge = ROUTE_BADGE[route] || ROUTE_BADGE.error;
+                          return (
+                            <span style={{ fontSize: '0.58rem', fontWeight: 700, padding: '2px 6px', borderRadius: '8px', background: badge.bg, color: badge.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              {badge.label}
+                            </span>
+                          );
+                        })()}
+                        {(() => {
+                          const elapsed = formatElapsed(run.started_at, run.completed_at);
+                          if (!elapsed) return null;
+                          return (
+                            <span style={{ fontSize: '0.62rem', fontWeight: 500, padding: '2px 6px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', color: '#8a88a0', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                              {elapsed}
+                            </span>
+                          );
+                        })()}
                         {run.project_name && (
                           <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', color: '#8a88a0' }}>{run.project_name}</span>
                         )}

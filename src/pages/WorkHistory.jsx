@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, CheckCircle, MessageSquare, Heart, Lightbulb, FileText, Clipboard, Bot, RefreshCw, Timer } from 'lucide-react';
+import { Clock, CheckCircle, MessageSquare, Heart, Lightbulb, FileText, Clipboard, Bot, RefreshCw, Timer, Cpu, User } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
@@ -56,20 +56,32 @@ const WorkHistory = () => {
       .limit(500);
 
     if (!error && data) {
-      setEntries(data.map(a => ({
-        id: a.id,
-        source: a.source_type || 'System',
-        title: a.title || a.action || 'Activity',
-        description: a.description || '',
-        action: a.action || '',
-        project: a.project || null,
-        timestamp: a.created_at,
-        meta: typeof a.details === 'string' ? a.details : (a.details ? JSON.stringify(a.details) : null),
-        actor: a.actor || 'System',
-        entity_type: a.entity_type || null,
-        entity_id: a.entity_id || null,
-        duration: estimateDuration(a),
-      })));
+      setEntries(data.map(a => {
+        // Parse details JSON for agent metadata
+        let detailsObj = null;
+        try {
+          detailsObj = typeof a.details === 'string' ? JSON.parse(a.details) : (a.details || null);
+        } catch { detailsObj = null; }
+
+        return {
+          id: a.id,
+          source: a.source_type || 'System',
+          title: a.title || a.action || 'Activity',
+          description: a.description || '',
+          action: a.action || '',
+          project: a.project || null,
+          timestamp: a.created_at,
+          meta: typeof a.details === 'string' ? a.details : (a.details ? JSON.stringify(a.details) : null),
+          actor: a.actor || 'System',
+          entity_type: a.entity_type || null,
+          entity_id: a.entity_id || null,
+          duration: estimateDuration(a),
+          // Agent-specific parsed fields
+          agentName: detailsObj?.agent_name || null,
+          agentRoute: detailsObj?.route || null,
+          agentCost: detailsObj?.cost_usd != null ? detailsObj.cost_usd : null,
+        };
+      }));
     }
 
     setLoading(false);
@@ -273,8 +285,25 @@ const WorkHistory = () => {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {entry.source === 'Agent' ? (
+                            <Cpu size={13} color="#3949ab" style={{ flexShrink: 0 }} />
+                          ) : (
+                            <User size={13} color="#8a8682" style={{ flexShrink: 0 }} />
+                          )}
                           <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#2e2c2a' }}>{entry.title}</span>
                           <span style={{ padding: '1px 8px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: 700, background: cfg.bg, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{entry.source}</span>
+                          {entry.source === 'Agent' && entry.agentName && (
+                            <span style={{ padding: '1px 7px', borderRadius: '8px', fontSize: '0.62rem', fontWeight: 600, background: 'rgba(57,73,171,0.1)', color: '#3949ab' }}>{entry.agentName}</span>
+                          )}
+                          {entry.source === 'Agent' && entry.agentRoute && (
+                            <span style={{ padding: '1px 6px', borderRadius: '8px', fontSize: '0.58rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em',
+                              background: entry.agentRoute === 'api' ? 'rgba(46,125,50,0.1)' : entry.agentRoute === 'local' ? 'rgba(21,101,192,0.1)' : 'rgba(198,40,40,0.1)',
+                              color: entry.agentRoute === 'api' ? '#2e7d32' : entry.agentRoute === 'local' ? '#1565c0' : '#c62828',
+                            }}>{entry.agentRoute === 'api' ? 'API' : entry.agentRoute === 'local' ? 'Local' : entry.agentRoute}</span>
+                          )}
+                          {entry.source === 'Agent' && entry.agentCost != null && (
+                            <span style={{ padding: '1px 6px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: 600, background: 'rgba(230,81,0,0.08)', color: '#e65100', fontFamily: 'monospace' }}>${Number(entry.agentCost).toFixed(4)}</span>
+                          )}
                           {entry.action && entry.action !== 'created' && (
                             <span style={{ padding: '1px 6px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: 500, background: 'rgba(0,0,0,0.04)', color: '#888' }}>{entry.action.replace(/_/g, ' ')}</span>
                           )}
