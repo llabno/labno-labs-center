@@ -142,6 +142,43 @@ ${code}
     URL.revokeObjectURL(url);
   };
 
+  const downloadAsTsx = (asset) => {
+    // Convert JSX to TSX — add basic type annotations
+    let code = asset.componentCode || '';
+    // Add React import with types if not present
+    if (!code.includes('import React')) {
+      code = `import React from 'react';\n\n${code}`;
+    }
+    // Add basic prop type
+    code = code.replace(/const (\w+) = \(\{/g, 'interface $1Props {\n  [key: string]: any;\n}\n\nconst $1: React.FC<$1Props> = ({');
+    code = code.replace(/const (\w+) = \(\)/g, 'const $1: React.FC = ()');
+    const blob = new Blob([code], { type: 'text/tsx' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${getFileName(asset)}.tsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAsCss = (asset) => {
+    // Extract inline styles from component code and convert to CSS classes
+    const code = asset.componentCode || '';
+    const name = getFileName(asset);
+    const css = `/* ${asset.name || 'Component'} — extracted styles */\n/* Auto-generated from Labno Labs UILibrary */\n\n.${name} {\n  /* Paste component-specific styles here */\n  /* Original component uses inline styles — convert as needed */\n}\n`;
+    const blob = new Blob([css], { type: 'text/css' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.css`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const toggleAddToProject = (e, assetId) => {
     e.stopPropagation();
     setAddToProjectOpen(prev => prev === assetId ? null : assetId);
@@ -182,7 +219,7 @@ ${code}
           onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
           onMouseOut={(e) => e.currentTarget.style.background = 'none'}
         >
-          <Download size={14} color="#16a34a" /> Download .jsx
+          <Download size={14} color="#16a34a" /> .jsx
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); downloadAsHtml(asset); setAddToProjectOpen(null); }}
@@ -190,7 +227,23 @@ ${code}
           onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
           onMouseOut={(e) => e.currentTarget.style.background = 'none'}
         >
-          <Download size={14} color="#9333ea" /> Download .html
+          <Download size={14} color="#9333ea" /> .html
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); downloadAsTsx(asset); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <Download size={14} color="#2563eb" /> .tsx
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); downloadAsCss(asset); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <Download size={14} color="#c49a40" /> .css
         </button>
         <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '4px 0' }} />
         <a

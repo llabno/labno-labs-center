@@ -137,17 +137,41 @@ const Sidebar = ({ user, onLogout }) => {
   const role = getRole(user?.email);
   const visibleZones = filterZonesForRole(ZONES, role);
 
-  // Favorites — user-selected quick links (stored in localStorage)
+  // Favorites — synced to Supabase (cross-device), localStorage as fallback
   const [favorites, setFavorites] = useState(() => {
     try { return JSON.parse(localStorage.getItem('llc_favorites') || '[]'); } catch { return []; }
   });
   const [editingFavorites, setEditingFavorites] = useState(false);
 
+  // Load favorites from Supabase on mount
+  useEffect(() => {
+    if (!user?.email) return;
+    supabase.from('user_preferences').select('favorites').eq('user_email', user.email).single()
+      .then(({ data }) => {
+        if (data?.favorites && Array.isArray(data.favorites) && data.favorites.length > 0) {
+          setFavorites(data.favorites);
+          localStorage.setItem('llc_favorites', JSON.stringify(data.favorites));
+        }
+      }).catch(() => {}); // table may not exist yet
+  }, [user?.email]);
+
+  // Save favorites to both localStorage and Supabase
+  const saveFavorites = (next) => {
+    localStorage.setItem('llc_favorites', JSON.stringify(next));
+    if (user?.email) {
+      supabase.from('user_preferences').upsert({
+        user_email: user.email,
+        favorites: next,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_email' }).catch(() => {});
+    }
+  };
+
   const allPages = visibleZones.flatMap(z => z.items.filter(i => i.path));
   const toggleFavorite = (path) => {
     setFavorites(prev => {
       const next = prev.includes(path) ? prev.filter(p => p !== path) : prev.length < 10 ? [...prev, path] : prev;
-      localStorage.setItem('llc_favorites', JSON.stringify(next));
+      saveFavorites(next);
       return next;
     });
   };
@@ -159,7 +183,7 @@ const Sidebar = ({ user, onLogout }) => {
       if (newIdx < 0 || newIdx >= prev.length) return prev;
       const next = [...prev];
       [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
-      localStorage.setItem('llc_favorites', JSON.stringify(next));
+      saveFavorites(next);
       return next;
     });
   };
