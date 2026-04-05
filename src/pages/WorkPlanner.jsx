@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Clock, Zap, Hand, Bot, Play, CheckCircle, AlertTriangle, ArrowRight, Rocket,
   Calendar, ChevronDown, ChevronRight, Download, Users, Target, Flame, LayoutList,
-  BarChart3, GitBranch, Shield, X, Check, SlidersHorizontal, Info, HelpCircle
+  BarChart3, GitBranch, Shield, X, Check, SlidersHorizontal, Info, HelpCircle,
+  DollarSign, Brain, Layers
 } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
-import { logSchedulerRun, logAgentDispatched, logTaskScheduled } from '../lib/activity-logger';
+import { logSchedulerRun, logAgentDispatched, logTaskScheduled, logActivity } from '../lib/activity-logger';
 import Breadcrumbs from '../components/Breadcrumbs';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
@@ -271,6 +272,7 @@ const WorkPlanner = () => {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [clients, setClients] = useState([]);
+  const [clientAvailability, setClientAvailability] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dispatching, setDispatching] = useState({});
   const [dispatched, setDispatched] = useState({});
@@ -299,14 +301,16 @@ const WorkPlanner = () => {
   // ─── Data Fetching ──────────────────────────────────────────────────────────
 
   const fetchTasks = async () => {
-    const [taskRes, projRes, clientRes] = await Promise.all([
+    const [taskRes, projRes, clientRes, availRes] = await Promise.all([
       supabase.from('global_tasks').select('*').neq('column_id', 'completed'),
       supabase.from('projects').select('*'),
       supabase.from('clients').select('*'),
+      supabase.from('client_availability').select('*'),
     ]);
     setTasks(taskRes.data || []);
     setProjects(projRes.data || []);
     setClients(clientRes.data || []);
+    setClientAvailability(availRes.data || []);
     setLoading(false);
   };
 
@@ -382,20 +386,32 @@ const WorkPlanner = () => {
         const isBlocked = t.is_blocked || (t.depends_on || []).some(dep => !completedTitles.has(dep));
         const fitsTime = est <= selectedTime;
         const onCriticalPath = proj?.complexity >= 3;
+        // M7: Check if task's client has multi-hour preferred_slots (duration >= 120 min)
+        const taskClientName = (t.client_name || t.assigned_to || '').toLowerCase();
+        const hasMultiHourBlock = clientAvailability.some(ca => {
+          if ((ca.client_name || '').toLowerCase() !== taskClientName || !taskClientName) return false;
+          return (ca.preferred_slots || []).some(slot => {
+            if (!slot.start || !slot.end) return false;
+            const [sh, sm] = slot.start.split(':').map(Number);
+            const [eh, em] = slot.end.split(':').map(Number);
+            return ((eh * 60 + em) - (sh * 60 + sm)) >= 120;
+          });
+        });
         const priorityScore =
           (isBlocked ? 0 : 100) +
           (onCriticalPath ? 50 : 0) +
           (fitsTime ? 30 : 0) +
           (t.column_id === 'in_progress' ? 20 : 0) +
-          (t.column_id === 'triage' ? 10 : 0);
-        return { ...t, _est: est, _trigger: trigger, _project: proj, _blocked: isBlocked, _fitsTime: fitsTime, _score: priorityScore, _needsHuman: (TRIGGER_LEVELS[trigger] || TRIGGER_LEVELS.manual).human, _isHot: onCriticalPath || proj?.status === 'Active' };
+          (t.column_id === 'triage' ? 10 : 0) +
+          (hasMultiHourBlock ? 25 : 0);
+        return { ...t, _est: est, _trigger: trigger, _project: proj, _blocked: isBlocked, _fitsTime: fitsTime, _score: priorityScore, _needsHuman: (TRIGGER_LEVELS[trigger] || TRIGGER_LEVELS.manual).human, _isHot: onCriticalPath || proj?.status === 'Active', _multiHour: hasMultiHourBlock };
       })
       .filter(t => {
         if (triggerFilter !== 'all' && t._trigger !== triggerFilter) return false;
         return true;
       })
       .sort((a, b) => b._score - a._score);
-  }, [tasks, selectedTime, projectMap, completedTitles, triggerFilter]);
+  }, [tasks, selectedTime, projectMap, completedTitles, triggerFilter, clientAvailability]);
 
   const fittingTasks = rankedTasks.filter(t => t._fitsTime && !t._blocked);
   const stretchTasks = rankedTasks.filter(t => !t._fitsTime && !t._blocked).slice(0, 5);
@@ -419,6 +435,114 @@ const WorkPlanner = () => {
         return true;
       });
   }, [tasks, completedTitles, projectMap, focusProject]);
+
+  // ─── M6: Scheduling Optimization Strategies ────────────────────────────────
+
+  const schedulingStrategies = useMemo(() => {
+    if (!clientAvailability.length) return [];
+
+    const TIER_RATES = { tier1: 150, tier2: 120, tier3: 100, standard: 90 };
+
+    // Helper: check if a client has multi-hour slots
+    const getMultiHourSlots = (ca) => (ca.preferred_slots || []).filter(slot => {
+      if (!slot.start || !slot.end) return false;
+      const [sh, sm] = slot.start.split(':').map(Number);
+      const [eh, em] = slot.end.split(':').map(Number);
+      return ((eh * 60 + em) - (sh * 60 + sm)) >= 120;
+    });
+
+    // Strategy 1: Revenue Maximize
+    const byRevenue = [...clientAvailability]
+      .map(ca => ({
+        name: ca.client_name || ca.client_id,
+        tier: ca.client_value_tier || 'standard',
+        rate: TIER_RATES[ca.client_value_tier] || TIER_RATES.standard,
+        preference: ca.general_preference || 'flexible',
+        slots: (ca.preferred_slots || []).length,
+      }))
+      .sort((a, b) => b.rate - a.rate)
+      .slice(0, 5);
+
+    // Strategy 2: Deep Work Protect
+    const deepStart = parseInt(deepWorkHours.start.split(':')[0]);
+    const deepEnd = parseInt(deepWorkHours.end.split(':')[0]);
+    const overlapping = clientAvailability
+      .filter(ca => (ca.preferred_slots || []).some(slot => {
+        const slotStart = parseInt((slot.start || '09:00').split(':')[0]);
+        const slotEnd = parseInt((slot.end || '10:00').split(':')[0]);
+        return slotStart < deepEnd && slotEnd > deepStart;
+      }))
+      .map(ca => ({
+        name: ca.client_name || ca.client_id,
+        tier: ca.client_value_tier || 'standard',
+        preference: ca.general_preference || 'flexible',
+        overlappingSlots: (ca.preferred_slots || []).filter(slot => {
+          const slotStart = parseInt((slot.start || '09:00').split(':')[0]);
+          const slotEnd = parseInt((slot.end || '10:00').split(':')[0]);
+          return slotStart < deepEnd && slotEnd > deepStart;
+        }),
+      }))
+      .slice(0, 5);
+
+    // Strategy 3: Multi-Hour Block Priority
+    const multiHour = clientAvailability
+      .filter(ca => getMultiHourSlots(ca).length > 0)
+      .map(ca => {
+        const mhSlots = getMultiHourSlots(ca);
+        const maxDuration = Math.max(...mhSlots.map(slot => {
+          const [sh, sm] = slot.start.split(':').map(Number);
+          const [eh, em] = slot.end.split(':').map(Number);
+          return (eh * 60 + em) - (sh * 60 + sm);
+        }));
+        return {
+          name: ca.client_name || ca.client_id,
+          tier: ca.client_value_tier || 'standard',
+          maxDuration,
+          slotCount: mhSlots.length,
+        };
+      })
+      .sort((a, b) => b.maxDuration - a.maxDuration)
+      .slice(0, 5);
+
+    return [
+      {
+        key: 'revenue',
+        name: 'Revenue Maximize',
+        icon: DollarSign,
+        color: '#2d8a4e',
+        description: 'Prioritize clients by billing rate. Shift lower-tier clients to fill gaps, keep premium slots for high-value clients.',
+        clients: byRevenue,
+        renderClient: (c) => `${c.name} — ${c.tier.replace('tier', 'Tier ')} ($${c.rate}/hr) · ${c.preference} · ${c.slots} slot${c.slots !== 1 ? 's' : ''}`,
+      },
+      {
+        key: 'deepwork',
+        name: 'Deep Work Protect',
+        icon: Brain,
+        color: '#9c27b0',
+        description: `Protect ${deepWorkHours.start}–${deepWorkHours.end} for deep work. These clients overlap that window and could be moved.`,
+        clients: overlapping,
+        renderClient: (c) => `${c.name} — ${c.overlappingSlots.length} slot${c.overlappingSlots.length !== 1 ? 's' : ''} overlap deep work · ${c.preference}`,
+      },
+      {
+        key: 'multiblock',
+        name: 'Multi-Hour Block Priority',
+        icon: Layers,
+        color: '#e65100',
+        description: 'Clients wanting 2–3 hour sessions are harder to fit. Give them first pick of long open blocks.',
+        clients: multiHour,
+        renderClient: (c) => `${c.name} — ${Math.round(c.maxDuration / 60 * 10) / 10}hr max block · ${c.slotCount} multi-hour slot${c.slotCount !== 1 ? 's' : ''}`,
+      },
+    ];
+  }, [clientAvailability, deepWorkHours]);
+
+  const applyStrategy = async (strategyKey) => {
+    await logActivity('scheduling_strategy_applied', {
+      entityType: 'scheduler',
+      entityName: strategyKey,
+      actor: 'Lance',
+      details: { strategy: strategyKey, clientCount: clientAvailability.length },
+    });
+  };
 
   // Quickest plan
   const quickestPlan = useMemo(() => {
@@ -1121,6 +1245,55 @@ const WorkPlanner = () => {
                   <Clock size={16} color="#e65100" />
                   <div style={{ fontSize: '0.82rem', color: '#3e3c3a' }}>
                     <strong>Temporary Holds:</strong> When scheduling with clients, slots are held for 4 hours by default. If the client doesn't confirm, the hold expires and the time reopens. Deep work hours ({deepWorkHours.start}\u2013{deepWorkHours.end}) are protected \u2014 only hot project tasks will be suggested during that window.
+                  </div>
+                </div>
+              )}
+
+              {/* M6: Scheduling Optimization Strategies */}
+              {advancedMode === 'client' && schedulingStrategies.length > 0 && (
+                <div className="glass-panel" style={{ padding: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#2e2c2a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Target size={16} /> Scheduling Recommendations
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: '#6b6764', marginBottom: '16px' }}>
+                    Three strategies to optimize your client schedule based on availability data.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {schedulingStrategies.map(strategy => (
+                      <div key={strategy.key} style={{ padding: '12px 16px', borderRadius: '10px', background: `${strategy.color}06`, border: `1px solid ${strategy.color}18` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <strategy.icon size={16} color={strategy.color} />
+                            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#2e2c2a' }}>{strategy.name}</span>
+                          </div>
+                          <button
+                            onClick={() => applyStrategy(strategy.key)}
+                            style={{
+                              padding: '5px 14px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600,
+                              border: `1px solid ${strategy.color}30`, cursor: 'pointer',
+                              background: `${strategy.color}0a`, color: strategy.color,
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = `${strategy.color}18`; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = `${strategy.color}0a`; }}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        <p style={{ fontSize: '0.78rem', color: '#6b6764', marginBottom: '8px' }}>{strategy.description}</p>
+                        {strategy.clients.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            {strategy.clients.map((c, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', borderRadius: '5px', background: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', color: '#3e3c3a' }}>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: strategy.color, flexShrink: 0 }} />
+                                {strategy.renderClient(c)}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '0.75rem', color: '#8a8682', fontStyle: 'italic' }}>No matching clients for this strategy.</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

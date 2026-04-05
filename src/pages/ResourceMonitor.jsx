@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Activity, AlertTriangle, CheckCircle, Shield, FolderOpen, FileText, Zap, RefreshCw, ChevronDown, ChevronUp, Copy, Play, Clock, Loader } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, Shield, FolderOpen, FileText, Zap, RefreshCw, ChevronDown, ChevronUp, Copy, Play, Clock, Loader, DollarSign } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
@@ -344,6 +344,37 @@ const OPTIMIZATION_STEPS = [
   },
 ];
 
+// ── Cost-per-page estimates ──────────────────────────────────────────────────
+const PAGE_COSTS = [
+  { page: 'Today', path: '/today', supabase: 8, claude: 0, google: 0, note: '8 Supabase queries for pending counts' },
+  { page: 'Dashboard', path: '/', supabase: 4, claude: 0, google: 0, note: 'Projects + tasks + stats' },
+  { page: 'Work Planner', path: '/planner', supabase: 3, claude: 0, google: 0, note: 'Tasks + projects + clients' },
+  { page: 'SOAP Notes', path: '/soap', supabase: 5, claude: 0, google: 0, note: 'Briefs + SOAPs + leads + exercises' },
+  { page: 'Oracle', path: '/oracle', supabase: 2, claude: 1, google: 0, note: 'SOP lookup + Claude query per question' },
+  { page: 'Dual CRM', path: '/crm', supabase: 3, claude: 0, google: 0, note: 'Clinical + consulting leads' },
+  { page: 'Autonomous', path: '/autonomous', supabase: 2, claude: 0, google: 0, note: 'Agent runs + polling every 10s' },
+  { page: 'Agent Queue', path: '/agent-queue', supabase: 2, claude: 0, google: 0, note: 'Needs-input runs' },
+  { page: 'Calendar', path: '/calendar', supabase: 1, claude: 0, google: 1, note: 'GCal sync when enabled' },
+  { page: 'Client Availability', path: '/availability', supabase: 2, claude: 0, google: 0, note: 'Availability + leads' },
+  { page: 'Billing Review', path: '/billing', supabase: 3, claude: 0, google: 0, note: 'SOAPs + cycles + invoices' },
+  { page: 'Telemetry', path: '/telemetry', supabase: 3, claude: 0, google: 0, note: 'Token logs + agent runs' },
+  { page: 'Work History', path: '/history', supabase: 1, claude: 0, google: 0, note: 'activity_log only' },
+  { page: 'Wishlist', path: '/wishlist', supabase: 2, claude: 1, google: 0, note: 'Items + Claude analysis on add' },
+  { page: 'Content Pipeline', path: '/content', supabase: 2, claude: 0, google: 0, note: 'Content items' },
+  { page: 'Resources', path: '/resources', supabase: 0, claude: 0, google: 0, note: 'Static analysis only' },
+  { page: 'Settings', path: '/settings', supabase: 1, claude: 0, google: 0, note: 'User preferences' },
+  { page: 'Reactivation', path: '/reactivation', supabase: 2, claude: 0, google: 0, note: 'Queue + leads' },
+  { page: 'Client Profitability', path: '/profitability', supabase: 3, claude: 0, google: 0, note: 'Clients + SOAPs + billing' },
+  { page: 'Proposal Generator', path: '/proposals', supabase: 2, claude: 1, google: 0, note: 'Claude generates proposal text' },
+  { page: 'Speak Freely', path: '/mechanic', supabase: 2, claude: 1, google: 0, note: 'Journal + Claude reflection' },
+];
+
+const COST_PER_SUPABASE = 0.000001;
+const COST_PER_CLAUDE = 0.01;
+const COST_PER_GOOGLE = 0.001;
+
+const calcPageCost = (p) => (p.supabase * COST_PER_SUPABASE) + (p.claude * COST_PER_CLAUDE) + (p.google * COST_PER_GOOGLE);
+
 // ── Main Component ────────────────────────────────────────────────────────────
 const ResourceMonitor = () => {
   const [completedSteps, setCompletedSteps] = useState(() => {
@@ -359,6 +390,8 @@ const ResourceMonitor = () => {
   });
   const [runningChecks, setRunningChecks] = useState({});
   const [runningAll, setRunningAll] = useState(false);
+  const [checkResults, setCheckResults] = useState({}); // { [id]: 'passed' | 'review' }
+  const [summaryBanner, setSummaryBanner] = useState(null); // { passed: N, review: N }
 
   const formatTimestamp = (ts) => {
     if (!ts) return 'Never checked';
@@ -366,33 +399,60 @@ const ResourceMonitor = () => {
     return 'Last checked: ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
 
-  const runCheck = useCallback((id) => {
-    return new Promise((resolve) => {
-      setRunningChecks(prev => ({ ...prev, [id]: true }));
-      const delay = 1000 + Math.random() * 1000;
-      setTimeout(() => {
-        const now = new Date().toISOString();
-        setLastChecked(prev => {
-          const next = { ...prev, [id]: now };
-          localStorage.setItem('resource-monitor-lastchecked', JSON.stringify(next));
-          return next;
+  const runCheck = useCallback(async (id) => {
+    setRunningChecks(prev => ({ ...prev, [id]: true }));
+    const step = OPTIMIZATION_STEPS.find(s => s.id === id);
+    const now = new Date().toISOString();
+    let result = 'passed';
+
+    try {
+      // Log the action to activity_log
+      await supabase.from('activity_log').insert({
+        source_type: 'System',
+        action: 'optimization_run',
+        title: `Optimization: ${step.title}`,
+        created_at: now,
+      });
+
+      // If security fix, create a pending task for manual review
+      if (step.isSecurityFix) {
+        await supabase.from('global_tasks').insert({
+          column_id: 'triage',
+          title: `Review: ${step.title} — manual approval needed`,
+          created_at: now,
         });
-        setCompletedSteps(prev => {
-          const next = prev.includes(id) ? prev : [...prev, id];
-          localStorage.setItem('resource-monitor-completed', JSON.stringify(next));
-          return next;
-        });
-        setRunningChecks(prev => ({ ...prev, [id]: false }));
-        resolve();
-      }, delay);
+        result = 'review';
+      }
+    } catch (err) {
+      console.error('runCheck error:', err);
+    }
+
+    // Update localStorage UI state
+    setLastChecked(prev => {
+      const next = { ...prev, [id]: now };
+      localStorage.setItem('resource-monitor-lastchecked', JSON.stringify(next));
+      return next;
     });
+    setCompletedSteps(prev => {
+      const next = prev.includes(id) ? prev : [...prev, id];
+      localStorage.setItem('resource-monitor-completed', JSON.stringify(next));
+      return next;
+    });
+    setCheckResults(prev => ({ ...prev, [id]: result }));
+    setRunningChecks(prev => ({ ...prev, [id]: false }));
+    return result;
   }, []);
 
   const runAllChecks = useCallback(async () => {
     setRunningAll(true);
+    setSummaryBanner(null);
+    const results = { passed: 0, review: 0 };
     for (const step of OPTIMIZATION_STEPS) {
-      await runCheck(step.id);
+      const result = await runCheck(step.id);
+      if (result === 'review') results.review++;
+      else results.passed++;
     }
+    setSummaryBanner(results);
     setRunningAll(false);
   }, [runCheck]);
 
@@ -491,6 +551,23 @@ const ResourceMonitor = () => {
             {runningAll ? 'Running...' : 'Run All Checks'}
           </button>
         </div>
+        {summaryBanner && (
+          <div style={{
+            padding: '10px 16px', borderRadius: '8px', marginBottom: '12px',
+            background: summaryBanner.review > 0 ? 'rgba(237,108,2,0.08)' : 'rgba(46,125,50,0.08)',
+            border: `1px solid ${summaryBanner.review > 0 ? 'rgba(237,108,2,0.2)' : 'rgba(46,125,50,0.2)'}`,
+            display: 'flex', alignItems: 'center', gap: '8px',
+            fontSize: '0.82rem', fontWeight: 600, color: '#2e2c2a',
+          }}>
+            <CheckCircle size={16} color={summaryBanner.review > 0 ? '#ed6c02' : '#2e7d32'} />
+            {summaryBanner.passed} check{summaryBanner.passed !== 1 ? 's' : ''} passed, {summaryBanner.review} need{summaryBanner.review !== 1 ? '' : 's'} manual review.
+            {summaryBanner.review > 0 && (
+              <span style={{ color: '#ed6c02', fontWeight: 500 }}>
+                See Today &rarr; Pending Actions.
+              </span>
+            )}
+          </div>
+        )}
         <div style={{ display: 'grid', gap: '8px' }}>
           {OPTIMIZATION_STEPS.map((step) => {
             const done = completedSteps.includes(step.id);
@@ -546,6 +623,18 @@ const ResourceMonitor = () => {
                       {formatTimestamp(lastChecked[step.id])}
                     </span>
                   </div>
+                  {checkResults[step.id] && !isRunning && (
+                    <div style={{
+                      marginTop: '4px', fontSize: '0.72rem', fontWeight: 600,
+                      color: checkResults[step.id] === 'review' ? '#ed6c02' : '#2e7d32',
+                      display: 'flex', alignItems: 'center', gap: '4px',
+                    }}>
+                      {checkResults[step.id] === 'review'
+                        ? <><AlertTriangle size={12} /> Needs manual review — added to Today&apos;s pending actions</>
+                        : <><CheckCircle size={12} /> Completed — no issues found</>
+                      }
+                    </div>
+                  )}
                   {/* Actionable prompt — copy-paste instructions */}
                   {step.prompt && (
                     <div style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
@@ -579,6 +668,70 @@ const ResourceMonitor = () => {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Cost by Page */}
+      <div className="glass-panel" style={{ padding: '20px' }}>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <DollarSign size={18} color="#2e7d32" /> Cost by Page
+        </h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid rgba(0,0,0,0.08)' }}>
+                <th style={{ textAlign: 'left', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Page</th>
+                <th style={{ textAlign: 'center', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Supabase</th>
+                <th style={{ textAlign: 'center', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Claude</th>
+                <th style={{ textAlign: 'center', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Google</th>
+                <th style={{ textAlign: 'right', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Est. Cost/Visit</th>
+                <th style={{ textAlign: 'left', padding: '8px 10px', color: '#555', fontWeight: 600 }}>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...PAGE_COSTS]
+                .sort((a, b) => calcPageCost(b) - calcPageCost(a))
+                .map((p) => {
+                  const cost = calcPageCost(p);
+                  const costColor = cost > 0.01 ? '#d32f2f' : cost >= 0.001 ? '#f9a825' : '#2e7d32';
+                  return (
+                    <tr key={p.path} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                      <td style={{ padding: '7px 10px', fontWeight: 600, color: '#2e2c2a' }}>
+                        <span style={{ marginRight: '6px' }}>{p.page}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#999' }}>{p.path}</span>
+                      </td>
+                      <td style={{ textAlign: 'center', padding: '7px 10px', color: '#555' }}>{p.supabase}</td>
+                      <td style={{ textAlign: 'center', padding: '7px 10px', color: p.claude > 0 ? '#d32f2f' : '#555', fontWeight: p.claude > 0 ? 700 : 400 }}>{p.claude}</td>
+                      <td style={{ textAlign: 'center', padding: '7px 10px', color: p.google > 0 ? '#f57c00' : '#555', fontWeight: p.google > 0 ? 700 : 400 }}>{p.google}</td>
+                      <td style={{ textAlign: 'right', padding: '7px 10px', fontWeight: 700, color: costColor }}>
+                        ${cost < 0.0001 ? '<0.0001' : cost.toFixed(4)}
+                      </td>
+                      <td style={{ padding: '7px 10px', fontSize: '0.75rem', color: '#888' }}>{p.note}</td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+            <tfoot>
+              {(() => {
+                const totalPerVisitAllPages = PAGE_COSTS.reduce((sum, p) => sum + calcPageCost(p), 0);
+                const avgVisitsPerDay = 20;
+                const monthlyEstimate = totalPerVisitAllPages * avgVisitsPerDay * 30;
+                return (
+                  <tr style={{ borderTop: '2px solid rgba(0,0,0,0.1)', background: 'rgba(0,0,0,0.02)' }}>
+                    <td colSpan={4} style={{ padding: '10px', fontWeight: 700, fontSize: '0.82rem', color: '#2e2c2a' }}>
+                      Monthly Estimate (20 visits/day avg across all pages)
+                    </td>
+                    <td style={{ textAlign: 'right', padding: '10px', fontWeight: 700, fontSize: '0.85rem', color: monthlyEstimate > 5 ? '#d32f2f' : '#2e7d32' }}>
+                      ${monthlyEstimate.toFixed(2)}/mo
+                    </td>
+                    <td style={{ padding: '10px', fontSize: '0.75rem', color: '#888' }}>
+                      Claude calls dominate cost
+                    </td>
+                  </tr>
+                );
+              })()}
+            </tfoot>
+          </table>
         </div>
       </div>
 

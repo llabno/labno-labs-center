@@ -265,6 +265,19 @@ const ClientAvailability = () => {
     return vacations.sort((a, b) => new Date(a.start) - new Date(b.start));
   }, [clients]);
 
+  // All vacations grouped by client
+  const allVacationsByClient = useMemo(() => {
+    const grouped = {};
+    clients.forEach(c => {
+      const name = c.client_name || c.client_id;
+      const vacations = c.vacation_dates || [];
+      if (vacations.length > 0) {
+        grouped[name] = vacations.sort((a, b) => new Date(a.start) - new Date(b.start));
+      }
+    });
+    return grouped;
+  }, [clients]);
+
   // CRM name suggestions
   const [clientSelected, setClientSelected] = useState(false);
   const clientSuggestions = useMemo(() => {
@@ -511,11 +524,11 @@ const ClientAvailability = () => {
       </div>
 
       {/* Upcoming Vacations */}
-      {upcomingVacations.length > 0 && (
-        <div className="glass-panel" style={{ padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Plane size={14} color="#5a8abf" /> Upcoming Vacations (60 days)
-          </h3>
+      <div className="glass-panel" style={{ padding: '1rem' }}>
+        <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Plane size={14} color="#5a8abf" /> Upcoming Vacations (60 days)
+        </h3>
+        {upcomingVacations.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {upcomingVacations.map((v, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', borderRadius: '6px', background: 'rgba(90,138,191,0.04)', fontSize: '0.78rem' }}>
@@ -525,8 +538,34 @@ const ClientAvailability = () => {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p style={{ fontSize: '0.78rem', color: '#8a8682', fontStyle: 'italic' }}>No upcoming vacations in the next 60 days.</p>
+        )}
+
+        {/* All Vacations by Client */}
+        <h4 style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2e2c2a', marginTop: '16px', marginBottom: '8px' }}>All Client Vacations</h4>
+        {Object.keys(allVacationsByClient).length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {Object.entries(allVacationsByClient).sort(([a], [b]) => a.localeCompare(b)).map(([clientName, vacations]) => (
+              <div key={clientName}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2e2c2a', marginBottom: '4px' }}>{clientName}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '12px' }}>
+                  {vacations.map((v, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#6b6764' }}>
+                      <span style={{ color: '#5a8abf' }}>
+                        {new Date(v.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {new Date(v.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      {v.notes && <span style={{ color: '#8a8682' }}>({v.notes})</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.78rem', color: '#8a8682', fontStyle: 'italic' }}>No vacations tracked. Add vacation dates when editing a client.</p>
+        )}
+      </div>
 
       {/* Invite Link Banner */}
       {inviteLink && (

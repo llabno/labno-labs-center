@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Activity, Cpu, Clock, ChevronRight, ChevronDown, AlertCircle, CheckCircle, Loader, Zap, ExternalLink, Eye, EyeOff, MessageSquare, Send } from 'lucide-react';
 import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -38,6 +38,56 @@ const Autonomous = () => {
   const [routeMode, setRouteMode] = useState('simulation');
   const [timeRange, setTimeRange] = useState('week');
   const [expandedRun, setExpandedRun] = useState(null);
+  const [showOutput, setShowOutput] = useState({});
+  const [showFollowUp, setShowFollowUp] = useState({});
+  const [followUpAnswers, setFollowUpAnswers] = useState({});
+  const [submittingFollowUp, setSubmittingFollowUp] = useState({});
+
+  const FOLLOW_UP_QUESTIONS = [
+    'Was this output what you expected?',
+    'Should this task be re-run with different parameters?',
+    'Does this output require changes to other parts of the system?',
+    'Should the result be reviewed before being applied?',
+    'Are there follow-up tasks that should be created?',
+  ];
+
+  const handleFollowUpAnswer = useCallback((runId, qIdx, value) => {
+    setFollowUpAnswers(prev => ({
+      ...prev,
+      [runId]: { ...(prev[runId] || {}), [qIdx]: value },
+    }));
+  }, []);
+
+  const submitFollowUp = useCallback(async (run) => {
+    const answers = followUpAnswers[run.id] || {};
+    const hasAnswers = Object.values(answers).some(a => a && a.trim());
+    if (!hasAnswers) return;
+
+    setSubmittingFollowUp(prev => ({ ...prev, [run.id]: true }));
+
+    const qaContext = FOLLOW_UP_QUESTIONS
+      .map((q, i) => answers[i] ? `Q: ${q}\nA: ${answers[i]}` : null)
+      .filter(Boolean)
+      .join('\n\n');
+
+    const { error } = await supabase.from('agent_runs').insert({
+      task_title: `Follow-up: ${run.task_title}`,
+      project_name: run.project_name || null,
+      status: 'queued',
+      result: null,
+      error: null,
+      context: `Original task: ${run.task_title}\nOriginal result summary: ${(run.result || '').slice(0, 500)}\n\n--- Follow-up Q&A ---\n${qaContext}`,
+    });
+
+    setSubmittingFollowUp(prev => ({ ...prev, [run.id]: false }));
+
+    if (!error) {
+      setFollowUpAnswers(prev => ({ ...prev, [run.id]: {} }));
+      // Refresh runs
+      const { data } = await supabase.from('agent_runs').select('*').order('created_at', { ascending: false }).limit(100);
+      if (data) setAgentRuns(data);
+    }
+  }, [followUpAnswers]);
 
   useEffect(() => {
     const fetchRuns = async () => {
@@ -217,16 +267,83 @@ const Autonomous = () => {
                               <div style={{ fontSize: '0.75rem', color: '#8a88a0', lineHeight: 1.6 }}>
                                 {run.project_name && <div>Project: {run.project_name}</div>}
                                 <div>Status: <span style={{ color: statusColor }}>{run.status}</span></div>
-                                {run.error && <div style={{ color: '#ff5555' }}>Error: {run.error}</div>}
                               </div>
                             </div>
                           </div>
-                          {run.result && (
-                            <div style={{ marginTop: '6px' }}>
-                              <div style={{ fontSize: '0.68rem', color: '#6272a4', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>Result</div>
-                              <pre style={{ fontSize: '0.72rem', color: '#c0bdd0', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.5, maxHeight: '200px', overflow: 'auto', padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)' }}>
-                                {run.result}
+
+                          {/* Error display for failed runs */}
+                          {run.status === 'failed' && run.error && (
+                            <div style={{ marginTop: '8px', padding: '10px 12px', borderRadius: '8px', background: 'rgba(255,85,85,0.1)', border: '1px solid rgba(255,85,85,0.25)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <AlertCircle size={14} color="#ff5555" />
+                                <span style={{ fontSize: '0.72rem', color: '#ff5555', fontWeight: 600, textTransform: 'uppercase' }}>Error</span>
+                              </div>
+                              <pre style={{ fontSize: '0.75rem', color: '#ff7777', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.5 }}>
+                                {run.error}
                               </pre>
+                            </div>
+                          )}
+
+                          {/* Non-failed error (warning style) */}
+                          {run.status !== 'failed' && run.error && (
+                            <div style={{ fontSize: '0.75rem', color: '#ff5555', marginTop: '4px' }}>Error: {run.error}</div>
+                          )}
+
+                          {/* Show Output toggle for result */}
+                          {run.result && (
+                            <div style={{ marginTop: '8px' }}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setShowOutput(prev => ({ ...prev, [run.id]: !prev[run.id] })); }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: showOutput[run.id] ? 'rgba(139,233,253,0.1)' : 'rgba(255,255,255,0.04)', color: showOutput[run.id] ? '#8be9fd' : '#6272a4', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase' }}
+                              >
+                                {showOutput[run.id] ? <EyeOff size={12} /> : <Eye size={12} />}
+                                {showOutput[run.id] ? 'Hide Output' : 'Show Output'}
+                              </button>
+                              {showOutput[run.id] && (
+                                <pre style={{ fontSize: '0.72rem', color: '#c0bdd0', whiteSpace: 'pre-wrap', fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace", margin: '8px 0 0', lineHeight: 1.5, maxHeight: '300px', overflowY: 'auto', padding: '10px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                  {run.result}
+                                </pre>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Follow-up Questions for completed runs */}
+                          {run.status === 'completed' && (
+                            <div style={{ marginTop: '10px' }}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setShowFollowUp(prev => ({ ...prev, [run.id]: !prev[run.id] })); }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: showFollowUp[run.id] ? 'rgba(80,250,123,0.1)' : 'rgba(255,255,255,0.04)', color: showFollowUp[run.id] ? '#50fa7b' : '#6272a4', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase' }}
+                              >
+                                <MessageSquare size={12} />
+                                {showFollowUp[run.id] ? 'Hide Follow-up Questions' : 'Follow-up Questions'}
+                              </button>
+                              {showFollowUp[run.id] && (
+                                <div style={{ marginTop: '8px', padding: '10px', borderRadius: '8px', background: 'rgba(80,250,123,0.04)', border: '1px solid rgba(80,250,123,0.12)' }}>
+                                  {FOLLOW_UP_QUESTIONS.map((q, qIdx) => (
+                                    <div key={qIdx} style={{ marginBottom: qIdx < FOLLOW_UP_QUESTIONS.length - 1 ? '10px' : 0 }}>
+                                      <label style={{ display: 'block', fontSize: '0.75rem', color: '#c0bdd0', marginBottom: '4px', lineHeight: 1.4 }}>
+                                        {qIdx + 1}. {q}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        placeholder="Type your answer..."
+                                        value={(followUpAnswers[run.id] || {})[qIdx] || ''}
+                                        onChange={(e) => handleFollowUpAnswer(run.id, qIdx, e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.25)', color: '#e0dfe6', fontSize: '0.75rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+                                      />
+                                    </div>
+                                  ))}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); submitFollowUp(run); }}
+                                    disabled={submittingFollowUp[run.id] || !Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim())}
+                                    style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '8px', border: 'none', background: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? 'rgba(80,250,123,0.2)' : 'rgba(255,255,255,0.04)', color: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? '#50fa7b' : '#6272a4', cursor: Object.values(followUpAnswers[run.id] || {}).some(a => a && a.trim()) ? 'pointer' : 'not-allowed', fontSize: '0.78rem', fontWeight: 600, opacity: submittingFollowUp[run.id] ? 0.5 : 1 }}
+                                  >
+                                    <Send size={12} />
+                                    {submittingFollowUp[run.id] ? 'Submitting...' : 'Submit to Agent Queue'}
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
