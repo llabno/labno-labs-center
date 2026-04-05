@@ -541,6 +541,14 @@ const Settings = () => {
                     document.documentElement.style.setProperty('--primary-glow', t.primary);
                     document.documentElement.style.setProperty('--secondary-glow', t.secondary);
                     localStorage.setItem('llc_theme', JSON.stringify(t));
+                    // Toggle dark mode for the Dark Mode theme
+                    if (t.name === 'Dark Mode') {
+                      document.documentElement.setAttribute('data-theme', 'dark');
+                      localStorage.setItem('llc_dark_mode', 'true');
+                    } else {
+                      document.documentElement.removeAttribute('data-theme');
+                      localStorage.setItem('llc_dark_mode', 'false');
+                    }
                   }} style={{ cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ width: '100%', height: '70px', borderRadius: '10px', background: t.gradient, border: '2px solid rgba(0,0,0,0.08)', transition: 'transform 0.2s' }}
                       onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}

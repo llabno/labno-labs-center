@@ -139,12 +139,29 @@ export default async function handler(req, res) {
       if (!updateErr) upserted++;
     }
 
+    // Auto-create outreach tasks for high-priority leads (score >= 70)
+    const highPriority = scored.filter(s => s.priority_score >= 70);
+    if (highPriority.length > 0) {
+      const outreachTasks = highPriority.slice(0, 5).map(s => ({
+        title: `Reactivation: Contact ${s.lead_name} (${s.outreach_method})`,
+        description: `Score: ${s.priority_score}/100. ${s.scoring_reasons}\n\nSuggested message:\n${s.suggested_message}`,
+        column_id: 'triage',
+        assigned_to: 'Lance',
+        priority: s.priority_score >= 80 ? 'P0 — Critical' : 'P1 — High',
+        category: 'clinical',
+        domain: 'BRAIN',
+        trigger_level: s.outreach_method === 'email' ? 'one-click' : 'manual',
+        source: 'reactivation',
+      }));
+      await supabase.from('global_tasks').insert(outreachTasks).catch(() => {});
+    }
+
     // Log
     await supabase.from('agent_runs').insert({
-      task_title: `Reactivation Scoring (${upserted} leads scored)`,
+      task_title: `Reactivation Scoring (${upserted} leads scored, ${highPriority.length} high-priority)`,
       status: 'completed',
       agent_route: isCron ? 'cron' : 'manual',
-      result: JSON.stringify({ leadsScanned: leads.length, eligible: scored.length, upserted }),
+      result: JSON.stringify({ leadsScanned: leads.length, eligible: scored.length, upserted, highPriority: highPriority.length }),
     });
 
     return res.status(200).json({
