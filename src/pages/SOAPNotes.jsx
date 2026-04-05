@@ -300,6 +300,30 @@ const SOAPNotes = () => {
     });
     if (!error) {
       setSaved(true);
+
+      // Auto-generate superbill if CPT codes were provided
+      if (soap.cpt_codes.trim()) {
+        try {
+          const { data: { session: authSession } } = await supabase.auth.getSession();
+          // Get the just-saved SOAP note ID
+          const { data: latestSoap } = await supabase.from('soap_notes')
+            .select('id')
+            .eq('client_name', soap.client_name)
+            .eq('session_date', soap.session_date)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (latestSoap?.id) {
+            fetch('/api/billing/superbill', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authSession?.access_token || ''}` },
+              body: JSON.stringify({ soap_note_id: latestSoap.id }),
+            }).catch(() => {}); // fire and forget
+          }
+        } catch {} // non-blocking
+      }
+
       setTimeout(() => setSaved(false), 2000);
       setSoap({ client_name: '', session_date: new Date().toISOString().split('T')[0], subjective: '', objective: '', assessment: '', plan: '', cpt_codes: '', duration: '55', diagnosis: '', functional_goal: '', progress_to_goal: 'New', clinical_flags: '', exercises: '' });
       setSelectedExercises([]);

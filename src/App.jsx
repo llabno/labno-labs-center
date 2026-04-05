@@ -4,46 +4,46 @@ import { Home, Database, PhoneCall, Code, Layers, LogOut, Settings as SettingsIc
 import { supabase } from './lib/supabase';
 import './index.css';
 
-// Import Pages
-import CommandCenter from './pages/CommandCenter';
-import Dashboard from './pages/Dashboard';
-import Oracle from './pages/Oracle';
-import DualCRM from './pages/DualCRM';
-import AppStudio from './pages/AppStudio';
-import UILibrary from './pages/UILibrary';
-import SettingsPage from './pages/Settings';
-import Login from './pages/Login';
-import Autonomous from './pages/Autonomous';
-import Reactivation from './pages/Reactivation';
-import Strategic from './pages/Strategic';
-import StrategicPlaybook from './pages/StrategicPlaybook';
-import WorkHistory from './pages/WorkHistory';
-import ClinicalBlog from './pages/ClinicalBlog';
-import Telemetry from './pages/Telemetry';
-import ProjectsTasks from './pages/ProjectsTasks';
-import TaskQueue from './pages/TaskQueue';
-import Wishlist from './pages/Wishlist';
-import ResourceMonitor from './pages/ResourceMonitor';
-import InternalMechanic from './pages/InternalMechanic';
-import ProjectPassport from './pages/ProjectPassport';
-import ClientOnboarding from './pages/ClientOnboarding';
-import CalendarView from './pages/CalendarView';
-import TimePicker from './pages/TimePicker';
-import ProposalGenerator from './pages/ProposalGenerator';
-import TemplateLibrary from './pages/TemplateLibrary';
-import SmartScheduler from './pages/SmartScheduler';
-import ClientDocuments from './pages/ClientDocuments';
-import ClientProfitability from './pages/ClientProfitability';
-import SOAPNotes from './pages/SOAPNotes';
-import ClientAvailability from './pages/ClientAvailability';
-import AvailabilityForm from './pages/AvailabilityForm';
-import BillingReview from './pages/BillingReview';
-import TodayView from './pages/TodayView';
-import DemoMode from './pages/DemoMode';
-import ClientPortal from './pages/ClientPortal';
-import WorkPlanner from './pages/WorkPlanner';
-import ContentPipeline from './pages/ContentPipeline';
-import AgentQueue from './pages/AgentQueue';
+// Lazy-loaded Pages — code-split for faster initial load
+import Login from './pages/Login'; // Login loads eagerly (first thing users see)
+const CommandCenter = React.lazy(() => import('./pages/CommandCenter'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Oracle = React.lazy(() => import('./pages/Oracle'));
+const DualCRM = React.lazy(() => import('./pages/DualCRM'));
+const AppStudio = React.lazy(() => import('./pages/AppStudio'));
+const UILibrary = React.lazy(() => import('./pages/UILibrary'));
+const SettingsPage = React.lazy(() => import('./pages/Settings'));
+const Autonomous = React.lazy(() => import('./pages/Autonomous'));
+const Reactivation = React.lazy(() => import('./pages/Reactivation'));
+const Strategic = React.lazy(() => import('./pages/Strategic'));
+const StrategicPlaybook = React.lazy(() => import('./pages/StrategicPlaybook'));
+const WorkHistory = React.lazy(() => import('./pages/WorkHistory'));
+const ClinicalBlog = React.lazy(() => import('./pages/ClinicalBlog'));
+const Telemetry = React.lazy(() => import('./pages/Telemetry'));
+const ProjectsTasks = React.lazy(() => import('./pages/ProjectsTasks'));
+const TaskQueue = React.lazy(() => import('./pages/TaskQueue'));
+const Wishlist = React.lazy(() => import('./pages/Wishlist'));
+const ResourceMonitor = React.lazy(() => import('./pages/ResourceMonitor'));
+const InternalMechanic = React.lazy(() => import('./pages/InternalMechanic'));
+const ProjectPassport = React.lazy(() => import('./pages/ProjectPassport'));
+const ClientOnboarding = React.lazy(() => import('./pages/ClientOnboarding'));
+const CalendarView = React.lazy(() => import('./pages/CalendarView'));
+const TimePicker = React.lazy(() => import('./pages/TimePicker'));
+const ProposalGenerator = React.lazy(() => import('./pages/ProposalGenerator'));
+const TemplateLibrary = React.lazy(() => import('./pages/TemplateLibrary'));
+const SmartScheduler = React.lazy(() => import('./pages/SmartScheduler'));
+const ClientDocuments = React.lazy(() => import('./pages/ClientDocuments'));
+const ClientProfitability = React.lazy(() => import('./pages/ClientProfitability'));
+const SOAPNotes = React.lazy(() => import('./pages/SOAPNotes'));
+const ClientAvailability = React.lazy(() => import('./pages/ClientAvailability'));
+const AvailabilityForm = React.lazy(() => import('./pages/AvailabilityForm'));
+const BillingReview = React.lazy(() => import('./pages/BillingReview'));
+const TodayView = React.lazy(() => import('./pages/TodayView'));
+const DemoMode = React.lazy(() => import('./pages/DemoMode'));
+const ClientPortal = React.lazy(() => import('./pages/ClientPortal'));
+const WorkPlanner = React.lazy(() => import('./pages/WorkPlanner'));
+const ContentPipeline = React.lazy(() => import('./pages/ContentPipeline'));
+const AgentQueue = React.lazy(() => import('./pages/AgentQueue'));
 import NotificationBell from './components/NotificationBell';
 import OnboardingWizard, { isOnboardingComplete } from './components/OnboardingWizard';
 import Watermark from './components/Watermark';
@@ -385,11 +385,13 @@ function App() {
     if (window.location.pathname === '/availability/fill' || window.location.pathname === '/demo' || window.location.pathname === '/portal') {
       return (
         <Router>
-          <Routes>
-            <Route path="/availability/fill" element={<AvailabilityForm />} />
-            <Route path="/demo" element={<DemoMode />} />
-            <Route path="/portal" element={<ClientPortal />} />
-          </Routes>
+          <React.Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#8a8682' }}>Loading...</div>}>
+            <Routes>
+              <Route path="/availability/fill" element={<AvailabilityForm />} />
+              <Route path="/demo" element={<DemoMode />} />
+              <Route path="/portal" element={<ClientPortal />} />
+            </Routes>
+          </React.Suspense>
         </Router>
       );
     }
@@ -476,6 +478,7 @@ function AppShell({ session, onLogout }) {
 
         {showOnboarding && <OnboardingWizard onClose={() => setShowOnboarding(false)} />}
 
+        <React.Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#8a8682' }}>Loading...</div>}>
         <Routes>
           {/* Command Center (merged Mission Control + Projects & Tasks) */}
           <Route path="/" element={<CommandCenter />} />
@@ -518,6 +521,7 @@ function AppShell({ session, onLogout }) {
           <Route path="/demo" element={<DemoMode />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
+        </React.Suspense>
 
         {/* Global Quick Add (Cmd+K / Ctrl+K) */}
         {showQuickAdd && <QuickAddOverlay onClose={() => setShowQuickAdd(false)} />}

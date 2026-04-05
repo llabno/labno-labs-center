@@ -254,8 +254,25 @@ export default async function handler(req, res) {
     try {
       let result
       const prompt = await buildAgentPrompt(run, supabase)
+      const taskTitle = (run.task_title || '').toLowerCase()
 
-      if (routeMode === 'local') {
+      // Special routing: Sniper tasks go to the dedicated blog generation endpoint
+      if (taskTitle.includes('sniper') && taskTitle.includes('blog')) {
+        try {
+          const baseUrl = `https://${req.headers.host}`
+          const sniperRes = await fetch(`${baseUrl}/api/sniper/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': req.headers.authorization || '' },
+            body: JSON.stringify({ soap_note: run.context || prompt }),
+          })
+          const sniperData = await sniperRes.json()
+          result = sniperData.blog_post || sniperData.error || JSON.stringify(sniperData)
+        } catch (sniperErr) {
+          result = `Sniper routing failed: ${sniperErr.message}. Falling back to generic agent.`
+          // Fall through to generic processing
+          if (routeMode === 'api') result = await executeViaAPI(prompt, run.task_id)
+        }
+      } else if (routeMode === 'local') {
         result = executeViaLocalCLI(prompt)
       } else if (routeMode === 'api') {
         result = await executeViaAPI(prompt, run.task_id)
