@@ -52,6 +52,39 @@ import { getRole, filterZonesForRole, getRoleLabel, getRoleColor } from './lib/u
 import { useDemo } from './lib/useDemo';
 
 // The interactive background blob follower
+// Loading skeleton for lazy-loaded pages
+const PageSkeleton = () => (
+  <div className="main-content" style={{ padding: '1.5rem' }}>
+    <div style={{ width: '200px', height: '24px', borderRadius: '6px', background: 'rgba(0,0,0,0.06)', marginBottom: '1.5rem', animation: 'pulse 1.5s ease-in-out infinite' }} />
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+      {[1,2,3,4].map(i => (
+        <div key={i} className="glass-panel" style={{ height: '80px', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: `${i * 0.1}s` }} />
+      ))}
+    </div>
+    <div className="glass-panel" style={{ height: '300px', animation: 'pulse 1.5s ease-in-out infinite', animationDelay: '0.3s' }} />
+    <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
+  </div>
+);
+
+// Error boundary for lazy-loaded routes
+class PageErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="main-content" style={{ padding: '2rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '8px' }}>Something went wrong</div>
+          <p style={{ color: '#8a8682', marginBottom: '16px' }}>{this.state.error?.message || 'Page failed to load'}</p>
+          <button onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+            className="btn-primary" style={{ padding: '10px 24px' }}>Reload Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const GlassCursorBlob = () => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
@@ -385,13 +418,13 @@ function App() {
     if (window.location.pathname === '/availability/fill' || window.location.pathname === '/demo' || window.location.pathname === '/portal') {
       return (
         <Router>
-          <React.Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#8a8682' }}>Loading...</div>}>
+          <PageErrorBoundary><React.Suspense fallback={<PageSkeleton />}>
             <Routes>
               <Route path="/availability/fill" element={<AvailabilityForm />} />
               <Route path="/demo" element={<DemoMode />} />
               <Route path="/portal" element={<ClientPortal />} />
             </Routes>
-          </React.Suspense>
+          </React.Suspense></PageErrorBoundary>
         </Router>
       );
     }
@@ -478,7 +511,7 @@ function AppShell({ session, onLogout }) {
 
         {showOnboarding && <OnboardingWizard onClose={() => setShowOnboarding(false)} />}
 
-        <React.Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: '#8a8682' }}>Loading...</div>}>
+        <PageErrorBoundary><React.Suspense fallback={<PageSkeleton />}>
         <Routes>
           {/* Command Center (merged Mission Control + Projects & Tasks) */}
           <Route path="/" element={<CommandCenter />} />
@@ -521,7 +554,7 @@ function AppShell({ session, onLogout }) {
           <Route path="/demo" element={<DemoMode />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
-        </React.Suspense>
+        </React.Suspense></PageErrorBoundary>
 
         {/* Global Quick Add (Cmd+K / Ctrl+K) */}
         {showQuickAdd && <QuickAddOverlay onClose={() => setShowQuickAdd(false)} />}
