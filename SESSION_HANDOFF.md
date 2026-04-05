@@ -1,7 +1,7 @@
 # Labno Labs Center — Session Handoff (2026-04-05)
 
 ## What This Is
-React + Vite + Supabase app. **45 pages** + 3 public pages. 4 ventures: Movement Solutions, Labno Labs, Slowbraid, personal ops. Vercel deploy. Supabase "Mission Control" (jlvxubslxzwmzslvzgxs). Build: `node_modules/.bin/vite build` — zero errors, ~4s. Auth: lance@labnolabs.com (admin), romy@movement-solutions.com (clinical).
+React + Vite + Supabase app. **45 pages** + 3 public pages. 4 ventures: Movement Solutions, Labno Labs, Slowbraid, personal ops. Vercel deploy. Supabase "Mission Control" (jlvxubslxzwmzslvzgxs). Build: `node_modules/.bin/vite build` — zero errors, ~4s. Auth: lance@labnolabs.com OR lance.labno@movement-solutions.com (admin), romy@labnolabs.com (clinical).
 
 ## Pages (45 + 3 public)
 

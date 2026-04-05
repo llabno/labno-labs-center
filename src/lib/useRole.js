@@ -2,10 +2,10 @@
  * useRole — Role-based access control
  *
  * Roles:
- *   admin  — Lance (@labnolabs.com) — sees everything
- *   clinical — Romy (@movement-solutions.com) — sees clinical pages + favorites
+ *   admin  — Lance (lance@labnolabs.com OR lance.labno@movement-solutions.com) — sees everything
+ *   clinical — Romy (romy@labnolabs.com) — sees clinical pages + favorites
  *
- * Page access is determined by email domain.
+ * Page access is determined by email.
  * Each role has a set of allowed paths and visible nav zones.
  */
 
@@ -45,10 +45,14 @@ const CLINICAL_ITEMS = new Set([
 export function getRole(email) {
   if (!email) return 'admin'; // no email = dev mode or pre-auth = show everything
   const lower = email.toLowerCase();
+  // Lance — admin on both domains
+  if (lower === 'lance@labnolabs.com') return 'admin';
+  if (lower === 'lance.labno@movement-solutions.com') return 'admin';
+  // Romy — clinical role
+  if (lower === 'romy@labnolabs.com') return 'clinical';
+  // Fallback: labnolabs.com domain = admin, others = admin (avoid hiding features)
   if (lower.endsWith('@labnolabs.com')) return 'admin';
-  if (lower.includes('lance')) return 'admin'; // Lance on any domain = admin
-  if (lower.endsWith('@movement-solutions.com')) return 'clinical';
-  return 'admin'; // default to admin to avoid hiding features unexpectedly
+  return 'admin';
 }
 
 export function filterZonesForRole(zones, role) {

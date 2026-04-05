@@ -134,12 +134,14 @@ export default async function handler(req, res) {
         }
 
         // Log the backup event
-        await supabase.from('activity_log').insert({
-          source_type: 'Task',
-          title: `Database backup: ${totalRecords} records across ${backup.table_count} tables`,
-          action: 'backup_completed',
-          details: JSON.stringify({ filename, records: totalRecords, tables: backup.table_count, errors: backup.error_count }),
-        }).catch(() => {})
+        try {
+          await supabase.from('activity_log').insert({
+            source_type: 'Task',
+            title: `Database backup: ${totalRecords} records across ${backup.table_count} tables`,
+            action: 'backup_completed',
+            details: JSON.stringify({ filename, records: totalRecords, tables: backup.table_count, errors: backup.error_count }),
+          })
+        } catch (_) { /* activity_log may not exist yet */ }
 
         return res.status(200).json({
           success: true,

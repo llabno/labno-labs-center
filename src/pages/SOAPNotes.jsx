@@ -411,7 +411,7 @@ const SOAPNotes = () => {
 
       {/* Session Brief Form */}
       {activeTab === 'brief' && (
-        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', position: 'relative', zIndex: (clientSuggestions.length > 0 && !clientSelected) || exerciseDropdownOpen ? 100 : undefined }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px', marginBottom: '16px' }}>
             <div style={{ position: 'relative' }}>
               <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#3e3c3a', display: 'block', marginBottom: '4px' }}>Client Name * <span style={{ fontSize: '0.65rem', color: '#8a8682', fontWeight: 400 }}>(from CRM)</span></label>

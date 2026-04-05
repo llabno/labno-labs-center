@@ -110,6 +110,18 @@ body {
   z-index: 1;
 }
 
+/* Allow dropdowns inside glass-panels to break out of stacking context */
+.glass-panel:has([data-dropdown-open="true"]) {
+  z-index: 100;
+}
+
+/* Dropdown containers that need to appear above everything */
+.dropdown-portal {
+  position: absolute;
+  z-index: 99999;
+}
+
+
 /* App Layout Grid */
 .app-container {
   display: flex;

@@ -17,8 +17,9 @@ function getRouteMode() {
   const explicit = process.env.AGENT_ROUTE
   if (explicit === 'local') return 'local'
   if (explicit === 'api') return 'api'
-  // Default to simulation — never spend money without explicit opt-in
-  return 'simulation'
+  // No simulation — if AGENT_ROUTE is not set, that's an error.
+  // Tasks should never silently fake results.
+  return 'error'
 }
 
 async function buildAgentPrompt(run, supabase) {
@@ -99,18 +100,16 @@ function executeViaLocalCLI(prompt) {
   return result.trim() || 'No response from local Claude CLI'
 }
 
-function executeSimulation(run) {
-  return `[Simulation] Agent analyzed task: "${run.task_title}"
+function buildRoutingError(run) {
+  return `[ERROR] AGENT_ROUTE is not configured. Task "${run.task_title}" was NOT executed.
 
-Plan:
-1. Review current state of ${run.project_name || 'project'}
-2. Identify dependencies and blockers
-3. Execute primary implementation
-4. Run validation checks
-5. Update task status
+ACTION REQUIRED: Set AGENT_ROUTE in Vercel Environment Variables.
+  - Go to Vercel Dashboard → Project → Settings → Environment Variables
+  - Add: AGENT_ROUTE=api (uses Anthropic API, paid per-token)
+  - Or: AGENT_ROUTE=local (uses local Claude CLI, free with Pro subscription)
+  - Redeploy after adding the variable.
 
-Complexity: Medium
-Route: Set AGENT_ROUTE=local (free, uses Claude Pro) or AGENT_ROUTE=api (paid, uses API key).`
+This task has been marked as FAILED and will appear in your Today dashboard pending actions.`
 }
 
 /**
@@ -277,8 +276,18 @@ export default async function handler(req, res) {
       } else if (routeMode === 'api') {
         result = await executeViaAPI(prompt, run.task_id)
       } else {
-        await new Promise(r => setTimeout(r, 1500))
-        result = executeSimulation(run)
+        // No valid route configured — fail the task loudly
+        const errorMsg = buildRoutingError(run)
+        await supabase.from('agent_runs')
+          .update({
+            status: 'failed',
+            error: 'AGENT_ROUTE not configured. Set AGENT_ROUTE=api or AGENT_ROUTE=local in Vercel env vars.',
+            result: errorMsg,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', run.id)
+        results.push({ id: run.id, status: 'failed', error: 'AGENT_ROUTE not configured' })
+        continue
       }
 
       // Tag the result with routing info

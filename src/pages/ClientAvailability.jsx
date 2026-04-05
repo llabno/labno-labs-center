@@ -513,7 +513,7 @@ const ClientAvailability = () => {
 
         {/* Edit / Add Form */}
         {(showAdd || editing) && (
-          <div className="glass-panel" style={{ padding: '1.25rem' }}>
+          <div className="glass-panel" style={{ padding: '1.25rem', position: 'relative', zIndex: clientSuggestions.length > 0 && !clientSelected ? 100 : undefined }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#2e2c2a' }}>
                 {editing ? 'Edit Client' : 'Add Client'}
