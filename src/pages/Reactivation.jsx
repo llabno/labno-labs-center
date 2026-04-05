@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Inbox, Phone, Mail, MessageSquare, CheckCircle, XCircle, Archive, ChevronDown, ChevronUp, Send, RefreshCw, Star, Clock, AlertTriangle } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 const METHOD_ICONS = { email: Mail, call: Phone, text: MessageSquare };
@@ -161,7 +162,7 @@ const Reactivation = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Inbox color="#b06050" /> Reactivation Inbox
+        <Inbox color="#b06050" /> Reactivation Inbox <InfoTooltip text={PAGE_INFO.reactivation} />
         <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(176,96,80,0.1)', color: '#b06050', fontWeight: 600 }}>
           {stats.pending} pending · {stats.highPriority} high priority
         </span>

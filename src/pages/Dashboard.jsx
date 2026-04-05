@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket, GitBranch, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle, Plus, LayoutList, Calendar, CheckSquare, Flame, X, SplitSquareHorizontal, ListFilter, ArrowRight, ExternalLink, ChevronDown, ChevronUp, Rocket, GitBranch, AlertCircle, CalendarPlus, Sparkles, Send, Mic, MicOff } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { CalendarWidget } from './CalendarView';
 
 const COLUMNS = ['backlog', 'triage', 'in_progress', 'review', 'blocked', 'completed'];
 const COLUMN_LABELS = { backlog: 'Backlog', triage: 'Needs Triage', in_progress: 'In Progress', review: 'Review', blocked: 'Blocked', completed: 'Completed' };
@@ -9,8 +12,9 @@ const COLUMN_DOTS = { backlog: '#9e9a97', triage: '#5a8abf', in_progress: '#b060
 const VENTURE_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'clinical', label: 'Clinical (MOSO)' },
-  { key: 'consulting', label: 'Consulting (Labno Labs)' },
-  { key: 'apps', label: 'Apps' },
+  { key: 'labno_internal', label: 'Labno Labs (Internal)' },
+  { key: 'client_consulting', label: 'Client Consulting' },
+  { key: 'infrastructure', label: 'Infrastructure' },
 ];
 
 const ASSIGNEE_FILTERS = ['All', 'Lance', 'Avery', 'Romy', 'Sarah', 'Agent'];
@@ -18,9 +22,17 @@ const ASSIGNEE_FILTERS = ['All', 'Lance', 'Avery', 'Romy', 'Sarah', 'Agent'];
 const inferCategory = (name) => {
   const n = (name || '').toLowerCase();
   if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization') || n.includes('kylie') || n.includes('exercise card')) return 'clinical';
-  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting') || n.includes('greenrope') || n.includes('notion crm')) return 'consulting';
-  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('oracle') || n.includes('mcp')) return 'apps';
-  return 'all';
+  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('greenrope') || n.includes('notion crm') || n.includes('labno')) return 'labno_internal';
+  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('oracle') || n.includes('mcp')) return 'infrastructure';
+  return null;
+};
+
+// Get the venture for a project: prefer DB column, fall back to inference
+const getProjectVenture = (p) => {
+  if (p.venture) return p.venture;
+  const pType = p.project_type || 'internal';
+  if (pType === 'client') return 'client_consulting';
+  return inferCategory(p.name) || null;
 };
 
 const TIER_KEYWORDS = [
@@ -41,14 +53,96 @@ const getUrgency = (dueDateStr) => {
   return { label: `${daysLeft}d left`, color: '#6aab6e', bg: 'rgba(106,171,110,0.10)' };
 };
 
-const Dashboard = () => {
+// Wishlist Quick Add — appears on Dashboard for frictionless idea capture
+const WishlistQuickAdd = () => {
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [recentCount, setRecentCount] = useState(0);
+  const [listening, setListening] = useState(false);
+
+  useEffect(() => {
+    supabase.from('wishlist').select('id', { count: 'exact', head: true }).then(({ count }) => setRecentCount(count || 0));
+  }, [sent]);
+
+  const submit = async () => {
+    if (!input.trim()) return;
+    setSending(true);
+    const items = input.split(/\n+/).map(s => s.trim()).filter(s => s.length > 3);
+    for (const chunk of items) {
+      await supabase.from('wishlist').insert({ raw_text: chunk, status: 'New Idea', analyzed: false });
+    }
+    setInput('');
+    setSending(false);
+    setSent(true);
+    setTimeout(() => setSent(false), 2000);
+  };
+
+  const toggleVoice = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+    if (listening) { setListening(false); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+      setInput(prev => prev ? prev + '\n' + transcript : transcript);
+    };
+    recognition.onend = () => setListening(false);
+    recognition.start();
+    setListening(true);
+  };
+
+  return (
+    <div className="glass-panel" style={{ padding: '1.25rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#2e2c2a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Sparkles size={16} color="#b06050" /> Quick Idea Capture
+        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.62rem', color: '#8a8682', padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)' }}>Cmd+K</span>
+          <Link to="/wishlist" style={{ fontSize: '0.72rem', color: '#5a8abf', textDecoration: 'none', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '3px' }}>
+            View All ({recentCount}) <ArrowRight size={10} />
+          </Link>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
+          placeholder="Type or speak an idea and press Enter..."
+          rows={2}
+          style={{ flex: 1, padding: '10px 12px', borderRadius: '10px', border: listening ? '2px solid #d14040' : '1px solid rgba(0,0,0,0.08)', fontSize: '0.85rem', resize: 'none', background: listening ? 'rgba(209,64,64,0.02)' : 'rgba(255,255,255,0.6)', outline: 'none', fontFamily: 'inherit', transition: 'all 0.2s' }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignSelf: 'flex-end' }}>
+          <button onClick={toggleVoice}
+            style={{ padding: '8px', borderRadius: '8px', border: 'none', background: listening ? '#d14040' : 'rgba(0,0,0,0.05)', color: listening ? '#fff' : '#6b6764', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+            title={listening ? 'Stop recording' : 'Voice input'}>
+            {listening ? <MicOff size={14} /> : <Mic size={14} />}
+          </button>
+          <button onClick={submit} disabled={!input.trim() || sending}
+            style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: sent ? '#2d8a4e' : '#b06050', color: '#fff', cursor: input.trim() ? 'pointer' : 'not-allowed', fontWeight: 600, fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s', opacity: input.trim() ? 1 : 0.5 }}>
+            {sent ? <><CheckCircle size={12} /> Done</> : <><Send size={12} /> Add</>}
+          </button>
+        </div>
+      </div>
+      <p style={{ fontSize: '0.68rem', color: '#8a8682', marginTop: '6px' }}>Ideas auto-analyze and route into your organization. Voice input or type — one idea per line for bulk add.</p>
+    </div>
+  );
+};
+
+const Dashboard = ({ projectTypeFilter = 'all' }) => {
   const [activeBoards, setActiveBoards] = useState([]);
   const [projects, setProjects] = useState([]);
   const [tasksByProject, setTasksByProject] = useState({});
   const [loading, setLoading] = useState(true);
   const [newTaskInputs, setNewTaskInputs] = useState({});
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', status: 'Active', due_date: '', complexity: 1 });
+  const [newProject, setNewProject] = useState({ name: '', status: 'Active', due_date: '', complexity: 1, project_type: 'internal', venture: '' });
   const [ventureFilter, setVentureFilter] = useState('all');
   const [assigneeFilter, setAssigneeFilter] = useState('All');
   const [showBacklog, setShowBacklog] = useState(false);
@@ -56,7 +150,17 @@ const Dashboard = () => {
   const [executingTasks, setExecutingTasks] = useState({});
   const [viewMode, setViewMode] = useState('tier');
   const [showBlockingView, setShowBlockingView] = useState(false);
+  const [scheduleModal, setScheduleModal] = useState(null); // { taskId, taskTitle }
+  const [scheduleDateInput, setScheduleDateInput] = useState('');
   const kanbanRef = useRef(null);
+
+  const scheduleTask = async () => {
+    if (!scheduleModal || !scheduleDateInput) return;
+    await supabase.from('global_tasks').update({ due_date: scheduleDateInput }).eq('id', scheduleModal.taskId);
+    setScheduleModal(null);
+    setScheduleDateInput('');
+    await fetchData();
+  };
 
   const executeTask = async (task, projectName) => {
     setExecutingTasks(prev => ({ ...prev, [task.id]: 'queued' }));
@@ -113,19 +217,38 @@ const Dashboard = () => {
     fetchRevenue();
   }, []);
 
+  // Consulting revenue estimate from active client projects
+  const [consultingRevenue, setConsultingRevenue] = useState(null);
+  useEffect(() => {
+    const fetchConsulting = async () => {
+      const { data: clientProjects } = await supabase.from('projects').select('id, project_type, status, client_id').eq('project_type', 'client').eq('status', 'Active');
+      const { data: clients } = await supabase.from('clients').select('id, billing_multiplier');
+      if (clientProjects && clients) {
+        const baseRate = Number(localStorage.getItem('llc_base_hourly_rate') || '250');
+        const clientMap = {};
+        clients.forEach(c => { clientMap[c.id] = c; });
+        const monthlyEstimate = clientProjects.reduce((sum, p) => {
+          const mult = clientMap[p.client_id]?.billing_multiplier || 1.0;
+          return sum + (20 * baseRate * mult); // ~20 hrs/mo per project
+        }, 0);
+        setConsultingRevenue({ activeProjects: clientProjects.length, monthlyEstimate: Math.round(monthlyEstimate) });
+      }
+    };
+    fetchConsulting();
+  }, []);
+
   const stats = [
     { title: 'Total CRM Contacts', value: liveStats.leads.toLocaleString(), link: '/crm' },
     { title: 'Active Clinical Pipeline', value: liveStats.activePipeline.toLocaleString(), link: '/crm' },
     { title: 'Oracle SOPs Loaded', value: liveStats.sops.toLocaleString(), link: '/oracle' },
-    ...(revenueStats ? [
-      { title: 'Revenue (Month)', value: `$${revenueStats.revenue.month.toLocaleString()}`, link: '/studio' },
-      { title: 'Orders (Month)', value: revenueStats.orders.month.toLocaleString(), link: '/studio' },
+    ...(consultingRevenue ? [
+      { title: 'Active Client Projects', value: consultingRevenue.activeProjects.toString(), link: '/profitability' },
     ] : []),
   ];
 
   const fetchData = async () => {
     const { data: projData, error: projErr } = await supabase
-      .from('internal_projects').select('*').order('due_date', { ascending: true });
+      .from('projects').select('*').order('due_date', { ascending: true });
     if (projErr) { console.error('Error fetching projects:', projErr); setLoading(false); return; }
     setProjects(projData || []);
 
@@ -164,17 +287,19 @@ const Dashboard = () => {
 
   const createProject = async () => {
     if (!newProject.name.trim()) return;
-    const { error } = await supabase.from('internal_projects').insert({
+    const { error } = await supabase.from('projects').insert({
       name: newProject.name.trim(),
       status: newProject.status,
       due_date: newProject.due_date || null,
       complexity: Number(newProject.complexity),
+      project_type: newProject.project_type,
+      venture: newProject.venture || null,
       total_tasks: 0,
       completed_tasks: 0,
     });
     if (error) { console.error('Error creating project:', error); return; }
     setShowNewProjectModal(false);
-    setNewProject({ name: '', status: 'Active', due_date: '', complexity: 1 });
+    setNewProject({ name: '', status: 'Active', due_date: '', complexity: 1, project_type: 'internal', venture: '' });
     await fetchData();
   };
 
@@ -184,10 +309,11 @@ const Dashboard = () => {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const hotList = projects.filter(p => p.complexity >= 3 || p.status === 'Active');
-
-  const filteredProjects = projects.filter(p => {
-    if (ventureFilter !== 'all' && inferCategory(p.name) !== ventureFilter) return false;
+  const applyFilters = (list) => list.filter(p => {
+    const pType = (p.project_type && p.project_type !== '') ? p.project_type : 'internal';
+    if (projectTypeFilter !== 'all' && pType !== projectTypeFilter) return false;
+    const venture = getProjectVenture(p);
+    if (ventureFilter !== 'all' && venture !== ventureFilter) return false;
     if (assigneeFilter !== 'All') {
       const projectTasks = tasksByProject[p.id];
       if (projectTasks) {
@@ -195,11 +321,16 @@ const Dashboard = () => {
         const hasAssignee = allTasks.some(t => (t.assigned_to || '').toLowerCase() === assigneeFilter.toLowerCase());
         if (!hasAssignee) return false;
       } else {
+        // Projects with no tasks: show for "Lance" (owner) if it's a client project, hide otherwise
+        if (pType === 'client' && assigneeFilter.toLowerCase() === 'lance') return true;
         return false;
       }
     }
     return true;
   });
+
+  const filteredProjects = applyFilters(projects);
+  const hotList = applyFilters(projects.filter(p => p.complexity >= 3 || p.status === 'Active'));
 
   const toggleProjectBoard = (proj) => {
     // PostHog Tracking for Behavioral Analysis
@@ -369,9 +500,27 @@ ${COLUMNS.map(col => `
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
+      {/* Getting Started Banner — dismissible */}
+      {!localStorage.getItem('llc_dismiss_getting_started') && (
+        <div className="glass-panel" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', borderLeft: '3px solid #b06050', background: 'linear-gradient(135deg, rgba(176,96,80,0.04) 0%, rgba(255,255,255,0.4) 100%)' }}>
+          <Rocket size={20} color="#b06050" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#2e2c2a', marginBottom: '2px' }}>Welcome to Labno Labs Center</div>
+            <div style={{ fontSize: '0.78rem', color: '#6b6764' }}>
+              New here? <Link to="/settings" style={{ color: '#b06050', fontWeight: 600, textDecoration: 'none' }}>Start the guided tour</Link> in Settings, or explore the <Link to="/demo" style={{ color: '#5a8abf', fontWeight: 600, textDecoration: 'none' }}>demo mode</Link> with sample data.
+              Use <strong>Work Planner</strong> to dispatch tasks to AI agents. Check <strong>Autonomous</strong> tab to see results.
+            </div>
+          </div>
+          <button onClick={() => { localStorage.setItem('llc_dismiss_getting_started', 'true'); window.location.reload(); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8a8682', fontSize: '0.82rem', fontWeight: 600, padding: '4px 8px', flexShrink: 0 }}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* 1. Executive Summary */}
       <div>
-        <h1 className="page-title">Executive Mission Control</h1>
+        <h1 className="page-title">Executive Mission Control <InfoTooltip text={PAGE_INFO.dashboard} /></h1>
         <div className="stats-grid">
           {stats.map((s) => (
             <div key={s.title} className="stat-card glass-panel" style={{ cursor: 'pointer' }} onClick={() => window.open(s.link, '_blank')}>
@@ -386,11 +535,15 @@ ${COLUMNS.map(col => `
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
         <div className="filter-bar">
           <span className="filter-label">Venture</span>
-          {VENTURE_FILTERS.map(f => (
-            <button key={f.key} className={`filter-pill${ventureFilter === f.key ? ' active' : ''}`} onClick={() => setVentureFilter(f.key)}>
-              {f.label}
-            </button>
-          ))}
+          {VENTURE_FILTERS.map(f => {
+            const count = f.key === 'all' ? projects.length : projects.filter(p => getProjectVenture(p) === f.key).length;
+            return (
+              <button key={f.key} className={`filter-pill${ventureFilter === f.key ? ' active' : ''}`} onClick={() => setVentureFilter(f.key)} style={{ opacity: count === 0 && f.key !== 'all' ? 0.4 : 1, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                {f.label}
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, background: ventureFilter === f.key ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.06)', padding: '0 5px', borderRadius: '8px' }}>{count}</span>
+              </button>
+            );
+          })}
         </div>
         <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
         <div className="filter-bar">
@@ -495,7 +648,8 @@ ${COLUMNS.map(col => `
           )}
         </div>
 
-        {/* 3. The Hot List */}
+        {/* 3. The Hot List + Calendar Widget */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div className="glass-panel" style={{ padding: '1.5rem', background: 'linear-gradient(180deg, rgba(176,96,80,0.04) 0%, rgba(255,255,255,0.28) 100%)' }}>
           <h3 style={{ color: '#b04a3a', fontSize: '1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
             <Flame size={20} /> The Hot List
@@ -522,6 +676,13 @@ ${COLUMNS.map(col => `
               )
             })}
           </div>
+        </div>
+
+        {/* Calendar Widget */}
+        <CalendarWidget onViewAll={() => window.location.href = '/calendar'} />
+
+        {/* Wishlist Quick Add — Frictionless Idea Capture */}
+        <WishlistQuickAdd />
         </div>
       </div>
 
@@ -589,9 +750,16 @@ ${COLUMNS.map(col => `
                                   )}
                                 </div>
                                 <button
+                                  onClick={e => { e.stopPropagation(); setScheduleModal({ taskId: t.id, taskTitle: t.title }); setScheduleDateInput(''); }}
+                                  title="Schedule"
+                                  style={{ background: 'rgba(90,138,191,0.12)', border: 'none', borderRadius: '6px', padding: '4px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease', marginLeft: '6px', flexShrink: 0 }}
+                                >
+                                  <CalendarPlus size={12} color="#5a8abf" />
+                                </button>
+                                <button
                                   onClick={e => { e.stopPropagation(); executeTask(t, board.name); }}
                                   title="Execute with Agent"
-                                  style={{ background: executingTasks[t.id] ? '#6aab6e' : 'rgba(176,96,80,0.15)', border: 'none', borderRadius: '6px', padding: '4px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease', marginLeft: '6px', flexShrink: 0 }}
+                                  style={{ background: executingTasks[t.id] ? '#6aab6e' : 'rgba(176,96,80,0.15)', border: 'none', borderRadius: '6px', padding: '4px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s ease', flexShrink: 0 }}
                                 >
                                   <Rocket size={12} color={executingTasks[t.id] ? '#fff' : '#b06050'} />
                                 </button>
@@ -839,12 +1007,31 @@ ${COLUMNS.map(col => `
                 <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px' }}>Project Name</label>
                 <input type="text" value={newProject.name} onChange={e => setNewProject(p => ({ ...p, name: e.target.value }))} style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.9rem', boxSizing: 'border-box', background: 'rgba(255,255,255,0.6)' }} />
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px' }}>Type</label>
+                  <select value={newProject.project_type} onChange={e => setNewProject(p => ({ ...p, project_type: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
+                    <option value="internal">Internal</option>
+                    <option value="client">Client Project</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px' }}>Status</label>
+                  <select value={newProject.status} onChange={e => setNewProject(p => ({ ...p, status: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
+                    <option value="Active">Active</option>
+                    <option value="Planning">Planning</option>
+                    <option value="Blocked">Blocked</option>
+                  </select>
+                </div>
+              </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px' }}>Status</label>
-                <select value={newProject.status} onChange={e => setNewProject(p => ({ ...p, status: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
-                  <option value="Active">Active</option>
-                  <option value="Planning">Planning</option>
-                  <option value="Blocked">Blocked</option>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#5a5856', marginBottom: '4px' }}>Venture</label>
+                <select value={newProject.venture} onChange={e => setNewProject(p => ({ ...p, venture: e.target.value }))} className="kanban-select" style={{ marginTop: 0, padding: '8px 28px 8px 10px', fontSize: '0.9rem' }}>
+                  <option value="">Auto-detect</option>
+                  <option value="clinical">Clinical (MOSO)</option>
+                  <option value="consulting">Consulting (Labno Labs)</option>
+                  <option value="apps">Apps</option>
+                  <option value="internal_ops">Internal Ops</option>
                 </select>
               </div>
               <div>
@@ -865,6 +1052,102 @@ ${COLUMNS.map(col => `
         </div>
       )}
 
+      {/* Schedule Task Modal */}
+      {scheduleModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setScheduleModal(null)}>
+          <div className="glass-panel" style={{ padding: '2rem', width: '380px', maxWidth: '90vw', background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(32px)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#2e2c2a', display: 'flex', alignItems: 'center', gap: '8px' }}><CalendarPlus size={18} color="#5a8abf" /> Schedule Task</h3>
+              <button onClick={() => setScheduleModal(null)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#6b6764' }}><X size={18} /></button>
+            </div>
+            <p style={{ fontSize: '0.88rem', color: '#3e3c3a', marginBottom: '1rem' }}>{scheduleModal.taskTitle}</p>
+            <input type="date" value={scheduleDateInput} onChange={e => setScheduleDateInput(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.9rem', marginBottom: '1rem', boxSizing: 'border-box', background: 'rgba(255,255,255,0.6)' }} />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => setScheduleModal(null)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>Cancel</button>
+              <button onClick={scheduleTask} className="btn-primary" style={{ flex: 1, padding: '10px', fontSize: '0.85rem' }}>Schedule</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Tasks — shows newest tasks with creation dates */}
+      <RecentTasksWidget />
+
+    </div>
+  );
+};
+
+// Recent Tasks Widget — shows newest global_tasks sorted by creation date
+const RecentTasksWidget = () => {
+  const [tasks, setTasks] = useState([]);
+  const [briefing, setBriefing] = useState(null);
+  const [loadingBriefing, setLoadingBriefing] = useState(false);
+
+  useEffect(() => {
+    supabase.from('global_tasks').select('id, title, assigned_to, column_id, created_at, source_type, project_id')
+      .order('created_at', { ascending: false }).limit(10)
+      .then(({ data }) => setTasks(data || []));
+  }, []);
+
+  const testBriefing = async () => {
+    setLoadingBriefing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/briefing/weekly', {
+        headers: { Authorization: `Bearer ${session?.access_token || ''}` },
+      });
+      const data = await res.json();
+      if (data.success) setBriefing(data.briefing);
+    } catch (err) { console.error(err); }
+    setLoadingBriefing(false);
+  };
+
+  const formatAgo = (d) => {
+    if (!d) return '';
+    const mins = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  const colColors = { backlog: '#9e9a97', triage: '#5a8abf', review: '#c49a40', completed: '#6aab6e', in_progress: '#b06050', blocked: '#d14040' };
+
+  return (
+    <div className="glass-panel" style={{ padding: '1.25rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#2e2c2a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Clock size={16} color="#b06050" /> Recent Tasks
+        </h3>
+        <button onClick={testBriefing} disabled={loadingBriefing}
+          style={{ fontSize: '0.72rem', padding: '5px 12px', borderRadius: '6px', border: '1px solid rgba(90,138,191,0.2)', background: 'rgba(90,138,191,0.06)', color: '#5a8abf', cursor: 'pointer', fontWeight: 500 }}>
+          {loadingBriefing ? 'Loading...' : briefing ? 'Refresh Briefing' : 'Test Monday Briefing'}
+        </button>
+      </div>
+
+      {/* Briefing output */}
+      {briefing && (
+        <div style={{ marginBottom: '12px', padding: '12px', borderRadius: '8px', background: 'rgba(90,138,191,0.04)', border: '1px solid rgba(90,138,191,0.1)', fontSize: '0.78rem', color: '#3e3c3a', whiteSpace: 'pre-wrap', fontFamily: 'inherit', lineHeight: 1.5, maxHeight: '300px', overflow: 'auto' }}>
+          {briefing.text}
+        </div>
+      )}
+
+      {tasks.length === 0 ? (
+        <p style={{ color: '#8a8682', fontSize: '0.82rem' }}>No tasks yet.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {tasks.map(t => (
+            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.015)' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: colColors[t.column_id] || '#9e9a97', flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: '0.82rem', color: '#2e2c2a', fontWeight: 500 }}>{t.title}</span>
+              {t.source_type && <span style={{ fontSize: '0.6rem', padding: '1px 5px', borderRadius: '3px', background: 'rgba(156,39,176,0.08)', color: '#9c27b0' }}>{t.source_type}</span>}
+              {t.assigned_to && <span style={{ fontSize: '0.65rem', color: '#8a8682' }}>{t.assigned_to}</span>}
+              <span style={{ fontSize: '0.65rem', color: '#aaa', whiteSpace: 'nowrap' }}>{formatAgo(t.created_at)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

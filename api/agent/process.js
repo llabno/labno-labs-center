@@ -287,6 +287,24 @@ export default async function handler(req, res) {
         await autoChainNext(supabase, run.task_id, run.project_name, req)
       }
 
+      // Log to activity_log so Work History picks it up
+      await supabase.from('activity_log').insert({
+        source_type: 'Task',
+        title: `Agent completed: ${run.task_title}`,
+        description: result?.slice(0, 500) || 'No output',
+        action: 'agent_completed',
+        project: run.project_name || null,
+        details: JSON.stringify({ run_id: run.id, route: routeMode, task_id: run.task_id }),
+      }).then(() => {}).catch(() => {}) // graceful — table may not exist yet
+
+      // If task came from wishlist, auto-mark wishlist item as done
+      if (run.task_id) {
+        await supabase.from('wishlist')
+          .update({ status: 'Done', dispatched_at: new Date().toISOString() })
+          .eq('id', run.task_id)
+          .then(() => {}).catch(() => {})
+      }
+
       results.push({ id: run.id, status: 'completed', route: routeMode })
 
     } catch (err) {

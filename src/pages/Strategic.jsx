@@ -1,4 +1,5 @@
 import { useState } from "react";
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 
 /* ─── DATA ─────────────────────────────────────────────────────────────────── */
 
@@ -569,7 +570,7 @@ export default function App() {
             Movement Solutions · Labno Labs · Deep Systems Analysis
           </p>
           <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:"clamp(1.8rem,4.5vw,2.9rem)", letterSpacing:"-0.02em", lineHeight:1.1, color:"#E8E3DC" }}>
-            Strategic Intelligence<br /><span style={{ fontStyle:"italic", color:"#7C9885" }}>Extended Field Manual</span>
+            Strategic Intelligence <InfoTooltip text={PAGE_INFO.strategic} color="#E8E3DC" /><br /><span style={{ fontStyle:"italic", color:"#7C9885" }}>Extended Field Manual</span>
           </h1>
           <div style={{ height:1, background:"linear-gradient(90deg,#7C9885 0%,#252825 60%,transparent 100%)", margin:"22px 0 0" }} />
         </div>

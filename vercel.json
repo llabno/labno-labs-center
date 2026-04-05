@@ -6,8 +6,8 @@
       "schedule": "*/15 * * * *"
     },
     {
-      "path": "/api/backup/export?cron=true",
-      "schedule": "0 6 * * 0"
+      "path": "/api/backup/export?cron=true&store=true",
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/data/quality-notify",

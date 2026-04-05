@@ -64,7 +64,7 @@ export default async function handler(req, res) {
     const needsAttention = moso.grade >= 'C' || consulting.grade >= 'C';
     if (needsAttention) {
       // Find or create a "Data Hygiene" project
-      const { data: projects } = await supabase.from('internal_projects').select('id').ilike('name', '%data%hygiene%').limit(1);
+      const { data: projects } = await supabase.from('projects').select('id').ilike('name', '%data%hygiene%').limit(1);
       const projectId = projects?.[0]?.id;
 
       if (projectId) {

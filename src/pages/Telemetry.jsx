@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Users, TrendingUp, BarChart3, Globe, Search, ChevronDown, ChevronUp, RefreshCw, AlertCircle } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 // Mock seed data — used when the geo_telemetry table doesn't exist yet.
@@ -246,7 +247,7 @@ const Telemetry = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 className="page-title" style={{ marginBottom: '0.25rem' }}>Global Telemetry</h1>
+          <h1 className="page-title" style={{ marginBottom: '0.25rem' }}>Global Telemetry <InfoTooltip text={PAGE_INFO.telemetry} /></h1>
           <p style={{ color: '#6b6764', fontSize: '0.85rem' }}>
             Visitor demographics by city, zip code, and state
             {usingMock && (

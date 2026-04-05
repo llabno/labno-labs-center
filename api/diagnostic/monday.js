@@ -45,7 +45,7 @@ export default async function handler(req, res) {
   };
 
   // ── 1. Table Health ──────────────────────────────────────
-  const tables = ['internal_projects', 'global_tasks', 'agent_runs', 'wishlist', 'moso_rx', 'oracle_sops'];
+  const tables = ['projects', 'global_tasks', 'agent_runs', 'wishlist', 'moso_rx', 'oracle_sops'];
   const tableCounts = {};
   for (const table of tables) {
     const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });

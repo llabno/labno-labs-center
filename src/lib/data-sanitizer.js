@@ -43,7 +43,7 @@ export const stripHtml = (text) => {
 
 // --- CLINICAL FIELD VALIDATORS ---
 
-const VALID_STATUSES_MOSO = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'PITA-DNC'];
+const VALID_STATUSES_MOSO = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'DNC'];
 const VALID_STATUSES_LABNO = ['New Lead', 'Qualified', 'Proposal', 'Active Client', 'Inactive', 'Referred Out'];
 const VALID_TIERS = ['1', '2', '3', 1, 2, 3];
 

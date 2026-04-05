@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   // 1. Supabase connectivity
   try {
     const { count, error } = await supabase
-      .from('internal_projects')
+      .from('projects')
       .select('id', { count: 'exact', head: true });
     checks.supabase = error ? { status: 'fail', error: error.message } : { status: 'ok', projects: count };
     if (error) healthy = false;
@@ -111,6 +111,48 @@ export default async function handler(req, res) {
     checks.oracle_sops = { status: 'skip' };
   }
 
+  // 6. API Route availability check (lightweight — just tests they respond)
+  if (req.query.deep === 'true') {
+    const baseUrl = `https://${req.headers.host}`;
+    const routes = [
+      '/api/briefing/daily',
+      '/api/briefing/weekly',
+      '/api/billing/superbill',
+      '/api/tasks/cleanup',
+      '/api/agent/run',
+      '/api/reactivation/score',
+      '/api/sniper/generate',
+      '/api/calendar/sync',
+      '/api/availability/invite',
+      '/api/oracle/ask',
+    ];
+    const routeChecks = {};
+    for (const route of routes) {
+      try {
+        const resp = await fetch(`${baseUrl}${route}`, {
+          method: route.includes('run') || route.includes('ask') ? 'POST' : 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          body: route.includes('run') ? JSON.stringify({ test: true }) : undefined,
+          signal: AbortSignal.timeout(5000),
+        });
+        routeChecks[route] = { status: resp.status < 500 ? 'ok' : 'fail', http: resp.status };
+      } catch (e) {
+        routeChecks[route] = { status: 'fail', error: e.message };
+        healthy = false;
+      }
+    }
+    checks.api_routes = routeChecks;
+  }
+
+  // 7. Environment variables check
+  checks.env = {
+    AGENT_ROUTE: process.env.AGENT_ROUTE || 'not set (defaults to simulation)',
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? 'set' : 'MISSING',
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'MISSING',
+    CRON_SECRET: process.env.CRON_SECRET ? 'set' : 'MISSING',
+  };
+  if (!process.env.ANTHROPIC_API_KEY) healthy = false;
+
   const duration = Date.now() - start;
 
   return res.status(healthy ? 200 : 503).json({
@@ -118,7 +160,8 @@ export default async function handler(req, res) {
     checks,
     response_ms: duration,
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '2.0.0',
     crons_configured: 8,
+    agent_route: process.env.AGENT_ROUTE || 'simulation',
   });
 }

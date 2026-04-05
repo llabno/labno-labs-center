@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { LayoutList, Columns, Waypoints, List, GitBranch, Zap, Shield, XCircle, Copy, Check, Clock, Play, Terminal } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 // ─── TRIGGER READINESS ────────────────────────────────────────────────────────
@@ -69,6 +70,18 @@ const TRIGGER_CONFIG = {
 
 const FREQ_LABELS = { once: 'One-time', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', quarterly: 'Quarterly' };
 const FREQ_CRON = { once: null, daily: '0 9 * * *', weekly: '0 9 * * 1', monthly: '0 9 1 * *', quarterly: '0 9 1 1,4,7,10 *' };
+
+// Pipeline stage mapping: which build stage each CASE belongs to
+const CASE_STAGE = {
+  '001':1, '002':1, '003':5, '004':6, '005':1, '006':2, '007':4, '008':4,
+  '009':1, '010':5, '011':4, '012':6, '013':4, '014':4, '015':5,
+  '016':4, '017':4, '018':4, '019':4, '020':4, '021':1, '022':2, '023':4,
+  '024':1, '025':4, '026':3, '027':4, '028':4, '029':8, '030':4, '031':2,
+  '032':1, '033':4, '034':2, '035':4, '036':7, '037':4, '038':4, '039':3,
+  '040':2, '041':8, '042':6, '043':4, '044':1, '045':4, '046':4, '047':4,
+  '048':5, '049':4, '050':6,
+};
+const STAGE_LABELS = { 1:'Kickoff', 2:'Scope', 3:'Design', 4:'Build', 5:'Test', 6:'Deploy', 7:'Handoff', 8:'Close' };
 
 const CASES = [
   // P0
@@ -165,6 +178,57 @@ const VIEWS = [
 const DOMAINS = ['All', 'INFRA', 'BRAIN', 'CONSULT', 'APP', 'CONTENT'];
 const PRIORITIES = ['All', 'P0', 'P1', 'P2'];
 const TRIGGER_FILTERS = ['All', 'auto', 'gated', 'manual'];
+
+// ─── Run Tracking Helpers ────────────────────────────────────────────────────
+
+function formatRunDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function computeNextRun(freq, lastRunAt) {
+  if (freq === 'once') return 'On demand';
+  const now = new Date();
+  let next;
+  switch (freq) {
+    case 'daily':
+      next = new Date(now);
+      next.setDate(next.getDate() + 1);
+      next.setHours(9, 0, 0, 0);
+      break;
+    case 'weekly': {
+      next = new Date(now);
+      const dayOfWeek = next.getDay(); // 0=Sun
+      const daysUntilMon = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 7 : 8 - dayOfWeek;
+      next.setDate(next.getDate() + daysUntilMon);
+      next.setHours(9, 0, 0, 0);
+      break;
+    }
+    case 'monthly':
+      next = new Date(now.getFullYear(), now.getMonth() + 1, 1, 9, 0, 0);
+      break;
+    case 'quarterly': {
+      const currentQ = Math.floor(now.getMonth() / 3);
+      const nextQMonth = (currentQ + 1) * 3;
+      next = nextQMonth >= 12
+        ? new Date(now.getFullYear() + 1, nextQMonth - 12, 1, 9, 0, 0)
+        : new Date(now.getFullYear(), nextQMonth, 1, 9, 0, 0);
+      break;
+    }
+    default:
+      return 'On demand';
+  }
+  return formatRunDate(next);
+}
+
+const RUN_STATUS_COLORS = {
+  success: '#2d8a4e',
+  failure: '#d14040',
+  pending: '#c49a40',
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -334,6 +398,7 @@ function CaseCard({ c, onClick, compact }) {
             <Badge bg={dc.badge} color={dc.badgeText}>{c.domain}</Badge>
             <Badge bg={ss.bg} color={ss.color}>{c.status}</Badge>
             <TriggerBadge caseId={c.id} compact={compact} />
+            {CASE_STAGE[c.id] && <Badge bg="rgba(176,96,80,0.10)" color="#b06050">Stage {CASE_STAGE[c.id]}: {STAGE_LABELS[CASE_STAGE[c.id]]}</Badge>}
           </div>
           <div style={{ fontWeight: 600, color: '#3a3836', fontSize: compact ? 12 : 13, lineHeight: 1.3 }}>{c.title}</div>
           {!compact && <div style={{ fontSize: 12, color: '#888', marginTop: 4, lineHeight: 1.4 }}>{c.desc}</div>}
@@ -348,6 +413,57 @@ function CaseCard({ c, onClick, compact }) {
           )}
         </div>
       )}
+      {/* Run tracking metadata with color-coded status */}
+      {(() => {
+        const cfg = TRIGGER_CONFIG[c.id];
+        if (!cfg) return null;
+        const lastRun = c.last_run_at ? formatRunDate(c.last_run_at) : null;
+        const runStatus = c.last_run_status || null;
+        const nextRun = c.next_run_at ? formatRunDate(c.next_run_at) : computeNextRun(cfg.freq, c.last_run_at);
+        const isOnDemandNeverRun = !lastRun && cfg.freq === 'once';
+        const statusColor = runStatus ? (RUN_STATUS_COLORS[runStatus] || '#999') : '#999';
+
+        // Color-coded indicator: green = ran recently, amber = due soon, red = overdue, gray = never/on-demand
+        let indicatorColor = '#9e9a97'; // gray default
+        let indicatorLabel = '';
+        if (lastRun && runStatus === 'success') {
+          indicatorColor = '#2d8a4e'; // green
+          indicatorLabel = 'OK';
+        } else if (lastRun && runStatus === 'failure') {
+          indicatorColor = '#d14040'; // red
+          indicatorLabel = 'Failed';
+        } else if (lastRun && runStatus === 'pending') {
+          indicatorColor = '#c49a40'; // amber
+          indicatorLabel = 'Pending';
+        } else if (!lastRun && cfg.freq !== 'once') {
+          indicatorColor = '#d14040'; // red — recurring task that has never run = overdue
+          indicatorLabel = 'Overdue';
+        }
+
+        return (
+          <div style={{ display: 'flex', gap: 10, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            {!isOnDemandNeverRun && (
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: indicatorColor, flexShrink: 0, boxShadow: `0 0 4px ${indicatorColor}44` }} />
+            )}
+            {isOnDemandNeverRun ? (
+              <span style={{ fontSize: '0.68rem', color: '#bbb', fontStyle: 'italic' }}>On demand — runs when triggered</span>
+            ) : (
+              <>
+                <span style={{ fontSize: '0.68rem', color: lastRun ? statusColor : '#d14040', fontWeight: indicatorLabel === 'Overdue' ? 600 : 400 }}>
+                  {lastRun ? `Last: ${lastRun}` : 'Never run'}
+                  {indicatorLabel && ` · ${indicatorLabel}`}
+                </span>
+                <span style={{ fontSize: '0.68rem', color: '#aaa' }}>
+                  Next: {nextRun}
+                </span>
+                <span style={{ fontSize: '0.68rem', padding: '1px 6px', borderRadius: 4, background: 'rgba(0,0,0,0.04)', color: '#8a8682' }}>
+                  {FREQ_LABELS[cfg.freq]}
+                </span>
+              </>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -653,10 +769,44 @@ const TaskQueue = () => {
   const [triggerFilter, setTriggerFilter] = useState('All');
   const [selected, setSelected] = useState(null);
   const [statuses, setStatuses] = useState(() => Object.fromEntries(CASES.map(c => [c.id, c.status])));
+  const [runHistory, setRunHistory] = useState({});
+
+  // Load task run history from global_tasks table
+  useEffect(() => {
+    async function loadRunHistory() {
+      try {
+        const { data, error } = await supabase
+          .from('global_tasks')
+          .select('case_id, last_run_at, last_run_status, next_run_at');
+        if (!error && data) {
+          const history = {};
+          data.forEach(row => {
+            if (row.case_id) {
+              history[row.case_id] = {
+                last_run_at: row.last_run_at || null,
+                last_run_status: row.last_run_status || null,
+                next_run_at: row.next_run_at || null,
+              };
+            }
+          });
+          setRunHistory(history);
+        }
+      } catch {
+        // Silently fail — fields may not exist yet
+      }
+    }
+    loadRunHistory();
+  }, []);
 
   const casesWithStatus = useMemo(() =>
-    CASES.map(c => ({ ...c, status: statuses[c.id] || c.status })),
-    [statuses]
+    CASES.map(c => ({
+      ...c,
+      status: statuses[c.id] || c.status,
+      last_run_at: runHistory[c.id]?.last_run_at || null,
+      last_run_status: runHistory[c.id]?.last_run_status || null,
+      next_run_at: runHistory[c.id]?.next_run_at || null,
+    })),
+    [statuses, runHistory]
   );
 
   const filtered = useMemo(() => casesWithStatus.filter(c => {
@@ -725,7 +875,7 @@ const TaskQueue = () => {
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#999', marginBottom: 2 }}>LABNO LABS / SYSTEM TASK QUEUE</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#3a3836', margin: 0 }}>50-Case Build Spec v1.0</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#3a3836', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>50-Case Build Spec v1.0 <InfoTooltip text={PAGE_INFO.taskqueue} /></h1>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(stats).map(([st, n]) => {
               const ss = STATUS_STYLES[st];
@@ -751,6 +901,40 @@ const TaskQueue = () => {
       {/* Suggested Auto-Triggers */}
       <SuggestedTriggers cases={casesWithStatus} onSelect={setSelected} />
 
+      {/* Domain Sub-Tabs */}
+      <div style={{
+        display: 'flex', gap: 0, marginBottom: 12,
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        overflowX: 'auto',
+      }}>
+        {DOMAINS.map(d => {
+          const isActive = domainFilter === d;
+          const dc = d !== 'All' ? DOMAIN_COLORS[d] : null;
+          const count = d === 'All' ? CASES.length : CASES.filter(c => c.domain === d).length;
+          return (
+            <button key={d} onClick={() => setDomainFilter(d)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '10px 16px', fontSize: '0.82rem', fontWeight: isActive ? 600 : 500,
+                color: isActive ? (dc ? dc.accent : '#b06050') : '#6b6764',
+                background: 'none', border: 'none',
+                borderBottom: isActive ? `2px solid ${dc ? dc.accent : '#b06050'}` : '2px solid transparent',
+                cursor: 'pointer', transition: 'all 0.15s', marginBottom: '-1px', whiteSpace: 'nowrap',
+              }}
+            >
+              {dc && <span style={{ width: 8, height: 8, borderRadius: '50%', background: dc.dot, flexShrink: 0 }} />}
+              {d === 'All' ? 'All Domains' : d}
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 700,
+                background: isActive ? (dc ? dc.badge : 'rgba(176,96,80,0.12)') : 'rgba(0,0,0,0.05)',
+                color: isActive ? (dc ? dc.badgeText : '#b06050') : '#8a8682',
+                padding: '1px 7px', borderRadius: 10,
+              }}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Controls */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' }}>
         <div className="glass-panel" style={{ display: 'flex', padding: 3, gap: 2, borderRadius: 10 }}>
@@ -775,9 +959,6 @@ const TaskQueue = () => {
           <select value={triggerFilter} onChange={e => setTriggerFilter(e.target.value)} style={selectStyle}>
             <option value="All">All Triggers</option>
             {TRIGGER_FILTERS.slice(1).map(t => <option key={t} value={t}>{TRIGGER_META[t].label} ({triggerStats[t]})</option>)}
-          </select>
-          <select value={domainFilter} onChange={e => setDomainFilter(e.target.value)} style={selectStyle}>
-            {DOMAINS.map(d => <option key={d} value={d}>{d === 'All' ? 'All Domains' : d}</option>)}
           </select>
           <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} style={selectStyle}>
             {PRIORITIES.map(p => <option key={p} value={p}>{p === 'All' ? 'All Priorities' : p}</option>)}

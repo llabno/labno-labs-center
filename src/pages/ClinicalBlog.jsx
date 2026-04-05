@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Send, RefreshCw, Rss, Trash2, Clock, Tag } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 const ClinicalBlog = () => {
@@ -91,7 +92,7 @@ const ClinicalBlog = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FileText size={24} /> Clinical Blog + Sniper Agent
+            <FileText size={24} /> Clinical Blog + Sniper Agent <InfoTooltip text={PAGE_INFO.blog} />
           </h1>
           <p style={{ color: '#6b6764', fontSize: '0.85rem', marginTop: '4px' }}>
             SOAP notes in, HIPAA-safe blog posts out. Powered by the Sniper Agent.

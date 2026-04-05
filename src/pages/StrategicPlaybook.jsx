@@ -1,4 +1,5 @@
 import { useState } from "react";
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 
 const habits = [
   {
@@ -393,7 +394,7 @@ export default function App() {
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <p className="header-subtitle" style={{ marginBottom: 14 }}>Movement Solutions · Labno Labs · Strategic Field Manual</p>
           <h1 className="header-title">
-            Systems Intelligence<br />
+            Systems Intelligence <InfoTooltip text={PAGE_INFO.playbook} color="#E8E3DC" /><br />
             <span style={{ fontStyle: "italic", color: "#7C9885" }}>& Strategic Alignment</span>
           </h1>
           <div className="divider-line" style={{ margin: "24px 0 0" }} />

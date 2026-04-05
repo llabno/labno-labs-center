@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     const { data: leads, error } = await supabase
       .from('moso_clinical_leads')
       .select('*')
-      .not('status', 'in', '("PITA-DNC","Referred Out","Waitlist")');
+      .not('status', 'in', '("DNC","Referred Out","Waitlist")');
 
     if (error) return res.status(500).json({ error: error.message });
 

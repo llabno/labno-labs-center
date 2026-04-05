@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -qE \"eyJhbG|sbp_|service_role|SUPABASE_ACCESS_TOKEN=|sk-ant-|ghp_|gho_\"; then echo \"BLOCKED: Do not write secrets into source files. Use .env or environment variables.\" >&2; exit 2; fi",
+            "timeout": 3
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -q '\\.sql$'; then echo 'NOTE: Migration file written. Run this in Supabase SQL Editor at https://supabase.com/dashboard/project/jlvxubslxzwmzslvzgxs/sql'; fi",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  }
+}

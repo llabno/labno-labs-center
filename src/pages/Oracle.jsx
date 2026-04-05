@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Database, UploadCloud, BrainCircuit, ShieldAlert, Cpu, Plus, X, Info, Search, Send, Loader, BookOpen, Pencil, Trash2, ChevronDown, ChevronRight, Tag, FileUp, Eye, EyeOff, Check, Filter } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 const CATEGORIES = ['General', 'Clinical', 'Billing', 'Operations', 'Agent', 'Security', 'Onboarding', 'Technical', 'Marketing'];
@@ -38,27 +39,38 @@ const Oracle = () => {
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showAllItems, setShowAllItems] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Lazy loading: fetch summaries first (no content), load content on expand
   const fetchSops = async () => {
     setLoading(true); setError(null);
-    // Try with category column first; fall back without it if column doesn't exist yet
+    // Fetch without content for fast initial load — content loaded on expand
     let { data, error: fetchErr } = await supabase
       .from('oracle_sops')
-      .select('id, title, content, visibility, status, token_count, last_synced, category')
+      .select('id, title, visibility, status, token_count, last_synced, category')
       .order('last_synced', { ascending: false });
     if (fetchErr && fetchErr.message?.includes('category')) {
-      // category column doesn't exist yet — fetch without it
       const fallback = await supabase
         .from('oracle_sops')
-        .select('id, title, content, visibility, status, token_count, last_synced')
+        .select('id, title, visibility, status, token_count, last_synced')
         .order('last_synced', { ascending: false });
       data = (fallback.data || []).map(d => ({ ...d, category: 'General' }));
       fetchErr = fallback.error;
     }
     if (fetchErr) setError(fetchErr.message);
-    else setSops(data || []);
+    else setSops((data || []).map(d => ({ ...d, content: null }))); // content null = not loaded yet
     setLoading(false);
+  };
+
+  // Load content lazily when a SOP is expanded
+  const loadContent = async (id) => {
+    const existing = sops.find(s => s.id === id);
+    if (existing?.content !== null) return; // already loaded
+    const { data } = await supabase.from('oracle_sops').select('content').eq('id', id).single();
+    if (data) {
+      setSops(prev => prev.map(s => s.id === id ? { ...s, content: data.content } : s));
+    }
   };
 
   useEffect(() => { fetchSops(); }, []);
@@ -169,12 +181,12 @@ const Oracle = () => {
     setQuerying(false);
   };
 
-  // --- Filtering ---
+  // --- Filtering (title-only search since content is lazy-loaded) ---
   const filtered = sops.filter(s => {
     if (categoryFilter !== 'All' && (s.category || 'General') !== categoryFilter) return false;
     if (searchFilter) {
       const q = searchFilter.toLowerCase();
-      return (s.title || '').toLowerCase().includes(q) || (s.content || '').toLowerCase().includes(q);
+      return (s.title || '').toLowerCase().includes(q) || (s.content && s.content.toLowerCase().includes(q));
     }
     return true;
   });
@@ -189,7 +201,7 @@ const Oracle = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-          <BrainCircuit color="#d15a45" /> The Oracle
+          <BrainCircuit color="#d15a45" /> The Oracle <InfoTooltip text={PAGE_INFO.oracle} />
           <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(209,90,69,0.1)', color: '#d15a45', fontWeight: 600 }}>
             {sops.length} docs · {totalTokens.toLocaleString()} tokens
           </span>
@@ -303,31 +315,41 @@ const Oracle = () => {
       <div style={{ display: 'flex', gap: '8px', marginBottom: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
           <Filter size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
-          <input type="text" value={searchFilter} onChange={e => setSearchFilter(e.target.value)}
+          <input type="text" value={searchFilter} onChange={e => { setSearchFilter(e.target.value); setShowAllItems(false); }}
             placeholder="Filter SOPs by title or content..."
             style={{ width: '100%', padding: '8px 12px 8px 32px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.85rem' }} />
         </div>
+        <button onClick={() => { setCategoryFilter('All'); setShowAllItems(false); }}
+          style={{ padding: '5px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 500,
+            background: categoryFilter === 'All' ? '#333' : 'rgba(0,0,0,0.05)', color: categoryFilter === 'All' ? '#fff' : '#666' }}>
+          All ({sops.length})
+        </button>
         {Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).map(([cat, count]) => {
           const cs = CATEGORY_COLORS[cat] || CATEGORY_COLORS.General;
           const active = categoryFilter === cat;
           return (
-            <button key={cat} onClick={() => setCategoryFilter(active ? 'All' : cat)}
+            <button key={cat} onClick={() => { setCategoryFilter(active ? 'All' : cat); setShowAllItems(false); }}
               style={{ padding: '5px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 500,
                 background: active ? cs.color : cs.bg, color: active ? '#fff' : cs.color }}>
               {cat} ({count})
             </button>
           );
         })}
-        {categoryFilter !== 'All' && (
-          <button onClick={() => setCategoryFilter('All')} style={{ padding: '5px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '0.72rem', background: 'rgba(0,0,0,0.05)', color: '#666' }}>Clear</button>
-        )}
         <button onClick={triggerEmbed} style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', background: 'none', cursor: 'pointer', fontSize: '0.72rem', color: '#555', display: 'flex', alignItems: 'center', gap: '4px' }}>
           <UploadCloud size={12} /> Sync Vectors
         </button>
       </div>
 
+      {/* Showing X of Y */}
+      {!loading && (
+        <div style={{ fontSize: '0.78rem', color: '#888', marginBottom: '6px' }}>
+          Showing {Math.min(showAllItems ? filtered.length : 10, filtered.length)} of {filtered.length}{filtered.length !== sops.length ? ` (${sops.length} total)` : ''} SOPs
+          {!showAllItems && filtered.length > 10 && <span style={{ color: '#d15a45', fontWeight: 600 }}> — content loaded on expand to save tokens</span>}
+        </div>
+      )}
+
       {/* SOP List */}
-      <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="glass-panel" style={{ padding: 0, overflow: 'hidden', maxHeight: 'calc(100vh - 300px)', overflowY: 'auto' }}>
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#777' }}>Loading SOPs...</div>
         ) : filtered.length === 0 ? (
@@ -336,7 +358,7 @@ const Oracle = () => {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {filtered.map(doc => {
+            {(showAllItems ? filtered : filtered.slice(0, 10)).map(doc => {
               const isExpanded = expandedId === doc.id;
               const isEditing = editingId === doc.id;
               const catStyle = CATEGORY_COLORS[doc.category || 'General'] || CATEGORY_COLORS.General;
@@ -344,7 +366,7 @@ const Oracle = () => {
               return (
                 <div key={doc.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
                   {/* Row Header */}
-                  <div onClick={() => !isEditing && setExpandedId(isExpanded ? null : doc.id)}
+                  <div onClick={() => { if (!isEditing) { setExpandedId(isExpanded ? null : doc.id); if (!isExpanded) loadContent(doc.id); } }}
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', cursor: 'pointer',
                       background: isExpanded ? 'rgba(209,90,69,0.03)' : 'transparent',
                       transition: 'background 0.15s' }}>
@@ -371,7 +393,9 @@ const Oracle = () => {
                       <div style={{ background: '#fafafa', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '8px', padding: '16px',
                         fontSize: '0.85rem', color: '#333', lineHeight: 1.7, whiteSpace: 'pre-wrap', fontFamily: 'inherit',
                         maxHeight: '400px', overflowY: 'auto' }}>
-                        {doc.content || 'No content.'}
+                        {doc.content === null ? (
+                          <span style={{ color: '#999', fontStyle: 'italic' }}>Loading content...</span>
+                        ) : doc.content || 'No content.'}
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' }}>
                         <button onClick={(e) => { e.stopPropagation(); startEdit(doc); }}
@@ -435,6 +459,14 @@ const Oracle = () => {
                 </div>
               );
             })}
+            {!showAllItems && filtered.length > 10 && (
+              <div style={{ padding: '12px 16px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                <button onClick={() => setShowAllItems(true)}
+                  style={{ padding: '8px 20px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: 'rgba(209,90,69,0.05)', color: '#d15a45', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 500 }}>
+                  Show all {filtered.length} items
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

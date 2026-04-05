@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const emailSeen = new Map();
     const fillCounts = {};
 
-    const MOSO_STATUSES = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'PITA-DNC'];
+    const MOSO_STATUSES = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'DNC'];
     const LABNO_STATUSES = ['New Lead', 'Qualified', 'Proposal', 'Active Client', 'Inactive', 'Referred Out'];
     const validStatuses = type === 'moso' ? MOSO_STATUSES : LABNO_STATUSES;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

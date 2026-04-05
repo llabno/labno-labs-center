@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Users, Briefcase, Plus, Search, X, ChevronDown, ChevronUp, ArrowRight, Phone, Mail, MapPin, Activity, DollarSign, Calendar, Tag, Download, Check, Edit3, Save, BarChart3, AlertTriangle, Copy, Filter, Columns, TrendingUp, Hash } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 import { sanitizeClinicalLead, sanitizeConsultingLead } from '../lib/data-sanitizer';
+import ClientHealthWidget from '../components/ClientHealthWidget';
 
 // HIPAA audit logger — fire-and-forget, never blocks UI
 const logAudit = async (action, table, recordId, details) => {
@@ -16,14 +18,14 @@ const logAudit = async (action, table, recordId, details) => {
 };
 
 // Status pipeline stages
-const MOSO_STATUSES = ['Active', 'Reactivation', 'Waitlist', 'Inactive', 'Referred Out', 'PITA-DNC'];
+const MOSO_STATUSES = ['Tier 1 — Resilience', 'Tier 2 — Flow', 'Tier 3 — Edge', 'Inactive', 'Referred Out', 'DNC'];
 const MOSO_STATUS_COLORS = {
-  'Active': { bg: '#e8f5e9', color: '#2e7d32', dot: '#4caf50' },
-  'Reactivation': { bg: '#fff3e0', color: '#e65100', dot: '#ff9800' },
-  'Waitlist': { bg: '#e3f2fd', color: '#1565c0', dot: '#2196f3' },
+  'Tier 1 — Resilience': { bg: '#e8f5e9', color: '#2e7d32', dot: '#4caf50' },
+  'Tier 2 — Flow': { bg: '#e3f2fd', color: '#1565c0', dot: '#2196f3' },
+  'Tier 3 — Edge': { bg: 'rgba(196,154,64,0.1)', color: '#c49a40', dot: '#c49a40' },
   'Inactive': { bg: '#f5f5f5', color: '#666', dot: '#9e9e9e' },
   'Referred Out': { bg: '#fce4ec', color: '#c62828', dot: '#ef5350' },
-  'PITA-DNC': { bg: '#ffebee', color: '#b71c1c', dot: '#d32f2f' },
+  'DNC': { bg: '#fff3e0', color: '#e65100', dot: '#ff9800' },
 };
 
 const LABNO_STATUSES = ['New Lead', 'Qualified', 'Proposal', 'Active Client', 'Inactive', 'Referred Out'];
@@ -40,7 +42,7 @@ const PAGE_SIZE = 50;
 
 // Pipeline goals (hardcoded targets)
 const PIPELINE_GOALS = {
-  moso: { 'Active': 150, 'Reactivation': 50, 'Waitlist': 10 },
+  moso: { 'Tier 1 — Resilience': 150, 'Tier 2 — Flow': 50, 'Tier 3 — Edge': 10 },
   labno: { 'Active Client': 20, 'Qualified': 15, 'Proposal': 10 },
 };
 
@@ -82,7 +84,7 @@ const LABNO_COLUMNS = [
 // Risk score calculation for clinical leads
 const calcRiskScore = (lead) => {
   let score = 0;
-  if (lead.status === 'PITA-DNC') return { score: 0, label: 'DNC', color: '#b71c1c' };
+  if (lead.status === 'DNC') return { score: 0, label: 'DNC', color: '#e65100' };
   if (!lead.last_visit_date) score += 20;
   else {
     const daysSince = Math.floor((Date.now() - new Date(lead.last_visit_date).getTime()) / 86400000);
@@ -92,7 +94,7 @@ const calcRiskScore = (lead) => {
   }
   if ((lead.total_visits || 0) <= 2) score += 15;
   if (lead.status === 'Inactive') score += 20;
-  if (lead.status === 'Reactivation') score += 10;
+  if (lead.status === 'Tier 2 — Flow') score += 10;
   if (lead.tier === 1 || lead.tier === '1') score -= 10;
   score = Math.max(0, Math.min(100, score));
   if (score >= 60) return { score, label: 'High', color: '#d32f2f' };
@@ -131,7 +133,7 @@ const DualCRM = () => {
   // Form
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [newClinical, setNewClinical] = useState({ patient_name: '', email: '', condition_notes: '', status: 'Active' });
+  const [newClinical, setNewClinical] = useState({ patient_name: '', email: '', condition_notes: '', status: 'Tier 1 — Resilience' });
   const [newConsulting, setNewConsulting] = useState({ company_name: '', email: '', app_interest: '', lifetime_value: 0 });
 
   // Pagination
@@ -158,6 +160,8 @@ const DualCRM = () => {
   // Activity timeline
   const [leadActivity, setLeadActivity] = useState([]);
   const [loadingActivity, setLoadingActivity] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   // Next action
   const [nextAction, setNextAction] = useState({ text: '', date: '' });
@@ -239,6 +243,42 @@ const DualCRM = () => {
     }).eq('id', selectedLead.id);
     logAudit('next_action_update', table, selectedLead.id, { next_action: nextAction.text, next_action_date: nextAction.date });
     setSavingAction(false);
+  };
+
+  // Helper: insert a record into communication_log and refresh activity
+  const logCommunication = async (leadId, leadName, subject, body) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await supabase.from('communication_log').insert({
+        lead_id: leadId,
+        lead_name: leadName || null,
+        comm_type: 'note',
+        direction: 'outbound',
+        subject,
+        body,
+        status: 'completed',
+        user_email: session?.user?.email || null,
+      });
+      // Refresh activity if this lead's detail panel is open
+      if (selectedLead?.id === leadId) {
+        const { data } = await supabase.from('communication_log')
+          .select('id, comm_type, direction, subject, body, status, created_at')
+          .eq('lead_id', leadId)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setLeadActivity(data || []);
+      }
+    } catch { /* silent — activity log should never break the app */ }
+  };
+
+  const addManualNote = async () => {
+    if (!selectedLead || !noteText.trim()) return;
+    setSavingNote(true);
+    const isMoso = activeTab === 'moso';
+    const leadName = isMoso ? selectedLead.patient_name : (selectedLead.company_name || selectedLead.first_name);
+    await logCommunication(selectedLead.id, leadName, 'Manual note', noteText.trim());
+    setNoteText('');
+    setSavingNote(false);
   };
 
   // Keyboard shortcuts
@@ -325,7 +365,7 @@ const DualCRM = () => {
       totalRevenue += activeTab === 'moso' ? parseFloat(l.est_annual_revenue || 0) : parseFloat(l.lifetime_value || 0);
       totalVisits += parseInt(l.total_visits || 0);
       const status = activeTab === 'moso' ? l.status : (l.client_status || 'Inactive');
-      if (status === 'Active' || status === 'Active Client') activeCount++;
+      if (status === 'Tier 1 — Resilience' || status === 'Active Client') activeCount++;
     });
     return {
       totalRevenue, totalVisits, activeCount,
@@ -357,7 +397,7 @@ const DualCRM = () => {
     if (error) setError(error.message);
     else {
       logAudit('insert', 'moso_clinical_leads', data?.[0]?.id, { patient_name: cleaned.patient_name });
-      setNewClinical({ patient_name: '', email: '', condition_notes: '', status: 'Active' }); setShowForm(false); await fetchData();
+      setNewClinical({ patient_name: '', email: '', condition_notes: '', status: 'Tier 1 — Resilience' }); setShowForm(false); await fetchData();
     }
     setSubmitting(false);
   };
@@ -375,20 +415,35 @@ const DualCRM = () => {
   };
 
   const updateLeadStatus = async (leadId, newStatus) => {
-    const table = activeTab === 'moso' ? 'moso_clinical_leads' : 'labno_consulting_leads';
-    const field = activeTab === 'moso' ? 'status' : 'client_status';
+    const isMoso = activeTab === 'moso';
+    const table = isMoso ? 'moso_clinical_leads' : 'labno_consulting_leads';
+    const field = isMoso ? 'status' : 'client_status';
+    // Capture old status before updating
+    const leads = isMoso ? clinicalLeads : consultingLeads;
+    const lead = leads.find(l => l.id === leadId);
+    const oldStatus = lead ? lead[field] : 'unknown';
+    const leadName = lead ? (isMoso ? lead.patient_name : (lead.company_name || lead.first_name)) : null;
     const { error } = await supabase.from(table).update({ [field]: newStatus }).eq('id', leadId);
     if (!error) {
       logAudit('status_change', table, leadId, { field, new_status: newStatus });
+      await logCommunication(leadId, leadName, `Status changed to ${newStatus}`, `Changed from ${oldStatus}`);
       await fetchData(); if (selectedLead?.id === leadId) setSelectedLead(prev => ({ ...prev, [field]: newStatus }));
     }
   };
 
   const saveInlineEdit = async (leadId, field, value) => {
-    const table = activeTab === 'moso' ? 'moso_clinical_leads' : 'labno_consulting_leads';
+    const isMoso = activeTab === 'moso';
+    const table = isMoso ? 'moso_clinical_leads' : 'labno_consulting_leads';
     const parsedVal = ['total_visits', 'lifetime_value', 'est_annual_revenue', 'rate_per_session', 'tier'].includes(field) ? (parseFloat(value) || 0) : value;
     const { error: err } = await supabase.from(table).update({ [field]: parsedVal }).eq('id', leadId);
-    if (!err) { logAudit('inline_edit', table, leadId, { field, value: parsedVal }); await fetchData(); }
+    if (!err) {
+      logAudit('inline_edit', table, leadId, { field, value: parsedVal });
+      const leads = isMoso ? clinicalLeads : consultingLeads;
+      const lead = leads.find(l => l.id === leadId);
+      const leadName = lead ? (isMoso ? lead.patient_name : (lead.company_name || lead.first_name)) : null;
+      await logCommunication(leadId, leadName, `Updated ${field}`, `Changed to: ${parsedVal}`);
+      await fetchData();
+    }
     else setError(err.message);
     setEditingCell(null);
   };
@@ -608,8 +663,10 @@ const DualCRM = () => {
           </div>
         </div>
 
+        <ClientHealthWidget clientName={isMoso ? lead.patient_name : (lead.company_name || `${lead.first_name} ${lead.last_name}`)} />
+
         {/* Quick Actions */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '1rem', marginTop: '0.75rem' }}>
           {lead.email && <a href={`mailto:${lead.email}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', background: 'rgba(176,96,80,0.08)', color: '#b06050', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none', border: '1px solid rgba(176,96,80,0.15)' }}><Mail size={12} /> Email</a>}
           {(lead.phone || lead.mobile) && <a href={`tel:${lead.phone || lead.mobile}`} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', background: 'rgba(30,130,76,0.08)', color: '#2e7d32', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none', border: '1px solid rgba(30,130,76,0.15)' }}><Phone size={12} /> Call</a>}
           <button onClick={() => copyLeadInfo(selectedLead)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.04)', color: '#666', fontSize: '0.78rem', fontWeight: 600, border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer' }}><Copy size={12} /> Copy</button>
@@ -771,6 +828,15 @@ const DualCRM = () => {
           <h4 style={{ fontSize: '0.8rem', color: '#999', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Activity size={13} /> Activity ({leadActivity.length})
           </h4>
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '0.75rem' }}>
+            <input type="text" placeholder="Add a note..." value={noteText} onChange={e => setNoteText(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addManualNote(); }}
+              style={{ flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.12)', background: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', outline: 'none' }} />
+            <button onClick={addManualNote} disabled={savingNote || !noteText.trim()}
+              style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#b06050', color: '#fff', cursor: 'pointer', fontSize: '0.78rem', opacity: (savingNote || !noteText.trim()) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+              {savingNote ? '...' : 'Add'}
+            </button>
+          </div>
           {loadingActivity ? (
             <div style={{ fontSize: '0.82rem', color: '#aaa' }}>Loading...</div>
           ) : leadActivity.length === 0 ? (
@@ -914,7 +980,7 @@ const DualCRM = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
       <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Users color="#b06050" /> Dual CRM Engine
+        <Users color="#b06050" /> Dual CRM Engine <InfoTooltip text={PAGE_INFO.crm} />
         <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(176,96,80,0.1)', color: '#b06050', fontWeight: 600, marginLeft: '8px' }}>
           {(clinicalLeads.length + consultingLeads.length).toLocaleString()} contacts
         </span>

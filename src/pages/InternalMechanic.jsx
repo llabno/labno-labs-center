@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Trash2, Edit3, Save, X, Heart, Shield, Flame, Sun, Users, FileText, Eye, ChevronRight, ChevronDown, Zap, Brain, RefreshCw, Send, Activity, User, Loader, CheckCircle, AlertTriangle, BookOpen, UserPlus, UsersRound, Clock, Bell, Settings, Target, Dumbbell } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 import { MODULE_LABELS, MODULE_DESCRIPTIONS, ROLE_LABELS, NS_LABELS, DRIVE_LABELS, QUADRANT_LABELS, PRODUCT_NAME, EXPORT_TITLE } from '../lib/mechanic-labels';
 
@@ -356,6 +357,213 @@ const PartsRegistry = ({ parts, setParts, fetchParts, userId }) => {
 };
 
 // ============================================
+// Board Templates for Visual Board
+// ============================================
+const BOARD_TEMPLATES = [
+  { id: 'free', name: 'Free Canvas', desc: 'Drag anywhere, no structure', icon: '✦' },
+  { id: 'constellation', name: 'Constellation', desc: 'Concentric rings by role', icon: '◎' },
+  { id: 'earth-core', name: 'Earth Core', desc: 'Cross-section: core to atmosphere', icon: '⊕' },
+  { id: 'traffic-light', name: 'Traffic Light', desc: 'Red / Yellow / Green zones', icon: '🚦' },
+  { id: 'safety-thermometer', name: 'Safety Thermometer', desc: 'Shutdown to Connected scale', icon: '🌡' },
+  { id: 'weather-report', name: 'Weather Report', desc: 'Sunny, Cloudy, Stormy, Frozen, Mixed', icon: '⛅' },
+  { id: 'compass', name: 'Compass', desc: 'Seeking / Grief / Play / Fear / Calm', icon: '🧭' },
+  { id: 'conference-table', name: 'Parts Conference', desc: 'Round table meeting of parts', icon: '🪑' },
+  { id: 'window-of-tolerance', name: 'Window of Tolerance', desc: 'Hyper / Tolerance / Hypo zones', icon: '📊' },
+  { id: 'week-glance', name: 'Week at a Glance', desc: '7 daily columns for tracking', icon: '📅' },
+];
+
+// Render board-specific SVG background layer
+const BoardBackground = ({ template, w, h }) => {
+  const cx = w / 2, cy = h / 2;
+  switch (template) {
+    case 'earth-core': {
+      const rings = [
+        { r: Math.min(cx, cy) * 0.2, fill: 'rgba(180,40,40,0.25)', label: 'Core (Vulnerable)', labelColor: 'rgba(180,40,40,0.6)' },
+        { r: Math.min(cx, cy) * 0.4, fill: 'rgba(180,140,40,0.25)', label: 'Mantle (Guardians)', labelColor: 'rgba(180,140,40,0.6)' },
+        { r: Math.min(cx, cy) * 0.6, fill: 'rgba(120,120,120,0.18)', label: 'Crust (Persona)', labelColor: 'rgba(120,120,120,0.5)' },
+        { r: Math.min(cx, cy) * 0.85, fill: 'rgba(40,120,60,0.15)', label: 'Atmosphere (Connections)', labelColor: 'rgba(40,120,60,0.5)' },
+      ];
+      return (
+        <g>
+          {[...rings].reverse().map((ring, i) => (
+            <circle key={i} cx={cx} cy={cy} r={ring.r} fill={ring.fill} stroke={ring.labelColor} strokeWidth="1" opacity="0.8" />
+          ))}
+          {rings.map((ring, i) => (
+            <text key={`lbl-${i}`} x={cx + ring.r + 6} y={cy - 4} fontSize="9" fill={ring.labelColor}>{ring.label}</text>
+          ))}
+        </g>
+      );
+    }
+    case 'traffic-light': {
+      const zoneH = h / 3;
+      return (
+        <g>
+          <rect x={0} y={0} width={w} height={zoneH} fill="rgba(180,40,40,0.20)" />
+          <rect x={0} y={zoneH} width={w} height={zoneH} fill="rgba(180,140,40,0.18)" />
+          <rect x={0} y={zoneH * 2} width={w} height={zoneH} fill="rgba(40,120,60,0.18)" />
+          <text x={20} y={zoneH / 2} fontSize="14" fontWeight="600" fill="rgba(180,40,40,0.5)">Stop / Overwhelmed</text>
+          <text x={20} y={zoneH + zoneH / 2} fontSize="14" fontWeight="600" fill="rgba(180,140,40,0.5)">Caution / Alert</text>
+          <text x={20} y={zoneH * 2 + zoneH / 2} fontSize="14" fontWeight="600" fill="rgba(40,120,60,0.5)">Go / Connected</text>
+          <line x1={0} y1={zoneH} x2={w} y2={zoneH} stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+          <line x1={0} y1={zoneH * 2} x2={w} y2={zoneH * 2} stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+        </g>
+      );
+    }
+    case 'safety-thermometer': {
+      const barW = 60, barX = 40;
+      return (
+        <g>
+          {/* Gradient bar */}
+          <defs>
+            <linearGradient id="thermo-grad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="rgba(40,60,160,0.35)" />
+              <stop offset="35%" stopColor="rgba(40,60,160,0.20)" />
+              <stop offset="50%" stopColor="rgba(180,140,40,0.25)" />
+              <stop offset="65%" stopColor="rgba(40,120,60,0.25)" />
+              <stop offset="100%" stopColor="rgba(40,120,60,0.35)" />
+            </linearGradient>
+          </defs>
+          <rect x={barX} y={30} width={barW} height={h - 60} rx="30" fill="url(#thermo-grad)" stroke="rgba(0,0,0,0.1)" strokeWidth="1" />
+          <text x={barX + barW + 14} y={50} fontSize="11" fill="rgba(40,120,60,0.6)" fontWeight="600">Connected / Safe</text>
+          <text x={barX + barW + 14} y={h / 2} fontSize="11" fill="rgba(180,140,40,0.6)" fontWeight="600">Alert / Mobilized</text>
+          <text x={barX + barW + 14} y={h - 40} fontSize="11" fill="rgba(40,60,160,0.6)" fontWeight="600">Shutdown / Frozen</text>
+          {/* Tick marks */}
+          {[0.1, 0.25, 0.5, 0.75, 0.9].map((pct, i) => (
+            <line key={i} x1={barX + 10} y1={30 + (h - 60) * pct} x2={barX + barW - 10} y2={30 + (h - 60) * pct}
+              stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+          ))}
+        </g>
+      );
+    }
+    case 'weather-report': {
+      const weathers = [
+        { label: 'Sunny', x: w * 0.1, emoji: '☀️', color: 'rgba(200,160,40,0.25)' },
+        { label: 'Cloudy', x: w * 0.3, emoji: '☁️', color: 'rgba(150,150,150,0.20)' },
+        { label: 'Stormy', x: w * 0.5, emoji: '⛈️', color: 'rgba(80,80,120,0.22)' },
+        { label: 'Frozen', x: w * 0.7, emoji: '❄️', color: 'rgba(40,60,160,0.18)' },
+        { label: 'Mixed', x: w * 0.9, emoji: '🌤️', color: 'rgba(120,140,80,0.18)' },
+      ];
+      const colW = w / 5;
+      return (
+        <g>
+          {weathers.map((wt, i) => (
+            <g key={i}>
+              <rect x={i * colW} y={0} width={colW} height={h} fill={wt.color} />
+              <text x={i * colW + colW / 2} y={40} textAnchor="middle" fontSize="28">{wt.emoji}</text>
+              <text x={i * colW + colW / 2} y={65} textAnchor="middle" fontSize="12" fontWeight="600"
+                fill="rgba(60,60,60,0.5)">{wt.label}</text>
+              {i > 0 && <line x1={i * colW} y1={0} x2={i * colW} y2={h} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />}
+            </g>
+          ))}
+        </g>
+      );
+    }
+    case 'compass': {
+      const r = Math.min(cx, cy) * 0.75;
+      const directions = [
+        { label: 'SEEKING', angle: -Math.PI / 2, color: 'rgba(180,140,40,0.5)' },
+        { label: 'PLAY', angle: 0, color: 'rgba(40,120,60,0.5)' },
+        { label: 'GRIEF', angle: Math.PI / 2, color: 'rgba(40,60,160,0.5)' },
+        { label: 'FEAR', angle: Math.PI, color: 'rgba(180,40,40,0.5)' },
+      ];
+      return (
+        <g>
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+          <circle cx={cx} cy={cy} r={r * 0.5} fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1" strokeDasharray="6,4" />
+          <circle cx={cx} cy={cy} r={r * 0.15} fill="rgba(200,160,80,0.15)" stroke="rgba(200,160,80,0.3)" strokeWidth="1.5" />
+          <text x={cx} y={cy + 4} textAnchor="middle" fontSize="10" fontWeight="700" fill="rgba(200,160,80,0.6)">CALM</text>
+          {/* Cross lines */}
+          <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+          <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+          {directions.map((d, i) => (
+            <text key={i} x={cx + (r + 20) * Math.cos(d.angle)} y={cy + (r + 20) * Math.sin(d.angle) + 4}
+              textAnchor="middle" fontSize="12" fontWeight="700" fill={d.color}>{d.label}</text>
+          ))}
+        </g>
+      );
+    }
+    case 'conference-table': {
+      const tableR = Math.min(cx, cy) * 0.3;
+      const seatR = Math.min(cx, cy) * 0.55;
+      const seatCount = 12;
+      return (
+        <g>
+          {/* Table */}
+          <ellipse cx={cx} cy={cy} rx={tableR * 1.3} ry={tableR} fill="rgba(120,90,60,0.12)" stroke="rgba(120,90,60,0.25)" strokeWidth="2" />
+          <text x={cx} y={cy + 4} textAnchor="middle" fontSize="11" fontWeight="600" fill="rgba(120,90,60,0.4)">Conference Table</text>
+          {/* Seat markers */}
+          {Array.from({ length: seatCount }).map((_, i) => {
+            const angle = (2 * Math.PI * i) / seatCount - Math.PI / 2;
+            return (
+              <g key={i}>
+                <circle cx={cx + seatR * Math.cos(angle)} cy={cy + seatR * Math.sin(angle) * 0.75} r="18"
+                  fill="rgba(180,170,160,0.10)" stroke="rgba(180,170,160,0.2)" strokeWidth="1" strokeDasharray="3,3" />
+              </g>
+            );
+          })}
+        </g>
+      );
+    }
+    case 'window-of-tolerance': {
+      const bandTop = h * 0.3, bandBot = h * 0.7;
+      return (
+        <g>
+          {/* Hyper-arousal zone (top) */}
+          <rect x={0} y={0} width={w} height={bandTop} fill="rgba(180,40,40,0.15)" />
+          <text x={20} y={bandTop / 2 + 4} fontSize="13" fontWeight="600" fill="rgba(180,40,40,0.45)">
+            Hyper-Arousal (Fight / Flight / Panic)
+          </text>
+          {/* Tolerance window (middle) */}
+          <rect x={0} y={bandTop} width={w} height={bandBot - bandTop} fill="rgba(40,120,60,0.15)" />
+          <text x={cx} y={(bandTop + bandBot) / 2 + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="rgba(40,120,60,0.45)">
+            Window of Tolerance
+          </text>
+          {/* Hypo-arousal zone (bottom) */}
+          <rect x={0} y={bandBot} width={w} height={h - bandBot} fill="rgba(40,60,160,0.15)" />
+          <text x={20} y={bandBot + (h - bandBot) / 2 + 4} fontSize="13" fontWeight="600" fill="rgba(40,60,160,0.45)">
+            Hypo-Arousal (Freeze / Shutdown / Numb)
+          </text>
+          {/* Boundary lines */}
+          <line x1={0} y1={bandTop} x2={w} y2={bandTop} stroke="rgba(180,40,40,0.25)" strokeWidth="2" strokeDasharray="8,4" />
+          <line x1={0} y1={bandBot} x2={w} y2={bandBot} stroke="rgba(40,60,160,0.25)" strokeWidth="2" strokeDasharray="8,4" />
+        </g>
+      );
+    }
+    case 'week-glance': {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const colW = w / 7;
+      return (
+        <g>
+          {days.map((day, i) => (
+            <g key={i}>
+              {i % 2 === 1 && <rect x={i * colW} y={0} width={colW} height={h} fill="rgba(0,0,0,0.02)" />}
+              <text x={i * colW + colW / 2} y={24} textAnchor="middle" fontSize="13" fontWeight="700"
+                fill="rgba(60,60,60,0.4)">{day}</text>
+              <line x1={i * colW} y1={0} x2={i * colW} y2={h} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+              <line x1={i * colW} y1={34} x2={(i + 1) * colW} y2={34} stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
+            </g>
+          ))}
+        </g>
+      );
+    }
+    case 'constellation': {
+      return (
+        <g>
+          <circle cx={cx} cy={cy} r={100} fill="none" stroke="rgba(180,40,40,0.15)" strokeWidth="1" strokeDasharray="8,8" />
+          <circle cx={cx} cy={cy} r={200} fill="none" stroke="rgba(40,120,60,0.12)" strokeWidth="1" strokeDasharray="8,8" />
+          <circle cx={cx} cy={cy} r={300} fill="none" stroke="rgba(180,80,20,0.12)" strokeWidth="1" strokeDasharray="8,8" />
+          <text x={cx + 105} y={cy - 5} fontSize="9" fill="rgba(180,40,40,0.45)">{ROLE_LABELS.exile}s</text>
+          <text x={cx + 205} y={cy - 5} fontSize="9" fill="rgba(40,120,60,0.45)">{ROLE_LABELS.protector}s</text>
+          <text x={cx + 305} y={cy - 5} fontSize="9" fill="rgba(180,80,20,0.45)">{ROLE_LABELS.firefighter}s</text>
+        </g>
+      );
+    }
+    default:
+      return null;
+  }
+};
+
+// ============================================
 // Visual Board Tab (SVG-based parts map)
 // ============================================
 const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelationships, fetchEntities }) => {
@@ -363,21 +571,28 @@ const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelation
   const [dragging, setDragging] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 900, height: 600 });
-  const [viewMode, setViewMode] = useState('free'); // free | constellation
-  const [showIconPicker, setShowIconPicker] = useState(null); // part id being edited
+  const [activeBoard, setActiveBoard] = useState('free');
+  const [showIconPicker, setShowIconPicker] = useState(null);
+  const [saveMsg, setSaveMsg] = useState('');
 
   useEffect(() => {
     const updateDims = () => {
       if (svgRef.current?.parentElement) {
         setDimensions({
           width: svgRef.current.parentElement.clientWidth - 40,
-          height: Math.max(500, window.innerHeight - 280),
+          height: Math.max(500, window.innerHeight - 320),
         });
       }
     };
     updateDims();
     window.addEventListener('resize', updateDims);
     return () => window.removeEventListener('resize', updateDims);
+  }, []);
+
+  // Load saved board from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('llc_speak_freely_board_active');
+    if (saved && BOARD_TEMPLATES.find(t => t.id === saved)) setActiveBoard(saved);
   }, []);
 
   // Auto-layout parts in a circle if no positions set
@@ -449,6 +664,93 @@ const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelation
 
   const handleMouseUp = () => setDragging(null);
 
+  // Constellation auto-layout
+  const applyConstellationLayout = () => {
+    const cx = dimensions.width / 2, cy = dimensions.height / 2;
+    const selfParts = parts.filter(p => p.role === 'self');
+    const exiles = parts.filter(p => p.role === 'exile');
+    const protectors = parts.filter(p => p.role === 'protector');
+    const firefighters = parts.filter(p => p.role === 'firefighter');
+    const layout = async () => {
+      for (const p of selfParts) await supabase.from('ifs_parts').update({ board_x: cx, board_y: cy }).eq('id', p.id);
+      exiles.forEach(async (p, i) => {
+        const angle = (2 * Math.PI * i) / (exiles.length || 1) - Math.PI / 2;
+        await supabase.from('ifs_parts').update({ board_x: cx + 100 * Math.cos(angle), board_y: cy + 100 * Math.sin(angle) }).eq('id', p.id);
+      });
+      protectors.forEach(async (p, i) => {
+        const angle = (2 * Math.PI * i) / (protectors.length || 1);
+        await supabase.from('ifs_parts').update({ board_x: cx + 200 * Math.cos(angle), board_y: cy + 200 * Math.sin(angle) }).eq('id', p.id);
+      });
+      firefighters.forEach(async (p, i) => {
+        const angle = (2 * Math.PI * i) / (firefighters.length || 1) + Math.PI / 4;
+        await supabase.from('ifs_parts').update({ board_x: cx + 300 * Math.cos(angle), board_y: cy + 300 * Math.sin(angle) }).eq('id', p.id);
+      });
+      relationships.forEach(async (r, i) => {
+        const angle = (2 * Math.PI * i) / (relationships.length || 1) + Math.PI / 6;
+        await supabase.from('ifs_relationships').update({ board_x: cx + 380 * Math.cos(angle), board_y: cy + 380 * Math.sin(angle) }).eq('id', r.id);
+      });
+      (entities || []).forEach(async (ent, i) => {
+        const angle = (2 * Math.PI * i) / ((entities || []).length || 1) + Math.PI / 3;
+        await supabase.from('ifs_entities').update({ board_x: cx + 420 * Math.cos(angle), board_y: cy + 420 * Math.sin(angle) }).eq('id', ent.id);
+      });
+      setTimeout(() => { fetchParts(); fetchRelationships(); fetchEntities?.(); }, 500);
+    };
+    layout();
+  };
+
+  // Save board layout to localStorage
+  const handleSaveBoard = () => {
+    const boardIdx = BOARD_TEMPLATES.findIndex(t => t.id === activeBoard);
+    const data = {
+      template: activeBoard,
+      parts: parts.map(p => ({ id: p.id, x: p.board_x, y: p.board_y })),
+      relationships: relationships.map(r => ({ id: r.id, x: r.board_x, y: r.board_y })),
+      entities: (entities || []).map(e => ({ id: e.id, x: e.board_x, y: e.board_y })),
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(`llc_speak_freely_board_${boardIdx}`, JSON.stringify(data));
+    localStorage.setItem('llc_speak_freely_board_active', activeBoard);
+    setSaveMsg('Saved!');
+    setTimeout(() => setSaveMsg(''), 2000);
+  };
+
+  // Screenshot: export SVG as image
+  const handleScreenshot = () => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    // Convert to canvas for PNG
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = dimensions.width * 2;
+      canvas.height = dimensions.height * 2;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+      ctx.fillStyle = '#f5f3f0';
+      ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+      ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          try {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            setSaveMsg('Copied to clipboard!');
+          } catch {
+            // Fallback: open in new tab
+            const pngUrl = canvas.toDataURL('image/png');
+            window.open(pngUrl, '_blank');
+            setSaveMsg('Opened in new tab');
+          }
+          setTimeout(() => setSaveMsg(''), 2500);
+        }
+      }, 'image/png');
+    };
+    img.src = url;
+  };
+
   // Draw connection lines between protectors and exiles
   const connections = [];
   parts.forEach(p => {
@@ -471,74 +773,56 @@ const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelation
 
   return (
     <div>
+      {/* Board template selector */}
+      <div style={{
+        display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', marginBottom: '12px',
+        scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch',
+      }}>
+        {BOARD_TEMPLATES.map(tmpl => (
+          <button key={tmpl.id} onClick={() => {
+            setActiveBoard(tmpl.id);
+            if (tmpl.id === 'constellation') applyConstellationLayout();
+          }} style={{
+            flex: '0 0 auto', minWidth: '120px', padding: '8px 12px', borderRadius: '10px',
+            border: activeBoard === tmpl.id ? '2px solid #b06050' : '1px solid rgba(0,0,0,0.1)',
+            background: activeBoard === tmpl.id ? 'rgba(176,96,80,0.12)' : 'rgba(255,255,255,0.4)',
+            cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s ease',
+          }}>
+            <div style={{ fontSize: '18px', marginBottom: '2px' }}>{tmpl.icon}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: activeBoard === tmpl.id ? '#b06050' : '#555' }}>{tmpl.name}</div>
+            <div style={{ fontSize: '9px', color: '#999', lineHeight: '1.2' }}>{tmpl.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '13px', color: '#888' }}>Drag to arrange.</span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <button style={{ ...s.btn(viewMode === 'free' ? 'primary' : 'ghost'), padding: '4px 10px', fontSize: '11px' }}
-              onClick={() => setViewMode('free')}>Free</button>
-            <button style={{ ...s.btn(viewMode === 'constellation' ? 'primary' : 'ghost'), padding: '4px 10px', fontSize: '11px' }}
-              onClick={() => {
-                setViewMode('constellation');
-                // Auto-layout: Self at center, exiles close, protectors mid-ring, firefighters outer
-                const cx = dimensions.width / 2, cy = dimensions.height / 2;
-                const selfParts = parts.filter(p => p.role === 'self');
-                const exiles = parts.filter(p => p.role === 'exile');
-                const protectors = parts.filter(p => p.role === 'protector');
-                const firefighters = parts.filter(p => p.role === 'firefighter');
-                const layout = async () => {
-                  // Self at center
-                  for (const p of selfParts) await supabase.from('ifs_parts').update({ board_x: cx, board_y: cy }).eq('id', p.id);
-                  // Exiles in inner ring
-                  exiles.forEach(async (p, i) => {
-                    const angle = (2 * Math.PI * i) / (exiles.length || 1) - Math.PI / 2;
-                    await supabase.from('ifs_parts').update({ board_x: cx + 100 * Math.cos(angle), board_y: cy + 100 * Math.sin(angle) }).eq('id', p.id);
-                  });
-                  // Protectors in mid ring
-                  protectors.forEach(async (p, i) => {
-                    const angle = (2 * Math.PI * i) / (protectors.length || 1);
-                    await supabase.from('ifs_parts').update({ board_x: cx + 200 * Math.cos(angle), board_y: cy + 200 * Math.sin(angle) }).eq('id', p.id);
-                  });
-                  // Firefighters in outer ring
-                  firefighters.forEach(async (p, i) => {
-                    const angle = (2 * Math.PI * i) / (firefighters.length || 1) + Math.PI / 4;
-                    await supabase.from('ifs_parts').update({ board_x: cx + 300 * Math.cos(angle), board_y: cy + 300 * Math.sin(angle) }).eq('id', p.id);
-                  });
-                  // Relationships on far edge
-                  relationships.forEach(async (r, i) => {
-                    const angle = (2 * Math.PI * i) / (relationships.length || 1) + Math.PI / 6;
-                    await supabase.from('ifs_relationships').update({ board_x: cx + 380 * Math.cos(angle), board_y: cy + 380 * Math.sin(angle) }).eq('id', r.id);
-                  });
-                  // Entities on outer-most edge
-                  (entities || []).forEach(async (ent, i) => {
-                    const angle = (2 * Math.PI * i) / ((entities || []).length || 1) + Math.PI / 3;
-                    await supabase.from('ifs_entities').update({ board_x: cx + 420 * Math.cos(angle), board_y: cy + 420 * Math.sin(angle) }).eq('id', ent.id);
-                  });
-                  setTimeout(() => { fetchParts(); fetchRelationships(); fetchEntities?.(); }, 500);
-                };
-                layout();
-              }}>Constellation</button>
+          {saveMsg && <span style={{ fontSize: '12px', color: '#4caf50', fontWeight: 600 }}>{saveMsg}</span>}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button style={{ ...s.btn('ghost'), padding: '5px 12px', fontSize: '11px' }} onClick={handleSaveBoard}>
+            <Save size={13} /> Save Board
+          </button>
+          <button style={{ ...s.btn('ghost'), padding: '5px 12px', fontSize: '11px' }} onClick={handleScreenshot}>
+            <Eye size={13} /> Screenshot
+          </button>
+          <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#888', marginLeft: '8px' }}>
+            {Object.entries(ROLE_CONFIG).map(([k, v]) => (
+              <span key={k} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: v.color, display: 'inline-block' }} />
+                {v.label.split(' (')[0]}
+              </span>
+            ))}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: '#888' }}>
-          {Object.entries(ROLE_CONFIG).map(([k, v]) => (
-            <span key={k} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: v.color, display: 'inline-block' }} />
-              {v.label.split(' (')[0]}
-            </span>
-          ))}
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '4px', background: '#6b8e9b', display: 'inline-block' }} />
-            Person
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '4px', background: '#5a8abf', display: 'inline-block', border: '1px dashed #5a8abf' }} />
-            Entity
-          </span>
-        </div>
       </div>
+
+      {/* SVG Canvas */}
       <div style={{ ...s.card, padding: '0', overflow: 'hidden' }}>
         <svg ref={svgRef} width={dimensions.width} height={dimensions.height}
+          xmlns="http://www.w3.org/2000/svg"
           style={{ background: 'rgba(245,243,240,0.5)', cursor: dragging ? 'grabbing' : 'default' }}
           onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
           <defs>
@@ -553,6 +837,9 @@ const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelation
               <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
+
+          {/* Board background layer */}
+          <BoardBackground template={activeBoard} w={dimensions.width} h={dimensions.height} />
 
           {/* Protection lines */}
           {connections.map((c, i) => (
@@ -615,24 +902,18 @@ const VisualBoard = ({ parts, relationships, entities, fetchParts, fetchRelation
             );
           })}
 
-          {/* Constellation rings */}
-          {viewMode === 'constellation' && (
-            <>
-              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={100} fill="none" stroke="rgba(176,96,80,0.08)" strokeWidth="1" strokeDasharray="8,8" />
-              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={200} fill="none" stroke="rgba(92,122,111,0.08)" strokeWidth="1" strokeDasharray="8,8" />
-              <circle cx={dimensions.width / 2} cy={dimensions.height / 2} r={300} fill="none" stroke="rgba(212,132,62,0.08)" strokeWidth="1" strokeDasharray="8,8" />
-              <text x={dimensions.width / 2 + 105} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(176,96,80,0.3)">{ROLE_LABELS.exile}s</text>
-              <text x={dimensions.width / 2 + 205} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(92,122,111,0.3)">{ROLE_LABELS.protector}s</text>
-              <text x={dimensions.width / 2 + 305} y={dimensions.height / 2 - 5} fontSize="9" fill="rgba(212,132,62,0.3)">{ROLE_LABELS.firefighter}s</text>
-            </>
-          )}
-
-          {/* Self energy center marker */}
+          {/* Empty state */}
           {parts.length === 0 && (
             <text x={dimensions.width / 2} y={dimensions.height / 2} textAnchor="middle" fontSize="14" fill="#ccc">
               Add parts to see your system map
             </text>
           )}
+
+          {/* Labno Labs watermark */}
+          <text x={dimensions.width - 16} y={dimensions.height - 12} textAnchor="end" fontSize="11"
+            fontWeight="500" fill="rgba(120,115,110,0.18)" fontFamily="system-ui, sans-serif">
+            Labno Labs
+          </text>
         </svg>
       </div>
     </div>
@@ -2622,7 +2903,7 @@ export default function InternalMechanic() {
   return (
     <div className="main-content" style={s.page}>
       <div style={s.header}>
-        <h1 style={s.title}>{PRODUCT_NAME}</h1>
+        <h1 style={s.title}>{PRODUCT_NAME} <InfoTooltip text={PAGE_INFO.mechanic} /></h1>
         <p style={s.subtitle}>Relational intelligence — Nervous System × Parts × Beliefs × Drives × Safety × Empathy × Perspectives × Values × Flow</p>
       </div>
 

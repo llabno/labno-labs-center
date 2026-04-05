@@ -1,141 +1,177 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, Calendar, BarChart2, Filter, ChevronDown, User, Bot, Folder, Tag } from 'lucide-react';
+import { Clock, CheckCircle, MessageSquare, Heart, Lightbulb, FileText, Clipboard, Bot, RefreshCw, Timer } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
-const CATEGORY_COLORS = {
-  'Feature': { bg: '#e8f5e9', color: '#2e7d32' },
-  'Bug Fix': { bg: '#fce4ec', color: '#c62828' },
-  'UI/UX': { bg: '#f3e5f5', color: '#7b1fa2' },
-  'Infrastructure': { bg: '#e3f2fd', color: '#1565c0' },
-  'DevOps': { bg: '#fff3e0', color: '#e65100' },
-  'Auth': { bg: '#e0f2f1', color: '#00695c' },
-  'Integration': { bg: '#fce4ec', color: '#ad1457' },
-  'Compliance': { bg: '#ffebee', color: '#b71c1c' },
+// Source badge config
+const SOURCE_CONFIG = {
+  Task:     { icon: CheckCircle,   bg: '#e8f5e9', color: '#2e7d32' },
+  CRM:      { icon: MessageSquare, bg: '#e3f2fd', color: '#1565c0' },
+  Clinical: { icon: Heart,         bg: '#fce4ec', color: '#c62828' },
+  Brief:    { icon: Clipboard,     bg: '#f3e5f5', color: '#7b1fa2' },
+  Wishlist: { icon: Lightbulb,     bg: '#fff3e0', color: '#e65100' },
+  Agent:    { icon: Bot,           bg: '#e8eaf6', color: '#3949ab' },
+  System:   { icon: RefreshCw,     bg: '#f5f5f5', color: '#666' },
 };
 
-const getCatStyle = (cat) => CATEGORY_COLORS[cat] || { bg: '#f5f5f5', color: '#666' };
+// Auto-duration estimation based on action type
+const estimateDuration = (entry) => {
+  if (entry.duration) return entry.duration;
+  const action = entry.action || '';
+  const source = entry.source || '';
+  // SOAP notes are typically 3-5 minutes to write
+  if (source === 'Clinical') return 5;
+  // Session briefs are 90 seconds
+  if (source === 'Brief') return 2;
+  // Agent tasks — estimate from result length
+  if (source === 'Agent' && action === 'agent_completed') return 1;
+  // CRM entries — quick logging
+  if (source === 'CRM') return 2;
+  // Task status changes — instant
+  if (action === 'created' || action === 'status_changed') return 1;
+  if (action === 'completed') return 3;
+  return null;
+};
 
 const WorkHistory = () => {
-  const [history, setHistory] = useState([]);
+  const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filters
-  const [timeRange, setTimeRange] = useState('today'); // today | week | month | all
-  const [projectFilter, setProjectFilter] = useState('All');
-  const [requestedByFilter, setRequestedByFilter] = useState('All');
-  const [agentFilter, setAgentFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [timeRange, setTimeRange] = useState('week');
+  const [sourceFilter, setSourceFilter] = useState('All');
+  const [actionFilter, setActionFilter] = useState('All');
 
-  const fetchHistory = async () => {
-    setLoading(true);
+  // ---------- Single-source fetch from activity_log ----------
+  const fetchAll = async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true);
+    else setLoading(true);
+
     const { data, error } = await supabase
-      .from('work_history')
+      .from('activity_log')
       .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setHistory(data || []);
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    if (!error && data) {
+      setEntries(data.map(a => ({
+        id: a.id,
+        source: a.source_type || 'System',
+        title: a.title || a.action || 'Activity',
+        description: a.description || '',
+        action: a.action || '',
+        project: a.project || null,
+        timestamp: a.created_at,
+        meta: typeof a.details === 'string' ? a.details : (a.details ? JSON.stringify(a.details) : null),
+        actor: a.actor || 'System',
+        entity_type: a.entity_type || null,
+        entity_id: a.entity_id || null,
+        duration: estimateDuration(a),
+      })));
+    }
+
     setLoading(false);
+    setRefreshing(false);
   };
 
-  useEffect(() => { fetchHistory(); }, []);
+  useEffect(() => { fetchAll(); }, []);
 
-  // Unique filter options from data
-  const filterOptions = useMemo(() => ({
-    projects: ['All', ...new Set(history.map(h => h.project_name).filter(Boolean))],
-    requesters: ['All', ...new Set(history.map(h => h.requested_by).filter(Boolean))],
-    agents: ['All', ...new Set(history.map(h => h.agent_or_mcp).filter(Boolean))],
-    categories: ['All', ...new Set(history.map(h => h.category).filter(Boolean))],
-  }), [history]);
-
-  // Filter by time range
+  // ---------- Time filtering ----------
   const timeFiltered = useMemo(() => {
     const now = new Date();
-    return history.filter(h => {
+    return entries.filter(e => {
       if (timeRange === 'all') return true;
-      const created = new Date(h.created_at);
-      if (timeRange === 'today') {
-        return created.toDateString() === now.toDateString();
-      }
-      if (timeRange === 'week') {
-        const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
-        return created >= weekAgo;
-      }
-      if (timeRange === 'month') {
-        const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
-        return created >= monthAgo;
-      }
+      const d = new Date(e.timestamp);
+      if (timeRange === 'today') return d.toDateString() === now.toDateString();
+      if (timeRange === 'week') { const ago = new Date(now); ago.setDate(ago.getDate() - 7); return d >= ago; }
+      if (timeRange === 'month') { const ago = new Date(now); ago.setMonth(ago.getMonth() - 1); return d >= ago; }
       return true;
     });
-  }, [history, timeRange]);
+  }, [entries, timeRange]);
 
-  // Apply all filters
+  // ---------- Source + Action filtering ----------
   const filtered = useMemo(() => {
-    return timeFiltered.filter(h => {
-      if (projectFilter !== 'All' && h.project_name !== projectFilter) return false;
-      if (requestedByFilter !== 'All' && h.requested_by !== requestedByFilter) return false;
-      if (agentFilter !== 'All' && h.agent_or_mcp !== agentFilter) return false;
-      if (categoryFilter !== 'All' && h.category !== categoryFilter) return false;
-      return true;
-    });
-  }, [timeFiltered, projectFilter, requestedByFilter, agentFilter, categoryFilter]);
+    let result = timeFiltered;
+    if (sourceFilter !== 'All') result = result.filter(e => e.source === sourceFilter);
+    if (actionFilter !== 'All') result = result.filter(e => e.action === actionFilter);
+    return result;
+  }, [timeFiltered, sourceFilter, actionFilter]);
 
-  // Analytics
-  const analytics = useMemo(() => {
-    const totalMinutes = filtered.reduce((s, h) => s + (h.duration_minutes || 0), 0);
-    const byCategory = {};
-    const byProject = {};
-    const byAgent = {};
-    const byRequester = {};
+  // ---------- Source counts for pills ----------
+  const sourceCounts = useMemo(() => {
+    const counts = { All: timeFiltered.length };
+    timeFiltered.forEach(e => { counts[e.source] = (counts[e.source] || 0) + 1; });
+    return counts;
+  }, [timeFiltered]);
 
-    filtered.forEach(h => {
-      byCategory[h.category] = (byCategory[h.category] || 0) + 1;
-      byProject[h.project_name] = (byProject[h.project_name] || 0) + 1;
-      byAgent[h.agent_or_mcp] = (byAgent[h.agent_or_mcp] || 0) + 1;
-      byRequester[h.requested_by] = (byRequester[h.requested_by] || 0) + 1;
-    });
+  // ---------- Action counts ----------
+  const actionCounts = useMemo(() => {
+    const counts = {};
+    timeFiltered.forEach(e => { if (e.action) counts[e.action] = (counts[e.action] || 0) + 1; });
+    return counts;
+  }, [timeFiltered]);
 
-    const topCategory = Object.entries(byCategory).sort((a, b) => b[1] - a[1])[0];
-    const topProject = Object.entries(byProject).sort((a, b) => b[1] - a[1])[0];
-
-    return { totalMinutes, totalTasks: filtered.length, byCategory, byProject, byAgent, byRequester, topCategory, topProject };
+  // ---------- Total estimated duration ----------
+  const totalDuration = useMemo(() => {
+    return filtered.reduce((sum, e) => sum + (e.duration || 0), 0);
   }, [filtered]);
 
+  // ---------- Helpers ----------
+  const formatTime = (iso) => {
+    if (!iso) return '';
+    return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  };
+
   const formatDuration = (min) => {
-    if (!min) return '—';
+    if (!min) return null;
     if (min < 60) return `${min}m`;
     return `${Math.floor(min / 60)}h ${min % 60}m`;
   };
 
-  const formatTime = (iso) => {
-    const d = new Date(iso);
-    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const timeAgo = (iso) => {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
   };
 
-  const BarChart = ({ data, maxWidth = 200 }) => {
-    const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
-    const max = Math.max(...entries.map(e => e[1]), 1);
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {entries.map(([label, count]) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem' }}>
-            <span style={{ width: '120px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{label}</span>
-            <div style={{ flex: 1, maxWidth, height: '16px', background: 'rgba(0,0,0,0.03)', borderRadius: '4px', overflow: 'hidden' }}>
-              <div style={{ width: `${(count / max) * 100}%`, height: '100%', background: 'rgba(176,96,80,0.5)', borderRadius: '4px', transition: 'width 0.3s ease' }} />
-            </div>
-            <span style={{ width: '24px', color: '#666', fontWeight: 600 }}>{count}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  // ---------- Group by date ----------
+  const grouped = useMemo(() => {
+    const groups = {};
+    filtered.forEach(e => {
+      const key = new Date(e.timestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+    return Object.entries(groups);
+  }, [filtered]);
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Clock color="#b06050" /> Work History
-        <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(176,96,80,0.1)', color: '#b06050', fontWeight: 600 }}>
-          {analytics.totalTasks} tasks · {formatDuration(analytics.totalMinutes)}
-        </span>
-      </h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+          <Clock color="#b06050" /> Work History <InfoTooltip text={PAGE_INFO.history} />
+          <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(176,96,80,0.1)', color: '#b06050', fontWeight: 600 }}>
+            {filtered.length} entries
+          </span>
+          {totalDuration > 0 && (
+            <span style={{ fontSize: '0.68rem', padding: '3px 10px', borderRadius: '10px', background: 'rgba(45,138,78,0.1)', color: '#2d8a4e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Timer size={11} /> ~{formatDuration(totalDuration)}
+            </span>
+          )}
+        </h1>
+        <button onClick={() => fetchAll(true)} disabled={refreshing}
+          style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.72rem', color: '#6b6764' }}>
+          <RefreshCw size={12} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} /> Refresh
+        </button>
+      </div>
 
       {/* Time Range Toggle */}
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -150,117 +186,153 @@ const WorkHistory = () => {
             style={{ fontSize: '0.8rem', padding: '5px 14px' }}>{t.label}</button>
         ))}
 
-        <div style={{ flex: 1 }} />
+        <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.1)', margin: '0 6px' }} />
 
-        {/* Dropdown Filters */}
-        <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)}
-          style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.8rem', background: 'rgba(255,255,255,0.7)' }}>
-          {filterOptions.projects.map(p => <option key={p} value={p}>{p === 'All' ? 'All Projects' : p}</option>)}
-        </select>
-        <select value={requestedByFilter} onChange={e => setRequestedByFilter(e.target.value)}
-          style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.8rem', background: 'rgba(255,255,255,0.7)' }}>
-          {filterOptions.requesters.map(r => <option key={r} value={r}>{r === 'All' ? 'All Requesters' : r}</option>)}
-        </select>
-        <select value={agentFilter} onChange={e => setAgentFilter(e.target.value)}
-          style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.8rem', background: 'rgba(255,255,255,0.7)' }}>
-          {filterOptions.agents.map(a => <option key={a} value={a}>{a === 'All' ? 'All Agents/MCPs' : a}</option>)}
-        </select>
-        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
-          style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)', fontSize: '0.8rem', background: 'rgba(255,255,255,0.7)' }}>
-          {filterOptions.categories.map(c => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
-        </select>
+        {/* Source filter pills */}
+        {['All', 'Task', 'Agent', 'CRM', 'Clinical', 'Brief', 'Wishlist'].map(s => {
+          const cfg = SOURCE_CONFIG[s];
+          const count = sourceCounts[s] || 0;
+          const isActive = sourceFilter === s;
+          return (
+            <button key={s} onClick={() => setSourceFilter(s)}
+              style={{
+                fontSize: '0.78rem', padding: '4px 12px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 600, transition: 'all 0.15s',
+                background: isActive ? (cfg?.bg || 'rgba(176,96,80,0.15)') : 'rgba(0,0,0,0.04)',
+                color: isActive ? (cfg?.color || '#b06050') : '#888',
+              }}>
+              {s} {count > 0 && <span style={{ fontSize: '0.68rem', opacity: 0.7 }}>({count})</span>}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Analytics Summary Cards */}
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <div className="glass-panel" style={{ flex: 1, minWidth: '200px', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.7rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>By Category</h3>
-          <BarChart data={analytics.byCategory} />
+      {/* Action filter — collapsible */}
+      {Object.keys(actionCounts).length > 0 && (
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', fontSize: '0.68rem' }}>
+          <span style={{ color: '#8a8682', padding: '3px 0', fontWeight: 600 }}>Action:</span>
+          <button onClick={() => setActionFilter('All')}
+            style={{ padding: '2px 8px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 600,
+              background: actionFilter === 'All' ? '#333' : 'rgba(0,0,0,0.04)', color: actionFilter === 'All' ? '#fff' : '#888' }}>
+            All
+          </button>
+          {Object.entries(actionCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([action, count]) => (
+            <button key={action} onClick={() => setActionFilter(actionFilter === action ? 'All' : action)}
+              style={{ padding: '2px 8px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 500,
+                background: actionFilter === action ? 'rgba(176,96,80,0.15)' : 'rgba(0,0,0,0.03)', color: actionFilter === action ? '#b06050' : '#999' }}>
+              {action.replace(/_/g, ' ')} ({count})
+            </button>
+          ))}
         </div>
-        <div className="glass-panel" style={{ flex: 1, minWidth: '200px', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.7rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>By Project</h3>
-          <BarChart data={analytics.byProject} />
-        </div>
-        <div className="glass-panel" style={{ flex: 1, minWidth: '200px', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.7rem', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>By Agent/MCP</h3>
-          <BarChart data={analytics.byAgent} />
-        </div>
+      )}
+
+      {/* Data source indicator */}
+      <div style={{ fontSize: '0.65rem', color: '#bbb', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2d8a4e' }} />
+        Powered by unified activity_log — all sources feed in via database triggers
       </div>
 
-      {/* Efficiency Insights */}
-      <div className="glass-panel" style={{ padding: '1rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.85rem' }}>
-        <div>
-          <span style={{ color: '#999' }}>Total Time:</span>{' '}
-          <strong style={{ color: '#2e2c2a' }}>{formatDuration(analytics.totalMinutes)}</strong>
-        </div>
-        <div>
-          <span style={{ color: '#999' }}>Avg per Task:</span>{' '}
-          <strong style={{ color: '#2e2c2a' }}>{analytics.totalTasks ? formatDuration(Math.round(analytics.totalMinutes / analytics.totalTasks)) : '—'}</strong>
-        </div>
-        <div>
-          <span style={{ color: '#999' }}>Most Common:</span>{' '}
-          <strong style={{ color: '#2e2c2a' }}>{analytics.topCategory ? `${analytics.topCategory[0]} (${analytics.topCategory[1]})` : '—'}</strong>
-        </div>
-        <div>
-          <span style={{ color: '#999' }}>Top Project:</span>{' '}
-          <strong style={{ color: '#2e2c2a' }}>{analytics.topProject ? `${analytics.topProject[0]} (${analytics.topProject[1]})` : '—'}</strong>
-        </div>
-      </div>
-
-      {/* Task List */}
-      <div className="glass-panel" style={{ flex: 1, padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ overflowY: 'auto', flex: 1 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.02)', borderBottom: '2px solid rgba(0,0,0,0.06)', position: 'sticky', top: 0 }}>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Time</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Task</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Project</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Category</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Requested By</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'left', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Agent/MCP</th>
-                <th style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#666', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>No work history for this period</td></tr>
-              ) : filtered.map(h => {
-                const cs = getCatStyle(h.category);
+      {/* Timeline */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, overflowY: 'auto' }}>
+        {loading ? (
+          <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>Loading activity...</div>
+        ) : grouped.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>
+            {entries.length === 0
+              ? 'No activity yet. Run the unified_activity_log.sql migration to enable triggers, then actions will appear here automatically.'
+              : 'No activity found for this period and filter combination.'}
+          </div>
+        ) : grouped.map(([dateLabel, items]) => (
+          <div key={dateLabel}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', paddingLeft: '4px' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {dateLabel}
+              </span>
+              <span style={{ fontSize: '0.62rem', color: '#bbb' }}>
+                {items.length} {items.length === 1 ? 'entry' : 'entries'}
+                {(() => { const d = items.reduce((s, e) => s + (e.duration || 0), 0); return d > 0 ? ` · ~${formatDuration(d)}` : ''; })()}
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {items.map(entry => {
+                const cfg = SOURCE_CONFIG[entry.source] || SOURCE_CONFIG.System;
+                const Icon = cfg.icon;
+                const isExpanded = expandedId === entry.id;
                 return (
-                  <tr key={h.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}
-                    onMouseOver={e => e.currentTarget.style.background = 'rgba(176,96,80,0.02)'}
-                    onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
-                    <td style={{ padding: '0.6rem 1rem', color: '#999', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>{formatTime(h.created_at)}</td>
-                    <td style={{ padding: '0.6rem 1rem', color: '#2e2c2a', fontWeight: 500 }}>{h.task_title}</td>
-                    <td style={{ padding: '0.6rem 1rem' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: '#666' }}>
-                        <Folder size={11} /> {h.project_name || '—'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.6rem 1rem' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 600, background: cs.bg, color: cs.color }}>{h.category}</span>
-                    </td>
-                    <td style={{ padding: '0.6rem 1rem' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: '#666' }}>
-                        <User size={11} /> {h.requested_by || '—'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.6rem 1rem' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', color: '#666' }}>
-                        <Bot size={11} /> {h.agent_or_mcp || '—'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.6rem 1rem', textAlign: 'right', color: '#444', fontWeight: 500, whiteSpace: 'nowrap' }}>{formatDuration(h.duration_minutes)}</td>
-                  </tr>
+                  <div key={entry.id} className="glass-panel" style={{
+                    padding: 0, overflow: 'hidden', transition: 'all 0.15s', cursor: 'pointer',
+                    border: isExpanded ? `1px solid ${cfg.color}30` : undefined,
+                  }}>
+                    {/* Summary row */}
+                    <div style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'flex-start', gap: '12px' }}
+                      onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                      onMouseOver={e => e.currentTarget.style.background = 'rgba(176,96,80,0.03)'}
+                      onMouseOut={e => e.currentTarget.style.background = ''}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: cfg.bg, color: cfg.color, flexShrink: 0, marginTop: '2px' }}>
+                        <Icon size={16} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#2e2c2a' }}>{entry.title}</span>
+                          <span style={{ padding: '1px 8px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: 700, background: cfg.bg, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{entry.source}</span>
+                          {entry.action && entry.action !== 'created' && (
+                            <span style={{ padding: '1px 6px', borderRadius: '8px', fontSize: '0.6rem', fontWeight: 500, background: 'rgba(0,0,0,0.04)', color: '#888' }}>{entry.action.replace(/_/g, ' ')}</span>
+                          )}
+                          {entry.project && <span style={{ fontSize: '0.72rem', color: '#888', fontStyle: 'italic' }}>{entry.project}</span>}
+                          {entry.duration && <span style={{ fontSize: '0.65rem', color: '#2d8a4e', fontWeight: 500 }}>~{formatDuration(entry.duration)}</span>}
+                        </div>
+                        {!isExpanded && entry.description && (
+                          <div style={{ fontSize: '0.8rem', color: '#777', marginTop: '3px', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {entry.description}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: '#aaa', whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>
+                        <div>{formatTime(entry.timestamp)}</div>
+                        <div style={{ fontSize: '0.6rem', color: '#ccc' }}>{timeAgo(entry.timestamp)}</div>
+                      </div>
+                    </div>
+                    {/* Expanded detail */}
+                    {isExpanded && (
+                      <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid rgba(0,0,0,0.04)', background: 'rgba(0,0,0,0.01)' }}>
+                        <div className="responsive-grid-2" style={{ padding: '12px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8a8682', marginBottom: '4px', textTransform: 'uppercase' }}>Details</div>
+                            {entry.description ? (
+                              <div style={{ fontSize: '0.82rem', color: '#3e3c3a', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{entry.description}</div>
+                            ) : (
+                              <div style={{ fontSize: '0.82rem', color: '#bbb', fontStyle: 'italic' }}>No additional details.</div>
+                            )}
+                            {entry.meta && entry.meta !== '{}' && entry.meta !== 'null' && (
+                              <div style={{ fontSize: '0.72rem', color: '#8a8682', marginTop: '6px', fontFamily: 'monospace', background: 'rgba(0,0,0,0.02)', padding: '6px 8px', borderRadius: '4px', wordBreak: 'break-all' }}>
+                                {entry.meta}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#8a8682', marginBottom: '4px', textTransform: 'uppercase' }}>Context</div>
+                            <div style={{ fontSize: '0.78rem', color: '#3e3c3a', lineHeight: 1.6 }}>
+                              <div><strong>Source:</strong> {entry.source}</div>
+                              {entry.action && <div><strong>Action:</strong> {entry.action.replace(/_/g, ' ')}</div>}
+                              {entry.actor && entry.actor !== 'System' && <div><strong>Actor:</strong> {entry.actor}</div>}
+                              {entry.project && <div><strong>Project:</strong> {entry.project}</div>}
+                              {entry.entity_type && <div><strong>Entity:</strong> {entry.entity_type} {entry.entity_id ? `#${entry.entity_id.slice(0, 8)}` : ''}</div>}
+                              <div><strong>When:</strong> {new Date(entry.timestamp).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
+                              {entry.duration && <div><strong>Est. Duration:</strong> ~{formatDuration(entry.duration)}</div>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };

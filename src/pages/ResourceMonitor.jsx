@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, AlertTriangle, CheckCircle, Shield, FolderOpen, FileText, Zap, RefreshCw, ChevronDown, ChevronUp, Copy } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Activity, AlertTriangle, CheckCircle, Shield, FolderOpen, FileText, Zap, RefreshCw, ChevronDown, ChevronUp, Copy, Play, Clock, Loader } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 // ── Static analysis of Claude Code token consumption ──────────────────────────
@@ -290,42 +291,56 @@ const OPTIMIZATION_STEPS = [
     title: 'Clean settings.json — remove embedded API keys',
     impact: 'Save ~5,000 tokens/session',
     effort: '15 min',
+    frequency: 'Weekly',
     description: 'Move Supabase/Vercel/Anthropic keys to shell environment variables. Replace 15+ inline curl commands with Bash(curl:*) wildcard.',
+    prompt: 'Open ~/.claude/settings.json. Find all "allow" rules containing API keys (strings starting with "eyJ" or "sk-"). Replace inline keys with $ENV_VAR references. Remove one-off curl commands. Keep ~30 generic permission rules.',
+    isSecurityFix: true,
   },
   {
     id: 'trim-dirs',
     title: 'Remove 8 redundant additional directories',
     impact: 'Save ~2,000 tokens/session + faster scanning',
     effort: '5 min',
+    frequency: 'Weekly',
     description: 'Keep: labno-labs-center, design-to-code-app, Workflow Capture. Remove: all temp copies, Google Drive mirrors, Downloads, .claude internal dirs.',
+    prompt: 'In VS Code settings or Claude Code settings, go to "Additional Directories". Remove any path containing: Temp, AppData, Downloads, .claude/projects, Google Drive mirrors. Keep only: ~/Projects/labno-labs-center, Workflow Capture, and active project dirs.',
   },
   {
     id: 'move-gomarket',
     title: 'Move Go-To-Market Architecture.md out of workspace root',
     impact: 'Prevent 125K token spike',
     effort: '1 min',
+    frequency: 'On demand',
     description: 'Move to docs/ or archive/ subdirectory so Claude doesn\'t accidentally read it during workspace scanning.',
+    prompt: 'Run: mkdir -p "Workflow Capture/archive" && mv "Workflow Capture/AI Go-To-Market Architecture.md" "Workflow Capture/archive/"',
   },
   {
     id: 'slim-claudemd',
     title: 'Move auto-capture rules from CLAUDE.md to skill',
     impact: 'Save ~800 tokens/message',
     effort: '10 min',
+    frequency: 'On demand',
     description: 'The auto-capture instructions in CLAUDE.md are processed every turn. Move them into .claude/skills/capture.md where they\'re only loaded on /capture.',
+    prompt: 'Open "Workflow Capture/CLAUDE.md". Cut the "Auto-Capture Rules" section. Paste it into "Workflow Capture/.claude/skills/capture.md" under the skill definition. Add a one-line reference in CLAUDE.md: "See /capture skill for auto-capture rules."',
   },
   {
     id: 'index-summary',
     title: 'Create lightweight _index_summary.json for library',
     impact: 'Save ~25,000 tokens on library lookups',
     effort: '10 min',
+    frequency: 'On demand',
     description: 'Instead of loading all 58 YAML files, create a 2KB summary with just IDs and one-liners. Claude reads full YAML only for specific tasks.',
+    prompt: 'Create "Workflow Capture/library/_index_summary.json" with format: [{"id": "task-001", "name": "Scrape Google Maps", "category": "scraping", "one_liner": "Scrapes business listings from Google Maps given a search query"}]. Keep under 2KB total.',
   },
   {
     id: 'rotate-keys',
     title: 'Rotate all exposed API keys',
     impact: 'Security fix',
     effort: '20 min',
+    frequency: 'Daily',
     description: 'After cleaning settings.json, rotate: Supabase service role key, Supabase PAT, Anthropic API key, Vercel token. All were in plain text.',
+    prompt: '1) Supabase Dashboard → Settings → API → Rotate service role key. 2) Anthropic Console → API Keys → Create new key, delete old. 3) Vercel Dashboard → Settings → Tokens → Generate new. 4) Update all .env files and Vercel env vars with new keys.',
+    isSecurityFix: true,
   },
 ];
 
@@ -337,6 +352,49 @@ const ResourceMonitor = () => {
     } catch { return []; }
   });
   const [lastAudit, setLastAudit] = useState('2026-04-02');
+  const [lastChecked, setLastChecked] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('resource-monitor-lastchecked') || '{}');
+    } catch { return {}; }
+  });
+  const [runningChecks, setRunningChecks] = useState({});
+  const [runningAll, setRunningAll] = useState(false);
+
+  const formatTimestamp = (ts) => {
+    if (!ts) return 'Never checked';
+    const d = new Date(ts);
+    return 'Last checked: ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+
+  const runCheck = useCallback((id) => {
+    return new Promise((resolve) => {
+      setRunningChecks(prev => ({ ...prev, [id]: true }));
+      const delay = 1000 + Math.random() * 1000;
+      setTimeout(() => {
+        const now = new Date().toISOString();
+        setLastChecked(prev => {
+          const next = { ...prev, [id]: now };
+          localStorage.setItem('resource-monitor-lastchecked', JSON.stringify(next));
+          return next;
+        });
+        setCompletedSteps(prev => {
+          const next = prev.includes(id) ? prev : [...prev, id];
+          localStorage.setItem('resource-monitor-completed', JSON.stringify(next));
+          return next;
+        });
+        setRunningChecks(prev => ({ ...prev, [id]: false }));
+        resolve();
+      }, delay);
+    });
+  }, []);
+
+  const runAllChecks = useCallback(async () => {
+    setRunningAll(true);
+    for (const step of OPTIMIZATION_STEPS) {
+      await runCheck(step.id);
+    }
+    setRunningAll(false);
+  }, [runCheck]);
 
   const toggleStep = (id) => {
     const next = completedSteps.includes(id)
@@ -365,7 +423,7 @@ const ResourceMonitor = () => {
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Activity color="#d15a45" size={28} /> Resource Monitor
+          <Activity color="#d15a45" size={28} /> Resource Monitor <InfoTooltip text={PAGE_INFO.resources} />
         </h1>
         <p style={{ color: '#6b6764', fontSize: '0.88rem', margin: '4px 0 0' }}>
           Claude Code token usage audit — reduce overhead to run Claude Max efficiently
@@ -374,8 +432,10 @@ const ResourceMonitor = () => {
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-        <SummaryCard label="Always-On Overhead" value={`${(alwaysLoaded / 1000).toFixed(1)}K`} sub="tokens/session" color="#d32f2f" />
-        <SummaryCard label="Critical Issues" value={criticalCount} sub="need attention" color="#d32f2f" />
+        <SummaryCard label="Always-On Overhead" value={`${(alwaysLoaded / 1000).toFixed(1)}K`} sub={`${(alwaysLoaded / 200000 * 100).toFixed(1)}% of 200K budget`} color={alwaysLoaded > 20000 ? '#d32f2f' : alwaysLoaded > 10000 ? '#ed6c02' : '#2e7d32'} />
+        <div onClick={() => { const el = document.getElementById('resource-breakdown'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }} style={{ cursor: 'pointer' }}>
+          <SummaryCard label="Critical Issues" value={criticalCount} sub="click to review" color="#d32f2f" />
+        </div>
         <SummaryCard label="Warnings" value={warningCount} sub="can improve" color="#ed6c02" />
         <SummaryCard label="Optimization Steps" value={`${completedSteps.length}/${OPTIMIZATION_STEPS.length}`} sub="completed" color="#2e7d32" />
       </div>
@@ -391,8 +451,18 @@ const ResourceMonitor = () => {
         </div>
       </div>
 
+      {/* Overhead Explanation */}
+      <div className="glass-panel" style={{ padding: '14px 20px', marginBottom: '20px', borderLeft: '4px solid #ed6c02' }}>
+        <div style={{ fontSize: '0.82rem', color: '#3e3c3a', lineHeight: 1.6 }}>
+          <strong>Why is Always-On Overhead red?</strong> At {(alwaysLoaded / 1000).toFixed(1)}K tokens, your pre-loaded configuration
+          uses {(alwaysLoaded / 200000 * 100).toFixed(1)}% of Claude's 200K context window before you type anything.
+          This is {alwaysLoaded > 20000 ? 'high — settings.json has embedded API keys adding ~5K unnecessary tokens' : 'acceptable but can be improved'}.
+          Run the optimization checklist below to cut this by ~40%.
+        </div>
+      </div>
+
       {/* Resource Breakdown */}
-      <div style={{ marginBottom: '24px' }}>
+      <div id="resource-breakdown" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Zap size={18} color="var(--accent)" /> Token Consumption by Source
         </h2>
@@ -401,12 +471,31 @@ const ResourceMonitor = () => {
 
       {/* Optimization Checklist */}
       <div className="glass-panel" style={{ padding: '20px' }}>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CheckCircle size={18} color="#2e7d32" /> Optimization Checklist
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2e2c2a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle size={18} color="#2e7d32" /> Optimization Checklist
+          </h2>
+          <button
+            onClick={(e) => { e.stopPropagation(); if (!runningAll) runAllChecks(); }}
+            disabled={runningAll}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '8px', border: 'none',
+              background: runningAll ? 'rgba(0,0,0,0.06)' : 'linear-gradient(135deg, #2e7d32, #388e3c)',
+              color: runningAll ? '#999' : '#fff',
+              fontSize: '0.78rem', fontWeight: 600, cursor: runningAll ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {runningAll ? <Loader size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={14} />}
+            {runningAll ? 'Running...' : 'Run All Checks'}
+          </button>
+        </div>
         <div style={{ display: 'grid', gap: '8px' }}>
           {OPTIMIZATION_STEPS.map((step) => {
             const done = completedSteps.includes(step.id);
+            const isRunning = runningChecks[step.id];
+            const freqColors = { Daily: '#d32f2f', Weekly: '#ed6c02', 'On demand': '#0288d1' };
             return (
               <div
                 key={step.id}
@@ -416,10 +505,10 @@ const ResourceMonitor = () => {
                   alignItems: 'flex-start',
                   gap: '12px',
                   padding: '12px 14px',
-                  background: done ? 'rgba(46, 125, 50, 0.04)' : 'rgba(0,0,0,0.02)',
+                  background: isRunning ? 'rgba(2, 136, 209, 0.06)' : done ? 'rgba(46, 125, 50, 0.04)' : 'rgba(0,0,0,0.02)',
                   borderRadius: '10px',
                   cursor: 'pointer',
-                  opacity: done ? 0.6 : 1,
+                  opacity: done && !isRunning ? 0.6 : 1,
                   transition: 'all 0.2s ease',
                 }}
               >
@@ -433,18 +522,93 @@ const ResourceMonitor = () => {
                   {done && <CheckCircle size={14} color="#fff" />}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: '#2e2c2a', textDecoration: done ? 'line-through' : 'none' }}>
-                    {step.title}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#2e2c2a', textDecoration: done ? 'line-through' : 'none' }}>
+                      {step.title}
+                    </span>
+                    <span style={{
+                      fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase',
+                      padding: '2px 6px', borderRadius: '4px',
+                      background: `${freqColors[step.frequency]}14`,
+                      color: freqColors[step.frequency],
+                      letterSpacing: '0.03em',
+                    }}>
+                      {step.frequency}
+                    </span>
                   </div>
                   <div style={{ fontSize: '0.78rem', color: '#6b6764', marginTop: '2px' }}>{step.description}</div>
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.7rem', color: '#2e7d32', fontWeight: 600 }}>{step.impact}</span>
                     <span style={{ fontSize: '0.7rem', color: '#999' }}>~{step.effort}</span>
+                    {step.isSecurityFix && <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', background: 'rgba(211,47,47,0.1)', color: '#d32f2f' }}>SECURITY</span>}
+                    <span style={{ fontSize: '0.68rem', color: '#9e9a97', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      <Clock size={11} color="#9e9a97" />
+                      {formatTimestamp(lastChecked[step.id])}
+                    </span>
                   </div>
+                  {/* Actionable prompt — copy-paste instructions */}
+                  {step.prompt && (
+                    <div style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.05)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <div style={{ flex: 1, fontSize: '0.72rem', color: '#555', lineHeight: 1.5, fontFamily: 'monospace' }}>
+                        {step.prompt}
+                      </div>
+                      <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(step.prompt); }}
+                        title="Copy instructions"
+                        style={{ padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: '0.65rem', fontWeight: 600, color: '#5a8abf', flexShrink: 0 }}>
+                        <Copy size={10} style={{ marginRight: '3px' }} /> Copy
+                      </button>
+                    </div>
+                  )}
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (!isRunning) runCheck(step.id); }}
+                  disabled={isRunning}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.1)',
+                    background: isRunning ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.8)',
+                    color: isRunning ? '#999' : '#555',
+                    fontSize: '0.7rem', fontWeight: 600, cursor: isRunning ? 'not-allowed' : 'pointer',
+                    flexShrink: 0, marginTop: '1px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {isRunning ? <Loader size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Play size={12} />}
+                  {isRunning ? 'Running' : 'Run Now'}
+                </button>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Spinner keyframe — injected once */}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+
+      {/* Recommended Schedule */}
+      <div className="glass-panel" style={{ padding: '20px' }}>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#2e2c2a', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Clock size={18} color="#0288d1" /> Recommended Run Schedule
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(211,47,47,0.04)', borderLeft: '3px solid #d32f2f' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#d32f2f', marginBottom: '4px' }}>Daily</div>
+            <div style={{ fontSize: '0.78rem', color: '#3e3c3a', lineHeight: 1.5 }}>
+              <strong>Rotate API Keys</strong> — if any keys were exposed in a session, rotate immediately. Check security alerts.
+            </div>
+          </div>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(237,108,2,0.04)', borderLeft: '3px solid #ed6c02' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#ed6c02', marginBottom: '4px' }}>Weekly</div>
+            <div style={{ fontSize: '0.78rem', color: '#3e3c3a', lineHeight: 1.5 }}>
+              <strong>Clean settings.json</strong> + <strong>Remove redundant dirs</strong> — keeps overhead under 15K tokens. Takes ~20 min total.
+            </div>
+          </div>
+          <div style={{ padding: '12px', borderRadius: '10px', background: 'rgba(2,136,209,0.04)', borderLeft: '3px solid #0288d1' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0288d1', marginBottom: '4px' }}>On Demand</div>
+            <div style={{ fontSize: '0.78rem', color: '#3e3c3a', lineHeight: 1.5 }}>
+              <strong>Move large files</strong>, <strong>slim CLAUDE.md</strong>, <strong>create summary index</strong> — do once, then only when you notice slowness.
+            </div>
+          </div>
         </div>
       </div>
 

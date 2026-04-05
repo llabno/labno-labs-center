@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Layers, Grid, List, X, Code, Star, ExternalLink, Copy } from 'lucide-react';
+import { Layers, Grid, List, X, Code, Star, ExternalLink, Copy, Download, ChevronDown } from 'lucide-react';
+import { watermarkBadgeHtml } from '../components/Watermark';
 
 const DESIGN_TO_CODE_URL = 'https://design-to-code-app.vercel.app';
 
@@ -71,8 +72,138 @@ const UILibrary = () => {
     return true;
   });
 
+  const [addToProjectOpen, setAddToProjectOpen] = useState(null); // asset id or null
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!addToProjectOpen) return;
+    const handler = () => setAddToProjectOpen(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [addToProjectOpen]);
+
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
+  };
+
+  const getFileName = (asset) => {
+    const name = (asset.name || 'Component').replace(/[^a-zA-Z0-9_-]/g, '_');
+    return name;
+  };
+
+  const downloadAsJsx = (asset) => {
+    const blob = new Blob([asset.componentCode || ''], { type: 'text/jsx' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${getFileName(asset)}.jsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadAsHtml = (asset) => {
+    const code = asset.componentCode || '';
+    const name = asset.name || 'Component';
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${name}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 2rem; }
+    #root { max-width: 1200px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+${code}
+
+    const container = document.getElementById('root');
+    // Render placeholder — adapt to your framework
+    container.innerHTML = '<p style="color:#888;text-align:center;padding:2rem;">Component code loaded. Integrate with your React build pipeline to render.</p>';
+  </script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+  ${watermarkBadgeHtml()}
+</body>
+</html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${getFileName(asset)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleAddToProject = (e, assetId) => {
+    e.stopPropagation();
+    setAddToProjectOpen(prev => prev === assetId ? null : assetId);
+  };
+
+  const renderAddToProjectDropdown = (asset, position = 'bottom-right') => {
+    if (addToProjectOpen !== asset.id) return null;
+    const positionStyles = position === 'bottom-left'
+      ? { left: 0, right: 'auto' }
+      : { right: 0, left: 'auto' };
+
+    return (
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        ...positionStyles,
+        marginTop: 4,
+        background: '#fff',
+        border: '1px solid rgba(0,0,0,0.1)',
+        borderRadius: 8,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+        zIndex: 1100,
+        minWidth: 180,
+        padding: '4px 0',
+        animation: 'fadeIn 0.15s ease-out',
+      }}>
+        <button
+          onClick={(e) => { e.stopPropagation(); copyCode(asset.componentCode); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <Copy size={14} color="#1976d2" /> Copy to Clipboard
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); downloadAsJsx(asset); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <Download size={14} color="#16a34a" /> Download .jsx
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); downloadAsHtml(asset); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <Download size={14} color="#9333ea" /> Download .html
+        </button>
+        <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '4px 0' }} />
+        <a
+          href={`/studio?component=${encodeURIComponent(asset.name)}`}
+          onClick={(e) => { e.stopPropagation(); setAddToProjectOpen(null); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 14px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.78rem', color: '#333', textDecoration: 'none', textAlign: 'left' }}
+          onMouseOver={(e) => e.currentTarget.style.background = '#f5f5f5'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+        >
+          <ExternalLink size={14} color="#d15a45" /> Open in App Studio
+        </a>
+      </div>
+    );
   };
 
   // Grid View
@@ -175,7 +306,7 @@ const UILibrary = () => {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', borderTop: '1px solid rgba(0,0,0,0.05)', padding: '0.5rem 0.8rem', gap: 8 }}>
+            <div style={{ display: 'flex', borderTop: '1px solid rgba(0,0,0,0.05)', padding: '0.5rem 0.8rem', gap: 8, alignItems: 'center' }}>
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedAsset(asset); setShowCode(true); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#666', padding: 4 }}
@@ -183,11 +314,21 @@ const UILibrary = () => {
                 <Code size={13} /> Code
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); copyCode(asset.componentCode); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#1976d2', fontWeight: 600, padding: 4, marginLeft: 'auto' }}
+                onClick={(e) => { e.stopPropagation(); downloadAsJsx(asset); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#16a34a', padding: 4 }}
+                title="Download as .jsx"
               >
-                <Copy size={13} /> Copy
+                <Download size={13} /> .jsx
               </button>
+              <div style={{ position: 'relative', marginLeft: 'auto' }}>
+                <button
+                  onClick={(e) => toggleAddToProject(e, asset.id)}
+                  style={{ background: 'none', border: '1px solid #ccc', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.75rem', color: '#1976d2', fontWeight: 600, padding: '4px 10px', borderRadius: 6 }}
+                >
+                  Add to Project <ChevronDown size={12} />
+                </button>
+                {renderAddToProjectDropdown(asset)}
+              </div>
             </div>
           </div>
         );
@@ -248,12 +389,30 @@ const UILibrary = () => {
               </td>
               <td style={{ padding: '1rem', fontSize: '0.8rem', color: '#888' }}>{new Date(asset.createdAt).toLocaleDateString()}</td>
               <td style={{ padding: '1rem' }}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); copyCode(asset.componentCode); }}
-                  style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem' }}
-                >
-                  <Copy size={13} /> Copy Code
-                </button>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); copyCode(asset.componentCode); }}
+                    style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem' }}
+                  >
+                    <Copy size={13} /> Copy
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); downloadAsJsx(asset); }}
+                    style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem' }}
+                    title="Download as .jsx"
+                  >
+                    <Download size={13} /> .jsx
+                  </button>
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      onClick={(e) => toggleAddToProject(e, asset.id)}
+                      style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem', color: '#1976d2', fontWeight: 600 }}
+                    >
+                      Add to Project <ChevronDown size={12} />
+                    </button>
+                    {renderAddToProjectDropdown(asset, 'bottom-left')}
+                  </div>
+                </div>
               </td>
             </tr>
           );
@@ -301,7 +460,7 @@ const UILibrary = () => {
           )}
 
           {/* Toggle */}
-          <div style={{ display: 'flex', gap: 4, padding: '0.75rem 1.5rem', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', gap: 4, padding: '0.75rem 1.5rem', borderBottom: '1px solid #eee', alignItems: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={() => setShowCode(false)}
               style={{
@@ -322,16 +481,53 @@ const UILibrary = () => {
             >
               Code
             </button>
-            <button
-              onClick={() => copyCode(selectedAsset.componentCode)}
-              style={{
-                marginLeft: 'auto', padding: '4px 14px', borderRadius: 14, border: '1px solid #ccc',
-                cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, background: '#fff', color: '#1976d2',
-                display: 'flex', alignItems: 'center', gap: 4,
-              }}
-            >
-              <Copy size={12} /> Copy
-            </button>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4, alignItems: 'center' }}>
+              <button
+                onClick={() => copyCode(selectedAsset.componentCode)}
+                style={{
+                  padding: '4px 14px', borderRadius: 14, border: '1px solid #ccc',
+                  cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, background: '#fff', color: '#1976d2',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}
+              >
+                <Copy size={12} /> Copy
+              </button>
+              <button
+                onClick={() => downloadAsJsx(selectedAsset)}
+                style={{
+                  padding: '4px 14px', borderRadius: 14, border: '1px solid #ccc',
+                  cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, background: '#fff', color: '#16a34a',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}
+                title="Download as .jsx"
+              >
+                <Download size={12} /> .jsx
+              </button>
+              <button
+                onClick={() => downloadAsHtml(selectedAsset)}
+                style={{
+                  padding: '4px 14px', borderRadius: 14, border: '1px solid #ccc',
+                  cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, background: '#fff', color: '#9333ea',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}
+                title="Download as HTML snippet"
+              >
+                <Download size={12} /> .html
+              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={(e) => toggleAddToProject(e, selectedAsset.id)}
+                  style={{
+                    padding: '4px 14px', borderRadius: 14, border: '1px solid #d15a45',
+                    cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, background: '#d15a45', color: '#fff',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  Add to Project <ChevronDown size={12} />
+                </button>
+                {renderAddToProjectDropdown(selectedAsset)}
+              </div>
+            </div>
           </div>
 
           {/* Metadata */}
@@ -605,6 +801,10 @@ const UILibrary = () => {
         @keyframes slideIn {
           from { transform: translateX(100%); }
           to { transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

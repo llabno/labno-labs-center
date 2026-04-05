@@ -145,13 +145,13 @@ export default async function handler(req, res) {
   if (output_type === 'pattern_alert' && content.includes('🔴')) {
     // Find or create the MOSO Personal System project
     let { data: mosoProject } = await supabase
-      .from('internal_projects')
+      .from('projects')
       .select('id')
       .eq('name', 'MOSO Personal System')
       .single()
 
     if (!mosoProject) {
-      const { data: newProj } = await supabase.from('internal_projects').insert({
+      const { data: newProj } = await supabase.from('projects').insert({
         name: 'MOSO Personal System',
         status: 'Active'
       }).select().single()

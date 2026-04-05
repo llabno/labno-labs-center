@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Code, Rocket, Edit3, Bug, Play, Server, Send, CheckCircle, Plus, ChevronDown, ChevronUp, X, ArrowRight, Check, ExternalLink, Zap, Shield, XCircle, Database, FileText } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
+import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const PROJECT_OPTIONS = [
   'Unassigned',
@@ -23,10 +26,23 @@ const PROJECT_COLORS = {
 
 const AppStudio = () => {
   const [apps, setApps] = useState([
-    { title: 'College Career OS', status: 'Live', mrr: '$1,200', active: '842', color: '#4caf50', description: 'End-to-end career management platform for university students. Features interview prep, resume builder, and job tracking.', progress: 95 },
-    { title: 'Stretching App (Romy)', status: 'In Development', mrr: '$0', active: '0', color: '#ff9800', description: 'Clinical stretching and mobility app designed for rehab patients. Currently building exercise library and video integration.', progress: 40 },
-    { title: 'Art Portfolio (Avery)', status: 'Planning', mrr: '$0', active: '0', color: '#2196f3', description: 'Minimalist portfolio builder for visual artists. Planning phase — wireframes and feature spec in progress.', progress: 10 },
+    { title: 'College Career OS', status: 'Live', mrr: '$1,200', active: '842', color: '#4caf50', description: 'End-to-end career management platform for university students. Features interview prep, resume builder, and job tracking.', progress: 95, vercelUrl: 'https://college-career-os.vercel.app', githubUrl: 'https://github.com/labnolabs/college-career-os', pipelineStage: 8, projectId: null },
+    { title: 'Stretching App (Romy)', status: 'In Development', mrr: '$0', active: '0', color: '#ff9800', description: 'Clinical stretching and mobility app designed for rehab patients. Currently building exercise library and video integration.', progress: 40, vercelUrl: null, githubUrl: null, pipelineStage: 3, projectId: null },
+    { title: 'Art Portfolio (Avery)', status: 'Planning', mrr: '$0', active: '0', color: '#2196f3', description: 'Minimalist portfolio builder for visual artists. Planning phase — wireframes and feature spec in progress.', progress: 10, vercelUrl: null, githubUrl: null, pipelineStage: 2, projectId: null },
   ]);
+
+  // Try to match portfolio apps to real projects by name
+  useEffect(() => {
+    const matchProjects = async () => {
+      const { data } = await supabase.from('projects').select('id, name');
+      if (!data) return;
+      setApps(prev => prev.map(app => {
+        const match = data.find(p => p.name.toLowerCase().includes(app.title.toLowerCase().split(' (')[0].split(' ').slice(0,2).join(' ').toLowerCase()));
+        return match ? { ...app, projectId: match.id } : app;
+      }));
+    };
+    matchProjects();
+  }, []);
 
   const stages = [
     { name: '1. Spin Up Starter Kit', icon: <Rocket size={20} color="#1976d2" />, desc: 'Next.js + Core UI + API Bridge' },
@@ -60,6 +76,44 @@ const AppStudio = () => {
 
   // Task 9: Portfolio accordion
   const [expandedApp, setExpandedApp] = useState(null);
+
+  // Pipeline templates from Supabase
+  const [pipelineTemplates, setPipelineTemplates] = useState({});
+  const [pipelineTrack, setPipelineTrack] = useState('app');
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      const { data, error } = await supabase
+        .from('pipeline_task_templates')
+        .select('*')
+        .order('stage', { ascending: true })
+        .order('sort_order', { ascending: true });
+      if (!error && data) {
+        const grouped = {};
+        data.forEach(t => {
+          const stageIdx = t.stage - 1;
+          if (!grouped[stageIdx]) grouped[stageIdx] = [];
+          grouped[stageIdx].push(t);
+        });
+        setPipelineTemplates(grouped);
+      }
+      setLoadingTemplates(false);
+    };
+    fetchTemplates();
+  }, []);
+
+  // Get templates for a stage filtered by track
+  const getStageTemplates = (stageIdx) => {
+    const templates = pipelineTemplates[stageIdx] || [];
+    return templates.filter(t => t.tracks.includes(pipelineTrack));
+  };
+
+  const TRIGGER_ICONS = {
+    auto: { icon: Zap, color: '#2d8a4e', label: 'Auto' },
+    gated: { icon: Shield, color: '#b08030', label: 'Gated' },
+    manual: { icon: XCircle, color: '#999', label: 'Manual' },
+  };
 
   const toggleStage = (idx) => {
     setOpenStage(openStage === idx ? null : idx);
@@ -136,7 +190,7 @@ const AppStudio = () => {
   return (
     <div className="main-content" style={{ padding: '1.5rem' }}>
       <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Code color="#d15a45" /> Labno Labs App Studio
+        <Code color="#d15a45" /> Labno Labs App Studio <InfoTooltip text={PAGE_INFO.studio} />
       </h1>
 
       <p style={{ marginBottom: '2rem', color: '#555', maxWidth: '800px' }}>
@@ -144,7 +198,17 @@ const AppStudio = () => {
       </p>
 
       {/* The 8 Stages of App Development (Clickable Logic) */}
-      <h3 style={{ marginBottom: '1.5rem', color: '#333', fontSize: '1.1rem', fontWeight: 600 }}>Action Pipeline</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h3 style={{ color: '#333', fontSize: '1.1rem', fontWeight: 600 }}>Action Pipeline</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '0.75rem', color: '#888', fontWeight: 500 }}>Track:</span>
+          <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+            <button onClick={() => setPipelineTrack('app')} style={{ padding: '5px 14px', fontSize: '0.75rem', fontWeight: 600, border: 'none', cursor: 'pointer', background: pipelineTrack === 'app' ? '#b06050' : 'rgba(255,255,255,0.5)', color: pipelineTrack === 'app' ? '#fff' : '#6b6764', transition: 'all 0.2s' }}>App Build</button>
+            <button onClick={() => setPipelineTrack('service')} style={{ padding: '5px 14px', fontSize: '0.75rem', fontWeight: 600, border: 'none', cursor: 'pointer', background: pipelineTrack === 'service' ? '#b06050' : 'rgba(255,255,255,0.5)', color: pipelineTrack === 'service' ? '#fff' : '#6b6764', transition: 'all 0.2s' }}>Service Build</button>
+          </div>
+          {!loadingTemplates && <span style={{ fontSize: '0.68rem', color: '#6aab6e', display: 'flex', alignItems: 'center', gap: '4px' }}><Database size={11} /> {Object.values(pipelineTemplates).flat().length} tasks loaded</span>}
+        </div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
         {stages.map((stage, idx) => (
           <div key={idx} style={{ display: 'flex', flexDirection: 'column' }}>
@@ -195,7 +259,44 @@ const AppStudio = () => {
                   transform: 'perspective(800px) rotateX(0.5deg)',
                 }}
               >
-                {(checklists[idx] || []).length === 0 && (
+                {/* Supabase Pipeline Templates */}
+                {getStageTemplates(idx).length > 0 && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#b06050' }}>
+                        Pipeline Tasks ({getStageTemplates(idx).length})
+                      </span>
+                      <span style={{ fontSize: '0.65rem', color: '#888', fontStyle: 'italic' }}>from template library</span>
+                    </div>
+                    {getStageTemplates(idx).map(t => {
+                      const triggerInfo = TRIGGER_ICONS[t.trigger_level] || TRIGGER_ICONS.gated;
+                      const TriggerIcon = triggerInfo.icon;
+                      return (
+                        <div key={t.id} style={{
+                          display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '8px 12px', marginBottom: '6px', borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.5)',
+                          border: '1px solid rgba(0,0,0,0.04)',
+                          fontSize: '0.82rem',
+                        }}>
+                          <TriggerIcon size={13} color={triggerInfo.color} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 500, color: '#2e2c2a' }}>{t.title}</div>
+                            {t.description && <div style={{ fontSize: '0.72rem', color: '#8a8682', marginTop: '2px' }}>{t.description}</div>}
+                          </div>
+                          <span style={{ fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: `${triggerInfo.color}18`, color: triggerInfo.color, whiteSpace: 'nowrap' }}>{triggerInfo.label}</span>
+                          <span style={{ fontSize: '0.65rem', color: '#8a8682', whiteSpace: 'nowrap' }}>{t.agent}</span>
+                          {t.case_id && <span style={{ fontSize: '0.6rem', fontWeight: 600, padding: '1px 5px', borderRadius: '3px', background: 'rgba(140,110,180,0.12)', color: '#7a5a9a', whiteSpace: 'nowrap' }}>CASE-{t.case_id}</span>}
+                        </div>
+                      );
+                    })}
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', marginTop: '10px', paddingTop: '10px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#6b6764' }}>Custom Items</span>
+                    </div>
+                  </div>
+                )}
+
+                {(checklists[idx] || []).length === 0 && getStageTemplates(idx).length === 0 && (
                   <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '0.5rem' }}>No items yet. Add one below.</p>
                 )}
                 {(checklists[idx] || []).map((item, itemIdx) => {
@@ -431,6 +532,25 @@ const AppStudio = () => {
                   <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '4px' }}>{app.progress}% complete</div>
                 </div>
 
+                {/* Pipeline Stage */}
+                {app.pipelineStage && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#888', marginBottom: '6px' }}>Pipeline Stage</div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {[1,2,3,4,5,6,7,8].map(s => (
+                        <div key={s} style={{
+                          flex: 1, height: '6px', borderRadius: '3px',
+                          background: s <= app.pipelineStage ? app.color : 'rgba(0,0,0,0.06)',
+                          transition: 'background 0.3s ease',
+                        }} />
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#888', marginTop: '4px' }}>
+                      Stage {app.pipelineStage}: {stages[app.pipelineStage - 1]?.name || 'Unknown'}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{
                     fontSize: '0.7rem',
@@ -448,29 +568,76 @@ const AppStudio = () => {
                   <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: '10px', background: 'rgba(0,0,0,0.04)', color: '#666' }}>
                     {app.mrr} MRR
                   </span>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); window.location.href = '/projects'; }}
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                  {app.vercelUrl && (
+                    <a
+                      href={app.vercelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        padding: '6px 14px', borderRadius: '8px',
+                        border: '1px solid rgba(76,175,80,0.3)',
+                        background: 'rgba(76,175,80,0.08)',
+                        color: '#388e3c', fontSize: '0.75rem', fontWeight: 600,
+                        textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <ExternalLink size={12} /> Open Live App
+                    </a>
+                  )}
+                  {app.githubUrl && (
+                    <a
+                      href={app.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        padding: '6px 14px', borderRadius: '8px',
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        background: 'rgba(0,0,0,0.04)',
+                        color: '#333', fontSize: '0.75rem', fontWeight: 600,
+                        textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <Code size={12} /> GitHub Repo
+                    </a>
+                  )}
+                  <Link
+                    to="/"
+                    onClick={e => e.stopPropagation()}
                     style={{
-                      marginLeft: 'auto',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      padding: '5px 12px',
-                      borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      padding: '6px 14px', borderRadius: '8px',
                       border: '1px solid rgba(176,96,80,0.25)',
-                      background: 'linear-gradient(135deg, rgba(176,96,80,0.08) 0%, rgba(196,122,106,0.06) 100%)',
-                      color: '#b06050',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.25s ease',
-                      boxShadow: '0 1px 4px rgba(176,96,80,0.08)',
+                      background: 'rgba(176,96,80,0.08)',
+                      color: '#b06050', fontSize: '0.75rem', fontWeight: 600,
+                      textDecoration: 'none', transition: 'all 0.2s ease',
                     }}
-                    onMouseOver={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(176,96,80,0.15) 0%, rgba(196,122,106,0.1) 100%)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(176,96,80,0.15)'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(176,96,80,0.08) 0%, rgba(196,122,106,0.06) 100%)'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(176,96,80,0.08)'; }}
                   >
-                    <ExternalLink size={12} /> Open Project Detail
-                  </button>
+                    <ArrowRight size={12} /> Command Center
+                  </Link>
+                  <Link
+                    to={`/project/${app.projectId || ''}`}
+                    onClick={e => { e.stopPropagation(); if (!app.projectId) e.preventDefault(); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      padding: '6px 14px', borderRadius: '8px',
+                      border: '1px solid rgba(25,118,210,0.25)',
+                      background: app.projectId ? 'rgba(25,118,210,0.08)' : 'rgba(0,0,0,0.03)',
+                      color: app.projectId ? '#1565c0' : '#999',
+                      fontSize: '0.75rem', fontWeight: 600,
+                      textDecoration: 'none', transition: 'all 0.2s ease',
+                      cursor: app.projectId ? 'pointer' : 'default',
+                    }}
+                  >
+                    <FileText size={12} /> {app.projectId ? 'Project Passport' : 'No Project Linked'}
+                  </Link>
                 </div>
               </div>
             )}

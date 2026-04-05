@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Plus, Send, Folder, Zap, CheckCircle, Clock, AlertCircle, Trash2, Filter, Lightbulb, Link2, Rocket, ExternalLink, Terminal, Mic, MicOff, GitBranch } from 'lucide-react';
+import { Sparkles, Plus, Send, Folder, Zap, CheckCircle, Clock, AlertCircle, Trash2, Filter, Lightbulb, Link2, Rocket, ExternalLink, Terminal, Mic, MicOff, GitBranch, ChevronDown, ChevronRight } from 'lucide-react';
+import InfoTooltip, { PAGE_INFO } from '../components/InfoTooltip';
 import { supabase } from '../lib/supabase';
 
 const TYPE_OPTIONS = ['Tool Stack', 'Website', 'Content', 'Research', 'System Improvement', 'Automation', 'Clinical', 'Business Dev', 'Agent / AI', 'Personal'];
@@ -72,11 +73,16 @@ const Wishlist = () => {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [dispatching, setDispatching] = useState({});
   const [listening, setListening] = useState(false);
+  const [lastDispatchCount, setLastDispatchCount] = useState(0);
+  const [dispatchBannerVisible, setDispatchBannerVisible] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all' | 'dispatched'
+  const [checkingStatus, setCheckingStatus] = useState({});
+  const [agentRunStatuses, setAgentRunStatuses] = useState({});
 
   const fetchAll = async () => {
     const [wishRes, projRes, taskRes, caseRes] = await Promise.all([
       supabase.from('wishlist').select('*').order('created_at', { ascending: false }),
-      supabase.from('internal_projects').select('*').order('name'),
+      supabase.from('projects').select('*').order('name'),
       supabase.from('global_tasks').select('*'),
       supabase.from('task_queue_cases').select('*').order('case_id'),
     ]);
@@ -155,6 +161,40 @@ const Wishlist = () => {
     await fetchAll();
   };
 
+  // Auto-create pipeline stages when converting a wish to a project
+  const createProjectFromWish = async (item) => {
+    // 1. Create the project
+    const track = (item.type === 'Website' || item.type === 'Tool Stack' || item.type === 'Agent / AI') ? 'app' : 'service';
+    const projType = (item.type === 'Business Dev' || item.project === 'Labno Labs') ? 'client' : 'internal';
+    const { data: newProj, error: projErr } = await supabase.from('projects').insert({
+      name: item.raw_text.slice(0, 100),
+      status: 'Planning',
+      project_type: projType,
+      venture: item.type === 'Clinical' ? 'clinical' : item.type === 'Business Dev' ? 'consulting' : 'apps',
+      pipeline_track: track,
+      total_tasks: 0,
+      completed_tasks: 0,
+    }).select().single();
+    if (projErr || !newProj) { console.error('Error creating project:', projErr); return; }
+
+    // 2. Create pipeline stages (8 stages)
+    const stages = [1,2,3,4,5,6,7,8].map(n => ({
+      project_id: newProj.id,
+      stage_number: n,
+      status: n === 1 ? 'active' : 'pending',
+      track,
+    }));
+    await supabase.from('project_pipelines').insert(stages);
+
+    // 3. Link wish to the new project
+    await supabase.from('wishlist').update({
+      linked_project_id: newProj.id,
+      status: 'In Progress',
+    }).eq('id', item.id);
+
+    await fetchAll();
+  };
+
   const dispatchToAgent = async (item) => {
     setDispatching(prev => ({ ...prev, [item.id]: true }));
     try {
@@ -181,13 +221,32 @@ const Wishlist = () => {
       });
       const data = await res.json();
       if (data.success) {
-        await supabase.from('wishlist').update({ agent_run_id: data.runId, status: 'In Progress' }).eq('id', item.id);
+        await supabase.from('wishlist').update({ agent_run_id: data.runId, status: 'In Progress', dispatched_at: new Date().toISOString() }).eq('id', item.id);
         await fetchAll();
+        setLastDispatchCount(1);
+        setDispatchBannerVisible(true);
+        return true;
       }
     } catch (err) {
       console.error('Dispatch failed:', err);
     }
     setDispatching(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+    return false;
+  };
+
+  const checkAgentRunStatus = async (agentRunId) => {
+    setCheckingStatus(prev => ({ ...prev, [agentRunId]: true }));
+    try {
+      const { data, error } = await supabase.from('agent_runs').select('id, status, created_at, updated_at').eq('id', agentRunId).single();
+      if (!error && data) {
+        setAgentRunStatuses(prev => ({ ...prev, [agentRunId]: data }));
+      } else {
+        setAgentRunStatuses(prev => ({ ...prev, [agentRunId]: { id: agentRunId, status: 'unknown', error: 'Could not fetch status' } }));
+      }
+    } catch {
+      setAgentRunStatuses(prev => ({ ...prev, [agentRunId]: { id: agentRunId, status: 'unknown', error: 'Fetch failed' } }));
+    }
+    setCheckingStatus(prev => { const n = { ...prev }; delete n[agentRunId]; return n; });
   };
 
   const [decomposing, setDecomposing] = useState({});
@@ -226,9 +285,17 @@ const Wishlist = () => {
   };
 
   const dispatchSelected = async () => {
+    let dispatched = 0;
     for (const id of selectedItems) {
       const item = items.find(i => i.id === id);
-      if (item) await dispatchToAgent(item);
+      if (item) {
+        const ok = await dispatchToAgent(item);
+        if (ok) dispatched++;
+      }
+    }
+    if (dispatched > 0) {
+      setLastDispatchCount(dispatched);
+      setDispatchBannerVisible(true);
     }
     setSelectedItems(new Set());
   };
@@ -244,14 +311,20 @@ const Wishlist = () => {
   const getTab = (id) => activeTab[id] || 'details';
   const setTab = (id, tab) => setActiveTab(prev => ({ ...prev, [id]: tab }));
 
-  const filtered = items.filter(item => {
+  // Split items: active (New Idea, Already Exists) vs history (everything else)
+  const ACTIVE_STATUSES = ['New Idea', 'Already Exists'];
+  const activeItems = items.filter(i => ACTIVE_STATUSES.includes(i.status));
+  const historyItems = items.filter(i => !ACTIVE_STATUSES.includes(i.status));
+  const [showHistory, setShowHistory] = useState(false);
+
+  const filtered = (filterStatus !== 'All' ? items : activeItems).filter(item => {
     if (filterType !== 'All' && item.type !== filterType) return false;
     if (filterStatus !== 'All' && item.status !== filterStatus) return false;
     return true;
   });
 
   const typeCounts = {};
-  items.forEach(i => { typeCounts[i.type] = (typeCounts[i.type] || 0) + 1; });
+  activeItems.forEach(i => { typeCounts[i.type] = (typeCounts[i.type] || 0) + 1; });
 
   if (loading) return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a8682' }}>Loading wishlist...</div>
@@ -263,12 +336,23 @@ const Wishlist = () => {
       {/* Header */}
       <div>
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Sparkles size={24} color="#c49a40" /> Wishlist — Idea Intake
+          <Sparkles size={24} color="#c49a40" /> Wishlist — Idea Intake <InfoTooltip text={PAGE_INFO.wishlist} />
         </h1>
         <p style={{ color: '#6b6764', fontSize: '0.9rem', marginTop: '4px' }}>
           Dump ideas freely. They get analyzed, tagged, and mapped to projects and workflows. Then dispatch to agents.
         </p>
       </div>
+
+      {/* Dispatch Banner */}
+      {dispatchBannerVisible && lastDispatchCount > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: '10px', background: 'rgba(45,138,78,0.08)', border: '1px solid rgba(45,138,78,0.2)', borderLeft: '3px solid #2d8a4e' }}>
+          <span style={{ fontSize: '0.85rem', color: '#2d8a4e', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Rocket size={14} />
+            {lastDispatchCount} task{lastDispatchCount !== 1 ? 's' : ''} dispatched to agent. <a href="/taskqueue" style={{ color: '#1565c0', textDecoration: 'underline', fontWeight: 600 }}>Check Task Queue for status updates</a>
+          </span>
+          <button onClick={() => setDispatchBannerVisible(false)} style={{ padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(0,0,0,0.08)', background: 'none', cursor: 'pointer', color: '#8a8682', fontSize: '0.72rem' }}>Dismiss</button>
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="glass-panel" style={{ padding: '1.5rem' }}>
@@ -308,14 +392,80 @@ const Wishlist = () => {
 
       {/* Bulk Actions */}
       {selectedItems.size > 0 && (
-        <div className="glass-panel" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(176,96,80,0.06)', borderLeft: '3px solid #b06050' }}>
+        <div className="glass-panel" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(176,96,80,0.06)', borderLeft: '3px solid #b06050', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#b06050' }}>{selectedItems.size} selected</span>
+          <button onClick={async () => {
+            for (const id of selectedItems) {
+              const item = items.find(i => i.id === id);
+              if (item && item.status === 'New Idea' && !item.linked_project_id) {
+                await createProjectFromWish(item);
+              }
+            }
+            setSelectedItems(new Set());
+          }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.8rem', borderRadius: '8px', border: '1px solid rgba(45,138,78,0.2)', background: 'rgba(45,138,78,0.06)', color: '#2d8a4e', cursor: 'pointer', fontWeight: 600 }}>
+            <Folder size={13} /> Create Projects
+          </button>
           <button onClick={dispatchSelected} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.8rem' }}>
             <Rocket size={13} /> Send All to Agent
           </button>
           <button onClick={() => setSelectedItems(new Set())} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)', background: 'none', cursor: 'pointer', color: '#6b6764', fontSize: '0.75rem' }}>
             Clear Selection
           </button>
+        </div>
+      )}
+
+      {/* Workflow Guide — how ideas flow through the system */}
+      <div className="glass-panel" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.01)', fontSize: '0.72rem', color: '#8a8682', flexWrap: 'wrap' }}>
+        <span style={{ fontWeight: 600, color: '#3e3c3a' }}>Idea Flow:</span>
+        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(90,138,191,0.08)', color: '#5a8abf', fontWeight: 600 }}>New Idea</span>
+        <span>→</span>
+        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(45,138,78,0.08)', color: '#2d8a4e', fontWeight: 600 }}>Smart Route (creates project)</span>
+        <span>→</span>
+        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(176,96,80,0.08)', color: '#b06050', fontWeight: 600 }}>In Progress (linked to project)</span>
+        <span>→</span>
+        <span>View project at /projects or /scheduler</span>
+        <span>→</span>
+        <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(156,39,176,0.08)', color: '#9c27b0', fontWeight: 600 }}>Completed (in History below)</span>
+      </div>
+
+      {/* Smart Route — Route all unlinked New Ideas to projects automatically */}
+      {items.filter(i => i.status === 'New Idea' && !i.linked_project_id).length > 0 && (
+        <div className="glass-panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(90,138,191,0.04)', borderLeft: '3px solid #5a8abf', flexWrap: 'wrap' }}>
+          <Zap size={14} color="#5a8abf" />
+          <span style={{ fontSize: '0.82rem', color: '#4a7aaf' }}>
+            <strong>{items.filter(i => i.status === 'New Idea' && !i.linked_project_id).length}</strong> new ideas ready to route
+          </span>
+          <button onClick={async () => {
+            const newIdeas = items.filter(i => i.status === 'New Idea' && !i.linked_project_id);
+            for (const item of newIdeas) {
+              const matchingProject = projects.find(p =>
+                p.name.toLowerCase().includes((item.project || '').toLowerCase()) ||
+                (item.project || '').toLowerCase().includes(p.name.toLowerCase().split(' ')[0])
+              );
+              if (matchingProject) {
+                await supabase.from('wishlist').update({ linked_project_id: matchingProject.id, status: 'In Progress' }).eq('id', item.id);
+              } else {
+                await createProjectFromWish(item);
+              }
+            }
+            await fetchAll();
+          }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', fontSize: '0.78rem', borderRadius: '8px', border: '1px solid rgba(90,138,191,0.2)', background: 'rgba(90,138,191,0.08)', color: '#5a8abf', cursor: 'pointer', fontWeight: 600 }}>
+            <GitBranch size={12} /> Smart Route All
+          </button>
+          <span style={{ fontSize: '0.68rem', color: '#8a8682' }}>Creates projects with 8-stage pipelines. Routed items move to History panel below.</span>
+        </div>
+      )}
+
+      {/* In Progress items that need attention */}
+      {items.filter(i => i.status === 'In Progress' && i.linked_project_id).length > 0 && (
+        <div className="glass-panel" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(45,138,78,0.04)', borderLeft: '3px solid #2d8a4e', flexWrap: 'wrap' }}>
+          <CheckCircle size={14} color="#2d8a4e" />
+          <span style={{ fontSize: '0.82rem', color: '#2d8a4e' }}>
+            <strong>{items.filter(i => i.status === 'In Progress' && i.linked_project_id).length}</strong> items routed to projects
+          </span>
+          <a href="/projects" style={{ fontSize: '0.72rem', color: '#5a8abf', textDecoration: 'none', fontWeight: 500 }}>View in Projects →</a>
+          <a href="/scheduler" style={{ fontSize: '0.72rem', color: '#b06050', textDecoration: 'none', fontWeight: 500 }}>Open Smart Scheduler →</a>
+          <span style={{ fontSize: '0.68rem', color: '#8a8682' }}>Use the Smart Scheduler (Quickest mode) to plan and launch these tasks</span>
         </div>
       )}
 
@@ -584,6 +734,12 @@ const Wishlist = () => {
                               className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px', opacity: dispatching[item.id] ? 0.6 : 1 }}>
                               <Rocket size={14} /> {dispatching[item.id] ? 'Dispatching...' : 'Send Direct (Single Task)'}
                             </button>
+                            {!item.linked_project_id && (
+                              <button onClick={() => createProjectFromWish(item)}
+                                className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px', background: '#2e7d32' }}>
+                                <Folder size={14} /> Create Project + Pipeline
+                              </button>
+                            )}
                             <button onClick={() => {
                               const prompt = `Wishlist Task: ${item.raw_text}\nType: ${item.type} | Project: ${item.project}\n${item.integration_notes || ''}`;
                               navigator.clipboard.writeText(prompt);
@@ -616,8 +772,37 @@ const Wishlist = () => {
                           )}
 
                           {item.agent_run_id && !decomposeResults[item.id] && (
-                            <div style={{ background: 'rgba(106,171,110,0.08)', padding: '8px 12px', borderRadius: '8px', borderLeft: '3px solid #6aab6e', fontSize: '0.8rem', color: '#2e7d32' }}>
-                              Agent run active — ID: <code style={{ fontSize: '0.72rem' }}>{item.agent_run_id}</code>
+                            <div style={{ background: 'rgba(106,171,110,0.08)', padding: '10px 12px', borderRadius: '8px', borderLeft: '3px solid #6aab6e', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <div style={{ fontSize: '0.8rem', color: '#2e7d32', fontWeight: 600 }}>Agent Dispatched</div>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '3px 10px', fontSize: '0.75rem', color: '#4a4744' }}>
+                                <span style={{ color: '#9e9a97' }}>Agent Run ID:</span>
+                                <code style={{ fontSize: '0.72rem' }}>{item.agent_run_id}</code>
+                                {item.dispatched_at && (
+                                  <>
+                                    <span style={{ color: '#9e9a97' }}>Dispatched at:</span>
+                                    <span>{new Date(item.dispatched_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>
+                                  </>
+                                )}
+                                <span style={{ color: '#9e9a97' }}>Status:</span>
+                                <span style={{ color: item.status === 'In Progress' ? '#b08a20' : '#2e7d32', fontWeight: 500 }}>
+                                  {item.status === 'In Progress' ? 'Awaiting agent processing...' : item.status}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                <button onClick={() => checkAgentRunStatus(item.agent_run_id)} disabled={checkingStatus[item.agent_run_id]}
+                                  style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(90,138,191,0.2)', background: 'rgba(90,138,191,0.06)', color: '#5a8abf', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 500 }}>
+                                  {checkingStatus[item.agent_run_id] ? 'Checking...' : 'Check Status'}
+                                </button>
+                                <a href="/taskqueue" style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(21,101,192,0.2)', background: 'rgba(21,101,192,0.06)', color: '#1565c0', fontSize: '0.72rem', textDecoration: 'none', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <ExternalLink size={11} /> View in Task Queue
+                                </a>
+                              </div>
+                              {agentRunStatuses[item.agent_run_id] && (
+                                <div style={{ padding: '6px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.03)', fontSize: '0.72rem', color: '#6b6764', marginTop: '2px' }}>
+                                  Agent status: <strong>{agentRunStatuses[item.agent_run_id].status || 'unknown'}</strong>
+                                  {agentRunStatuses[item.agent_run_id].error && <span style={{ color: '#b06050' }}> — {agentRunStatuses[item.agent_run_id].error}</span>}
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -635,6 +820,149 @@ const Wishlist = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* History — processed items (not deleted, archived) */}
+      {historyItems.length > 0 && (
+        <div className="glass-panel" style={{ padding: '1rem' }}>
+          <div onClick={() => setShowHistory(!showHistory)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            {showHistory ? <ChevronDown size={14} color="#8a8682" /> : <ChevronRight size={14} color="#8a8682" />}
+            <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#6b6764' }}>History ({historyItems.length} processed)</span>
+            <div style={{ display: 'flex', gap: '6px', marginLeft: '8px' }}>
+              {['In Progress', 'Decomposed', 'Completed', 'Improved', 'Deferred'].map(s => {
+                const count = historyItems.filter(i => i.status === s).length;
+                if (count === 0) return null;
+                return <span key={s} style={{ fontSize: '0.62rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: '#8a8682' }}>{s}: {count}</span>;
+              })}
+            </div>
+          </div>
+          {showHistory && (
+            <div style={{ marginTop: '10px' }}>
+              {/* History filter tabs */}
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '10px' }}>
+                <button onClick={() => setHistoryFilter('all')} style={{ padding: '3px 10px', borderRadius: '5px', border: 'none', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 500, background: historyFilter === 'all' ? '#6b6764' : 'rgba(0,0,0,0.04)', color: historyFilter === 'all' ? '#fff' : '#6b6764' }}>
+                  All ({historyItems.length})
+                </button>
+                <button onClick={() => setHistoryFilter('dispatched')} style={{ padding: '3px 10px', borderRadius: '5px', border: 'none', cursor: 'pointer', fontSize: '0.7rem', fontWeight: 500, background: historyFilter === 'dispatched' ? '#b06050' : 'rgba(0,0,0,0.04)', color: historyFilter === 'dispatched' ? '#fff' : '#6b6764', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Rocket size={10} /> Dispatched ({historyItems.filter(i => i.agent_run_id).length})
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {(historyFilter === 'dispatched' ? historyItems.filter(i => i.agent_run_id) : historyItems).map(item => {
+                const runStatus = item.agent_run_id ? agentRunStatuses[item.agent_run_id] : null;
+                return (
+                <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '0', borderRadius: '6px', background: 'rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', fontSize: '0.78rem' }}>
+                    <span style={{ fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px',
+                      background: item.status === 'Completed' ? 'rgba(45,138,78,0.1)' : item.status === 'In Progress' ? 'rgba(90,138,191,0.1)' : item.status === 'Decomposed' ? 'rgba(156,39,176,0.1)' : 'rgba(0,0,0,0.04)',
+                      color: item.status === 'Completed' ? '#2d8a4e' : item.status === 'In Progress' ? '#5a8abf' : item.status === 'Decomposed' ? '#9c27b0' : '#8a8682',
+                    }}>{item.status}</span>
+                    {item.agent_run_id && (
+                      <span style={{ fontSize: '0.6rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: 'rgba(106,171,110,0.12)', color: '#2e7d32', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Rocket size={9} /> Dispatched
+                      </span>
+                    )}
+                    {item.status === 'In Progress' && item.agent_run_id && (
+                      <span style={{ fontSize: '0.6rem', fontWeight: 500, padding: '2px 6px', borderRadius: '4px', background: 'rgba(196,154,64,0.12)', color: '#b08a20' }}>
+                        Awaiting agent processing...
+                      </span>
+                    )}
+                    <span style={{ flex: 1, color: '#6b6764' }}>{item.raw_text?.slice(0, 100)}</span>
+                    <span style={{ fontSize: '0.65rem', color: '#aaa' }}>{item.type}</span>
+                    {item.linked_project_id && <span style={{ fontSize: '0.6rem', color: '#5a8abf' }}>Linked</span>}
+                    {item.agent_run_id && (
+                      <button onClick={() => checkAgentRunStatus(item.agent_run_id)} disabled={checkingStatus[item.agent_run_id]}
+                        style={{ padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(90,138,191,0.2)', background: 'rgba(90,138,191,0.06)', color: '#5a8abf', fontSize: '0.62rem', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                        {checkingStatus[item.agent_run_id] ? 'Checking...' : 'Check Status'}
+                      </button>
+                    )}
+                    {item.dispatched_at && (
+                      <span style={{ fontSize: '0.6rem', color: '#9e9a97', whiteSpace: 'nowrap' }}>
+                        {new Date(item.dispatched_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} {new Date(item.dispatched_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                      </span>
+                    )}
+                  </div>
+                  {/* Agent run status details (shown after Check Status click) */}
+                  {runStatus && (
+                    <div style={{ padding: '4px 10px 6px 10px', fontSize: '0.7rem', color: '#6b6764', display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+                      <span style={{ color: '#9e9a97' }}>Run ID:</span> <code style={{ fontSize: '0.65rem' }}>{runStatus.id}</code>
+                      {runStatus.status && <span style={{ padding: '1px 5px', borderRadius: '3px', background: runStatus.status === 'completed' ? 'rgba(45,138,78,0.1)' : runStatus.status === 'running' ? 'rgba(90,138,191,0.1)' : 'rgba(0,0,0,0.04)', color: runStatus.status === 'completed' ? '#2d8a4e' : runStatus.status === 'running' ? '#5a8abf' : '#8a8682', fontWeight: 500 }}>{runStatus.status}</span>}
+                      {runStatus.error && <span style={{ color: '#b06050' }}>{runStatus.error}</span>}
+                      <a href="/taskqueue" style={{ color: '#1565c0', fontSize: '0.65rem', textDecoration: 'none', fontWeight: 500, marginLeft: 'auto' }}>View in Task Queue</a>
+                    </div>
+                  )}
+                </div>
+                );
+              })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* API Quick Add Guide */}
+      <div className="glass-panel" style={{ padding: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <Terminal size={16} color="#b06050" />
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#2e2c2a', margin: 0 }}>Quick Add from Anywhere</h3>
+        </div>
+        <p style={{ fontSize: '0.8rem', color: '#6b6764', marginBottom: '12px' }}>
+          Add ideas to your wishlist from email, Claude, terminal, or any app. Three easy options:
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Option 1: Bookmarklet */}
+          <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(90,138,191,0.04)', border: '1px solid rgba(90,138,191,0.1)' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#4a7aaf', marginBottom: '6px' }}>1. Browser Bookmarklet (drag to bookmarks bar)</div>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <a
+                href={`javascript:void(fetch('${window.location.origin}/api/wishlist/add',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':prompt('API Key:')},body:JSON.stringify({name:prompt('Idea:'),source:'bookmarklet',priority:'P2'})}).then(r=>r.json()).then(d=>alert(d.success?'Added!':'Error: '+d.error)).catch(e=>alert('Error: '+e)))`}
+                style={{ display: 'inline-block', padding: '6px 14px', borderRadius: '8px', background: '#5a8abf', color: '#fff', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none', cursor: 'grab' }}
+                onClick={e => e.preventDefault()}
+                draggable
+              >
+                + Add to Wishlist
+              </a>
+              <span style={{ fontSize: '0.72rem', color: '#8a8682' }}>Drag this to your bookmarks bar</span>
+            </div>
+          </div>
+
+          {/* Option 2: Terminal / Claude */}
+          <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(176,96,80,0.04)', border: '1px solid rgba(176,96,80,0.1)' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#b06050', marginBottom: '6px' }}>2. Terminal / Claude Code</div>
+            <div style={{ position: 'relative' }}>
+              <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: '10px 14px', borderRadius: '6px', fontSize: '0.72rem', overflow: 'auto', margin: 0 }}>{`curl -X POST ${window.location.origin}/api/wishlist/add \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: $CRON_SECRET" \\
+  -d '{"name": "Your idea here", "source": "terminal"}'`}</pre>
+              <button onClick={() => {
+                navigator.clipboard.writeText(`curl -X POST ${window.location.origin}/api/wishlist/add -H "Content-Type: application/json" -H "x-api-key: $CRON_SECRET" -d '{"name": "Your idea here", "source": "terminal"}'`);
+              }} style={{ position: 'absolute', top: '6px', right: '6px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa', fontSize: '0.65rem', cursor: 'pointer' }}>Copy</button>
+            </div>
+          </div>
+
+          {/* Option 3: iOS Shortcut / Siri */}
+          <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(45,138,78,0.04)', border: '1px solid rgba(45,138,78,0.1)' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#2d8a4e', marginBottom: '6px' }}>3. Apple Shortcut / Siri</div>
+            <p style={{ fontSize: '0.75rem', color: '#6b6764', margin: 0 }}>
+              Create an iOS Shortcut with "Get Text" → "Get Contents of URL" (POST to the endpoint above). Then say <strong>"Hey Siri, add to wishlist"</strong> and dictate your idea.
+            </p>
+          </div>
+
+          {/* Option 4: Android / Google Phone */}
+          <div style={{ padding: '12px', borderRadius: '8px', background: 'rgba(156,39,176,0.04)', border: '1px solid rgba(156,39,176,0.1)' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#9c27b0', marginBottom: '6px' }}>4. Android / Google Phone</div>
+            <p style={{ fontSize: '0.75rem', color: '#6b6764', margin: 0, lineHeight: 1.5 }}>
+              <strong>Option A — Tasker:</strong> Create a Tasker profile: Event → "Shortcut" → HTTP Request (POST to the endpoint above). Add to home screen.<br />
+              <strong>Option B — Google Assistant Routine:</strong> Settings → Google Assistant → Routines → add a custom routine that opens a Chrome tab to the bookmarklet URL.<br />
+              <strong>Option C — Chrome Home Screen Shortcut:</strong> Open this page in Chrome → ⋮ menu → "Add to Home screen". Quick access to the full Wishlist page with voice input built in.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '12px', padding: '8px 12px', borderRadius: '6px', background: 'rgba(0,0,0,0.02)', fontSize: '0.72rem', color: '#8a8682' }}>
+          <strong>Note:</strong> The API key is your CRON_SECRET environment variable. Set it in Vercel → Settings → Environment Variables.
+        </div>
       </div>
     </div>
   );

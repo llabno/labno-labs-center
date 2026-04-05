@@ -11,9 +11,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --glass-bg: rgba(255, 255, 255, 0.28);
-  --glass-border: rgba(255, 255, 255, 0.45);
-  --glass-shadow: 0 4px 12px 0 rgba(120, 115, 110, 0.10), 0 20px 50px 0 rgba(100, 95, 90, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 4px 12px 0 rgba(120, 115, 110, 0.08), 0 16px 40px 0 rgba(100, 95, 90, 0.08);
   --glass-blur: blur(28px);
   --accent: #b06050;
   --accent-light: rgba(176, 96, 80, 0.12);
@@ -31,7 +31,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #f0eee9;
+  background-color: #f7f5f2;
   overflow: hidden;
 }
 
@@ -124,6 +124,8 @@ body {
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar h2 {
@@ -132,12 +134,16 @@ body {
   letter-spacing: 0.03em;
   margin-bottom: 2rem;
   color: #2e2c2a;
+  flex-shrink: 0;
 }
 
 .sidebar nav {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 1rem;
 }
 
 .nav-item {
@@ -270,9 +276,7 @@ body {
   padding: 6px 28px 6px 10px;
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: #ffffff;
   color: #4a4745;
   cursor: pointer;
   width: 100%;
@@ -284,9 +288,34 @@ body {
   background-size: 12px;
 }
 
+.kanban-select option {
+  background-color: #ffffff;
+  color: #2e2c2a;
+  padding: 6px 10px;
+}
+
+/* Ensure select dropdowns are fully opaque and readable */
+.kanban-select:focus option,
+.kanban-select option:hover,
+.kanban-select option:checked {
+  background-color: #f0eeec;
+  color: #2e2c2a;
+}
+
+/* Force opaque backgrounds on all select elements inside glass panels */
+.glass-panel select,
+.glass-panel select option {
+  background-color: #ffffff;
+  color: #2e2c2a;
+}
+
+.glass-panel select:focus {
+  background-color: #ffffff;
+}
+
 .kanban-select:hover {
   border-color: rgba(176, 96, 80, 0.3);
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: #faf9f8;
   box-shadow: 0 2px 8px rgba(176, 96, 80, 0.08);
 }
 
@@ -540,4 +569,520 @@ body {
 .task-executing {
   animation: agent-pulse 2s infinite;
   border: 1px solid rgba(176, 96, 80, 0.5) !important;
+}
+
+/* Sidebar wrapper for mobile toggle */
+.sidebar-wrapper {
+  display: contents;
+}
+
+.mobile-menu-btn {
+  display: none !important;
+}
+
+/* ========== MOBILE-RESPONSIVE BREAKPOINTS ========== */
+
+/* Tablet: <= 1024px */
+@media (max-width: 1024px) {
+  .app-container {
+    grid-template-columns: 220px 1fr !important;
+  }
+
+  .kanban-grid[data-boards="3"] {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kanban-grid[data-boards="4"] {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Mobile: <= 768px */
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh;
+  }
+
+  /* Sidebar becomes slide-out drawer */
+  .sidebar-wrapper {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-wrapper.open {
+    left: 0;
+  }
+
+  .sidebar-wrapper .sidebar {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  /* Hamburger button */
+  .mobile-menu-btn {
+    display: flex !important;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 998;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #3e3c3a;
+  }
+
+  .main-content {
+    padding: 1rem !important;
+    padding-top: 56px !important;
+  }
+
+  .page-title {
+    font-size: 1.2rem !important;
+  }
+
+  /* Kanban stacks vertically */
+  .kanban-grid,
+  .kanban-grid[data-boards="2"],
+  .kanban-grid[data-boards="3"],
+  .kanban-grid[data-boards="4"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kanban-column {
+    min-width: unset !important;
+  }
+
+  /* Stats grid stacks */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Filter bar scrolls horizontally */
+  .filter-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  /* Table responsive */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Glass panels less padding */
+  .glass-panel {
+    padding: 1rem;
+  }
+}
+
+/* Small mobile: <= 480px */
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.75rem !important;
+    padding-top: 52px !important;
+  }
+
+  .page-title {
+    font-size: 1rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .filter-pill {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .btn-primary {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* ========== MOBILE ENHANCEMENTS (768px) ========== */
+@media (max-width: 768px) {
+  /* Touch targets — 44px minimum height for all interactive elements */
+  .nav-item {
+    min-height: 44px;
+    padding: 0.85rem 1rem;
+  }
+
+  .btn-primary,
+  button,
+  [role="button"],
+  select {
+    min-height: 44px;
+  }
+
+  .filter-pill {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .pipeline-checkbox {
+    width: 28px;
+    height: 28px;
+  }
+
+  .checklist-item-glass {
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+
+  /* Summary / stat cards stack vertically */
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  /* Quick Add overlay (Cmd+K) — full width on mobile */
+  .quick-add-overlay > div,
+  div[style*="maxWidth: '520px'"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 0 16px 16px !important;
+    margin: 0 !important;
+  }
+
+  /* NotificationBell — ensure it stays top-right and accessible */
+  .notification-bell {
+    position: fixed !important;
+    top: 12px !important;
+    right: 12px !important;
+    z-index: 998 !important;
+  }
+
+  /* Calendar 7-column grid — keep but shrink cells */
+  div[style*="repeat(7, 1fr)"] {
+    font-size: 0.65rem !important;
+  }
+
+  /* Sidebar close button area for easier dismissal */
+  .sidebar-wrapper.open .sidebar {
+    padding-top: 2rem;
+  }
+
+  /* Kanban cards — reduce padding for mobile */
+  .task-card {
+    padding: 0.85rem;
+  }
+
+  .task-card h4 {
+    font-size: 0.9rem;
+  }
+
+  /* Glass panel border radius — slightly tighter on mobile */
+  .glass-panel {
+    border-radius: 14px;
+  }
+
+  /* Kanban select — larger touch target */
+  .kanban-select {
+    min-height: 38px;
+    font-size: 0.82rem;
+    padding: 8px 28px 8px 12px;
+  }
+
+  /* Sidebar section title adjustments */
+  .sidebar h2 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* ========== MOBILE ENHANCEMENTS (480px) ========== */
+@media (max-width: 480px) {
+  /* Even larger touch targets on small screens */
+  .nav-item {
+    min-height: 48px;
+    padding: 1rem 1rem;
+    font-size: 1rem;
+  }
+
+  /* Stat cards fully stacked */
+  .stat-card {
+    padding: 0.65rem 1rem;
+  }
+
+  .stat-title {
+    font-size: 0.75rem;
+  }
+
+  /* Checklist items */
+  .checklist-item-glass {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  /* Task cards */
+  .task-card {
+    padding: 0.75rem;
+  }
+
+  .task-card h4 {
+    font-size: 0.85rem;
+  }
+
+  .task-card p {
+    font-size: 0.78rem;
+  }
+
+  /* Glass panel tighter radius and less padding */
+  .glass-panel {
+    border-radius: 12px;
+    padding: 0.75rem;
+  }
+}
+
+/* ========== RESPONSIVE GRID UTILITIES ========== */
+/* Use these classes alongside inline styles for mobile override */
+.responsive-grid-2 { /* inline: gridTemplateColumns: '1fr 1fr' */ }
+.responsive-grid-3 { /* inline: gridTemplateColumns: 'repeat(3, 1fr)' */ }
+.responsive-grid-4 { /* inline: gridTemplateColumns: 'repeat(4, 1fr)' */ }
+.responsive-grid-5 { /* inline: gridTemplateColumns: 'repeat(5, 1fr)' */ }
+
+@media (max-width: 768px) {
+  .responsive-grid-2 { grid-template-columns: 1fr !important; }
+  .responsive-grid-3 { grid-template-columns: 1fr 1fr !important; }
+  .responsive-grid-4 { grid-template-columns: 1fr 1fr !important; }
+  .responsive-grid-5 { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+@media (max-width: 480px) {
+  .responsive-grid-2 { grid-template-columns: 1fr !important; }
+  .responsive-grid-3 { grid-template-columns: 1fr !important; }
+  .responsive-grid-4 { grid-template-columns: 1fr !important; }
+  .responsive-grid-5 { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ========== MOBILE-FIRST PAGE LAYOUTS ========== */
+/* These target inline-styled grids that can't be overridden by class selectors */
+
+@media (max-width: 768px) {
+  /* Force all multi-column grids to stack on mobile */
+  /* React inline styles render as style="grid-template-columns: repeat(4, 1fr)" */
+  [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(5"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: 1fr 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  [style*="grid-template-columns: 1fr 1fr 1fr;"],
+  [style*="grid-template-columns: 1fr 1fr 1fr}"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* 2-col layouts — keep on tablet, stack on phone */
+  [style*="grid-template-columns: 1fr 1fr;"],
+  [style*="grid-template-columns: 1fr 1fr}"] {
+    grid-template-columns: 1fr 1fr !important; /* keep 2-col on tablet */
+  }
+  /* 2-col with right sidebar (like proposal generator) */
+  [style*="grid-template-columns: 1fr 300px"],
+  [style*="grid-template-columns: 1fr 280px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Today View — session cards stack */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+
+  /* Dashboard — force side-by-side stat cards to stack */
+  .main-content .glass-panel [style*="display: 'grid'"][style*="repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* SOAP Notes — form grid stacks on mobile */
+  .main-content .glass-panel [style*="gridTemplateColumns: '1fr 1fr 1fr 1fr'"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Calendar — smaller day cells */
+  .main-content [style*="gridTemplateColumns: 'repeat(7"] {
+    gap: 1px !important;
+  }
+
+  .main-content [style*="gridTemplateColumns: 'repeat(7"] > div {
+    min-height: 50px !important;
+    padding: 3px !important;
+    font-size: 0.6rem !important;
+  }
+
+  /* Work History — detail grid stacks */
+  .main-content .glass-panel [style*="gridTemplateColumns: '1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Modals — full width on mobile */
+  .main-content [style*="position: 'fixed'"] > div[style*="maxWidth"],
+  .main-content [style*="position: fixed"] > div[style*="max-width"] {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 1rem auto !important;
+  }
+
+  /* Hide non-essential columns on mobile task views */
+  .mobile-hide {
+    display: none !important;
+  }
+}
+
+/* ========== MOBILE-FIRST COMPONENT OVERRIDES ========== */
+@media (max-width: 768px) {
+  /* Bottom action bar for primary actions on key pages */
+  .mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 900;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  /* Swipeable cards */
+  .swipe-card {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .swipe-card > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Float the quick-add button on mobile */
+  .mobile-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px var(--accent-glow);
+    z-index: 899;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Session timer — full width on mobile */
+  .session-timer-bar {
+    font-size: 0.78rem !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Breadcrumbs — hidden on small screens */
+  .breadcrumbs {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small — everything stacks to single column */
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(5"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(7"] > div {
+    min-height: 40px !important;
+    padding: 2px !important;
+  }
+
+  /* Page header — tighter */
+  .page-title {
+    gap: 6px !important;
+    font-size: 1rem !important;
+  }
+
+  /* Hide info tooltip on very small screens */
+  .page-title span[style*="position: relative"] {
+    display: none;
+  }
+
+  /* Horizontal scroll for filter pills */
+  .filter-bar,
+  [style*="display: flex"][style*="gap"][style*="wrap"] {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
 }

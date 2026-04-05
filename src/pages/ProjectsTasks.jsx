@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FolderKanban, CheckSquare, Plus, Calendar, Clock, AlertCircle, ChevronDown, ChevronRight, X, Trash2, Edit3, Users, Target, Filter, Search, Briefcase, LayoutGrid } from 'lucide-react';
+import { FolderKanban, CheckSquare, Plus, Calendar, Clock, AlertCircle, ChevronDown, ChevronRight, X, Trash2, Edit3, Users, Target, Filter, Search, Briefcase, LayoutGrid, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { calculateHealthScore, checkScopeCreep } from '../lib/project-health';
 
 const STATUS_COLORS = {
   'Active': { bg: 'rgba(106, 171, 110, 0.12)', color: '#4a8a4e', dot: '#6aab6e' },
@@ -16,16 +18,24 @@ const COLUMNS = ['backlog', 'triage', 'review', 'completed'];
 const VENTURE_FILTERS = [
   { key: 'all', label: 'All Ventures' },
   { key: 'clinical', label: 'Clinical (MOSO)' },
-  { key: 'consulting', label: 'Consulting (Labno Labs)' },
-  { key: 'apps', label: 'Apps' },
+  { key: 'labno_internal', label: 'Labno Labs (Internal)' },
+  { key: 'client_consulting', label: 'Client Consulting' },
+  { key: 'infrastructure', label: 'Infrastructure' },
 ];
 
 const inferCategory = (name) => {
   const n = (name || '').toLowerCase();
   if (n.includes('moso') || n.includes('clinical') || n.includes('sanitization') || n.includes('reactivation')) return 'clinical';
-  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('consulting') || n.includes('agent infrastructure') || n.includes('agent security') || n.includes('cybernetic') || n.includes('plumbing') || n.includes('labno')) return 'consulting';
-  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('app studio')) return 'apps';
-  return 'all';
+  if (n.includes('gtm') || n.includes('lemon') || n.includes('lead') || n.includes('agent infrastructure') || n.includes('agent security') || n.includes('cybernetic') || n.includes('plumbing') || n.includes('labno')) return 'labno_internal';
+  if (n.includes('blog') || n.includes('telemetry') || n.includes('g-cal') || n.includes('ui/ux') || n.includes('center') || n.includes('app studio')) return 'infrastructure';
+  return null;
+};
+
+const getProjectVenture = (p) => {
+  if (p.venture) return p.venture;
+  const pType = p.project_type || 'internal';
+  if (pType === 'client') return 'client_consulting';
+  return inferCategory(p.name) || null;
 };
 
 const TABS = [
@@ -34,12 +44,12 @@ const TABS = [
   { key: 'search', label: 'Search', icon: Search },
 ];
 
-const ProjectsTasks = () => {
+const ProjectsTasks = ({ projectTypeFilter = 'all', initialTab = 'all', onTabChange }) => {
   const [projects, setProjects] = useState([]);
   const [tasksByProject, setTasksByProject] = useState({});
   const [loading, setLoading] = useState(true);
   const [expandedProject, setExpandedProject] = useState(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [ventureFilter, setVentureFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -53,11 +63,11 @@ const ProjectsTasks = () => {
 
   const fetchData = async () => {
     let { data: projData, error: projErr } = await supabase
-      .from('internal_projects').select('*').order('due_date', { ascending: true });
+      .from('projects').select('*').order('due_date', { ascending: true });
     if (projErr && projErr.message && projErr.message.includes('project_type')) {
       setHasProjectTypeColumn(false);
       ({ data: projData, error: projErr } = await supabase
-        .from('internal_projects').select('id,name,status,total_tasks,completed_tasks,due_date,complexity,created_at').order('due_date', { ascending: true }));
+        .from('projects').select('id,name,status,total_tasks,completed_tasks,due_date,complexity,created_at').order('due_date', { ascending: true }));
     }
     if (projErr) { console.error('Error fetching projects:', projErr); setLoading(false); return; }
     setProjects(projData || []);
@@ -87,7 +97,7 @@ const ProjectsTasks = () => {
       completed_tasks: 0,
     };
     if (hasProjectTypeColumn) insertData.project_type = newProject.project_type;
-    const { error } = await supabase.from('internal_projects').insert(insertData);
+    const { error } = await supabase.from('projects').insert(insertData);
     if (error) { console.error('Error creating project:', error); return; }
     setShowNewProjectModal(false);
     setNewProject({ name: '', status: 'Active', due_date: '', complexity: 1, project_type: 'internal' });
@@ -124,7 +134,7 @@ const ProjectsTasks = () => {
   };
 
   const updateProjectStatus = async (projectId, newStatus) => {
-    const { error } = await supabase.from('internal_projects').update({ status: newStatus }).eq('id', projectId);
+    const { error } = await supabase.from('projects').update({ status: newStatus }).eq('id', projectId);
     if (error) { console.error('Error updating project:', error); return; }
     await fetchData();
   };
@@ -173,19 +183,37 @@ const ProjectsTasks = () => {
     if (activeTab === 'search') return searchResults.projects;
 
     return projects.filter(p => {
-      // Client tab filter
-      if (activeTab === 'clients' && p.project_type !== 'client') return false;
-      // Venture filter (only on "all" tab)
-      if (activeTab === 'all' && ventureFilter !== 'all' && inferCategory(p.name) !== ventureFilter) return false;
+      const pType = (p.project_type && p.project_type !== '') ? p.project_type : 'internal';
+
+      // Client tab always shows only client projects
+      if (activeTab === 'clients') {
+        if (pType !== 'client') return false;
+      } else if (activeTab === 'all') {
+        // "All Projects" sub-tab: respect the CommandCenter project type filter ONLY if user hasn't switched tabs
+        // When user explicitly clicks "All Projects" tab, show all regardless of parent filter
+        // The parent filter applies from the CommandCenter pills (All / Internal / Consulting)
+        if (projectTypeFilter !== 'all' && pType !== projectTypeFilter) return false;
+      }
+
+      // Venture filter uses DB column first, then inference
+      const venture = getProjectVenture(p);
+      if (ventureFilter !== 'all' && venture !== ventureFilter) return false;
+
       if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+
+      // Assignee filter: check tasks, but also treat Lance as default owner for client projects
       if (assigneeFilter !== 'All') {
         const projTasks = tasksByProject[p.id] || [];
         const hasAssignee = projTasks.some(t => (t.assigned_to || '').toLowerCase() === assigneeFilter.toLowerCase());
-        if (!hasAssignee) return false;
+        if (!hasAssignee) {
+          // Lance is default owner of all projects, especially client ones
+          if (pType === 'client' && assigneeFilter.toLowerCase() === 'lance') return true;
+          return false;
+        }
       }
       return true;
     });
-  }, [activeTab, projects, tasksByProject, searchResults, ventureFilter, statusFilter, assigneeFilter]);
+  }, [activeTab, projects, tasksByProject, searchResults, ventureFilter, statusFilter, assigneeFilter, projectTypeFilter]);
 
   if (loading) return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a8682' }}>Loading projects...</div>
@@ -216,7 +244,7 @@ const ProjectsTasks = () => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
           return (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+            <button key={tab.key} onClick={() => { setActiveTab(tab.key); if (onTabChange) onTabChange(tab.key); }} style={{
               display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px',
               fontSize: '0.88rem', fontWeight: isActive ? 600 : 500,
               color: isActive ? '#b06050' : '#6b6764', background: 'none', border: 'none',
@@ -265,18 +293,6 @@ const ProjectsTasks = () => {
       {/* Filters (all & clients tabs) */}
       {activeTab !== 'search' && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
-          {activeTab === 'all' && (
-            <>
-              <div className="filter-bar">
-                <span className="filter-label">Venture</span>
-                {VENTURE_FILTERS.map(f => (
-                  <button key={f.key} className={`filter-pill${ventureFilter === f.key ? ' active' : ''}`}
-                    onClick={() => setVentureFilter(f.key)}>{f.label}</button>
-                ))}
-              </div>
-              <div style={{ width: '1px', height: '20px', background: 'rgba(0,0,0,0.08)' }} />
-            </>
-          )}
           <div className="filter-bar">
             <span className="filter-label">Status</span>
             {['all', 'Active', 'Planning', 'Blocked', 'Completed'].map(s => (
@@ -346,7 +362,9 @@ const ProjectsTasks = () => {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 600, fontSize: '1.05rem', color: '#2e2c2a' }}>{proj.name}</span>
+                    <Link to={`/project/${proj.id}`} onClick={e => e.stopPropagation()} style={{ fontWeight: 600, fontSize: '1.05rem', color: '#2e2c2a', textDecoration: 'none' }} title="Open Project Passport">
+                      {proj.name}
+                    </Link>
                     {proj.project_type === 'client' && (
                       <span style={{
                         fontSize: '0.65rem', fontWeight: 700, padding: '2px 8px', borderRadius: '10px',
@@ -360,6 +378,24 @@ const ProjectsTasks = () => {
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: statusStyle.dot, display: 'inline-block' }} />
                       {proj.status}
                     </span>
+                    {(() => {
+                      const health = calculateHealthScore(proj, tasks);
+                      if (health.score >= 80) return null; // Only show badge for non-healthy
+                      return (
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '6px', background: health.color + '15', color: health.color }} title={health.factors.join(', ')}>
+                          {health.label} ({health.score})
+                        </span>
+                      );
+                    })()}
+                    {(() => {
+                      const scope = checkScopeCreep(proj, stats.total);
+                      if (!scope.creeping) return null;
+                      return (
+                        <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '2px 6px', borderRadius: '6px', background: 'rgba(209,64,64,0.1)', color: '#d14040' }}>
+                          Scope +{scope.percentage}%
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div style={{ display: 'flex', gap: '16px', fontSize: '0.78rem', color: '#8a8682' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {formatDate(proj.due_date)}</span>
