@@ -29,6 +29,13 @@ const estimateMinutes = (t) => {
   return 15;
 };
 
+// Format minutes as human-readable hours (e.g. 90 → "1.5 hrs", 30 → "30 min")
+const formatHumanTime = (minutes) => {
+  if (minutes < 60) return `${minutes} min`;
+  const hrs = Math.round(minutes / 60 * 10) / 10;
+  return hrs === 1 ? '1 hr' : `${hrs} hrs`;
+};
+
 const getTrigger = (t) => {
   if (t.trigger_level) return t.trigger_level;
   if ((t.assigned_to || '').toLowerCase() === 'agent') return 'autonomous';
@@ -378,13 +385,13 @@ const SmartScheduler = () => {
               <Bot size={20} color="#2d8a4e" style={{ marginBottom: '4px' }} />
               <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#2d8a4e' }}>{quickestPlan.autoNow.length}</div>
               <div style={{ fontSize: '0.72rem', color: '#8a8682' }}>Autonomous</div>
-              <div style={{ fontSize: '0.65rem', color: '#2d8a4e' }}>~{quickestPlan.totalAutoMin}m</div>
+              <div style={{ fontSize: '0.65rem', color: '#2d8a4e' }}>~{formatHumanTime(quickestPlan.totalAutoMin)}</div>
             </div>
             <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center' }}>
               <Hand size={20} color="#c49a40" style={{ marginBottom: '4px' }} />
               <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#c49a40' }}>{quickestPlan.humanQueue.length}</div>
               <div style={{ fontSize: '0.72rem', color: '#8a8682' }}>Human tasks</div>
-              <div style={{ fontSize: '0.65rem', color: '#c49a40' }}>~{quickestPlan.totalHumanMin}m</div>
+              <div style={{ fontSize: '0.65rem', color: '#c49a40' }}>~{formatHumanTime(quickestPlan.totalHumanMin)}</div>
             </div>
             <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center' }}>
               <AlertTriangle size={20} color="#d14040" style={{ marginBottom: '4px' }} />
@@ -402,8 +409,8 @@ const SmartScheduler = () => {
           <div className="glass-panel" style={{ padding: '1.25rem', background: 'linear-gradient(135deg, rgba(45,138,78,0.04) 0%, rgba(176,96,80,0.04) 100%)', borderLeft: '3px solid #2d8a4e' }}>
             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2d8a4e', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>Recommended Approach</div>
             <div style={{ fontSize: '0.88rem', color: '#2e2c2a', lineHeight: 1.6 }}>
-              <strong>Step 1:</strong> Launch all {quickestPlan.autoNow.length} autonomous tasks (~{quickestPlan.totalAutoMin}m agent time).
-              <br /><strong>Step 2:</strong> {quickestPlan.humanQueue.length > 0 ? <>Start with the {Math.min(3, quickestPlan.humanQueue.length)} shortest tasks ({quickestPlan.humanQueue.slice(0, 3).map(t => `~${t._est}m`).join(', ')}).</> : 'No human tasks pending.'}
+              <strong>Step 1:</strong> Launch all {quickestPlan.autoNow.length} autonomous tasks (~{formatHumanTime(quickestPlan.totalAutoMin)} agent time).
+              <br /><strong>Step 2:</strong> {quickestPlan.humanQueue.length > 0 ? <>Start with the {Math.min(3, quickestPlan.humanQueue.length)} shortest tasks ({quickestPlan.humanQueue.slice(0, 3).map(t => `~${formatHumanTime(t._est)}`).join(', ')}).</> : 'No human tasks pending.'}
               {quickestPlan.wouldUnblock.length > 0 && <><br /><strong>Result:</strong> Unblocks {quickestPlan.wouldUnblock.length} additional tasks.</>}
             </div>
           </div>
@@ -431,6 +438,11 @@ const SmartScheduler = () => {
                           <option value="30">30 min</option>
                           <option value="60">1 hour</option>
                           <option value="120">2 hours</option>
+                          <option value="240">4 hours</option>
+                          <option value="480">8 hours (full day)</option>
+                          <option value="600">10 hours</option>
+                          <option value="720">12 hours</option>
+                          <option value="960">16 hours</option>
                           <option value="none">No limit</option>
                         </select>
                       </label>
@@ -480,7 +492,7 @@ const SmartScheduler = () => {
                         <Zap size={13} /> Launch ({filteredAutoNow.length} task{filteredAutoNow.length !== 1 ? 's' : ''})
                       </button>
                       <span style={{ fontSize: '0.7rem', color: '#8a8682' }}>
-                        ~{filteredAutoNow.reduce((s, t) => s + t._est, 0)}m estimated
+                        ~{formatHumanTime(filteredAutoNow.reduce((s, t) => s + t._est, 0))} estimated
                       </span>
                     </div>
                   </div>
@@ -491,7 +503,7 @@ const SmartScheduler = () => {
                         <span style={{ flex: 1, fontSize: '0.85rem', fontWeight: 500, color: '#2e2c2a' }}>{t.title}</span>
                         {t.source_name && <span style={{ fontSize: '0.62rem', padding: '2px 6px', borderRadius: '4px', background: 'rgba(0,0,0,0.04)', color: '#8a8682' }}>via {t.source_name}</span>}
                         <span style={{ fontSize: '0.7rem', color: '#8a8682' }}>{t._project?.name}</span>
-                        <span style={{ fontSize: '0.68rem', color: '#2d8a4e', fontWeight: 600 }}>~{t._est}m</span>
+                        <span style={{ fontSize: '0.68rem', color: '#2d8a4e', fontWeight: 600 }}>~{formatHumanTime(t._est)}</span>
                         <a href={gcalUrl(t)} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5a8abf', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}><Calendar size={10} /> GCal</a>
                       </div>
                     ))}
@@ -516,7 +528,7 @@ const SmartScheduler = () => {
                           {t._isHot && <Flame size={12} color="#d14040" />}
                           <span style={{ fontSize: '0.7rem', color: '#8a8682' }}>{t._project?.name}</span>
                           <span style={{ fontSize: '0.65rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', background: tri.color + '15', color: tri.color }}>{tri.label}</span>
-                          <span style={{ fontSize: '0.68rem', color: '#6b6764' }}>~{t._est}m</span>
+                          <span style={{ fontSize: '0.68rem', color: '#6b6764' }}>~{formatHumanTime(t._est)}</span>
                           <a href={gcalUrl(t)} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5a8abf', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}><Calendar size={10} /> GCal</a>
                         </div>
                       );
@@ -546,7 +558,7 @@ const SmartScheduler = () => {
                           <div style={{ fontWeight: 500, color: '#2e2c2a', marginBottom: '2px' }}>{t.title}</div>
                           <div style={{ fontSize: '0.68rem', color: '#8a8682', display: 'flex', justifyContent: 'space-between' }}>
                             <span>{t._project?.name}</span>
-                            <span>~{t._est}m</span>
+                            <span>~{formatHumanTime(t._est)}</span>
                           </div>
                         </div>
                       ))}
@@ -676,7 +688,7 @@ const SmartScheduler = () => {
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {availabilityPlan.autoQueue.slice(0, 10).map(t => (
-                  <span key={t.id} style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(45,138,78,0.08)', color: '#2d8a4e', fontWeight: 500 }}>{t.title} (~{t._est}m)</span>
+                  <span key={t.id} style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(45,138,78,0.08)', color: '#2d8a4e', fontWeight: 500 }}>{t.title} (~{formatHumanTime(t._est)})</span>
                 ))}
                 {availabilityPlan.autoQueue.length > 10 && <span style={{ fontSize: '0.72rem', color: '#8a8682' }}>+{availabilityPlan.autoQueue.length - 10} more</span>}
               </div>
@@ -709,7 +721,7 @@ const SmartScheduler = () => {
                       <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(0,0,0,0.04)' }}>
                         <tri.icon size={12} color={tri.color} />
                         <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 500, color: '#2e2c2a' }}>{t.title}</span>
-                        <span style={{ fontSize: '0.68rem', color: '#6b6764' }}>~{t._est}m</span>
+                        <span style={{ fontSize: '0.68rem', color: '#6b6764' }}>~{formatHumanTime(t._est)}</span>
                       </div>
                     );
                   })}
@@ -727,7 +739,7 @@ const SmartScheduler = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {availabilityPlan.unscheduledHuman.map(t => (
                   <div key={t.id} style={{ fontSize: '0.82rem', color: '#3e3c3a', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#c49a40' }} />{t.title} (~{t._est}m)
+                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#c49a40' }} />{t.title} (~{formatHumanTime(t._est)})
                   </div>
                 ))}
               </div>

@@ -334,7 +334,7 @@ const Wishlist = () => {
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
       {/* Header */}
-      <div>
+      <div data-highlight="new-ideas">
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Sparkles size={24} color="#c49a40" /> Wishlist — Idea Intake <InfoTooltip text={PAGE_INFO.wishlist} />
         </h1>

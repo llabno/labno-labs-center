@@ -275,7 +275,21 @@ const ClientAvailability = () => {
 
   if (loading) return <div className="main-content" style={{ padding: '1.5rem', color: '#8a8682' }}>Loading...</div>;
 
-  const tierCounts = TIERS.map(t => ({ ...t, count: clients.filter(c => c.client_value_tier === t.value).length }));
+  const tierCounts = TIERS.map(t => ({ ...t, count: clients.filter(c => c.client_value_tier === t.value).length, clients: clients.filter(c => c.client_value_tier === t.value) }));
+  const [expandedTier, setExpandedTier] = useState(null);
+  const [expandedScheduling, setExpandedScheduling] = useState(null);
+
+  // Scheduling breakdown
+  const schedulingStats = useMemo(() => {
+    const mornings = clients.filter(c => c.general_preference === 'mornings');
+    const afternoons = clients.filter(c => c.general_preference === 'afternoons');
+    const flexible = clients.filter(c => c.general_preference === 'flexible' || !c.general_preference);
+    return [
+      { key: 'mornings', label: 'Morning Preference', count: mornings.length, clients: mornings, color: '#c49a40', icon: '☀️' },
+      { key: 'afternoons', label: 'Afternoon Preference', count: afternoons.length, clients: afternoons, color: '#5a8abf', icon: '🌤' },
+      { key: 'flexible', label: 'Flexible', count: flexible.length, clients: flexible, color: '#2d8a4e', icon: '✓' },
+    ];
+  }, [clients]);
 
   return (
     <div className="main-content" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -293,16 +307,88 @@ const ClientAvailability = () => {
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Tier Summary Cards — clickable to expand client list */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
         {tierCounts.map(t => (
-          <div key={t.value} className="glass-panel" style={{ padding: '1rem', textAlign: 'center' }}>
+          <div key={t.value} className="glass-panel" onClick={() => setExpandedTier(expandedTier === t.value ? null : t.value)}
+            style={{ padding: '1rem', textAlign: 'center', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', border: expandedTier === t.value ? `2px solid ${t.color}` : '2px solid transparent' }}
+            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
             <Star size={16} color={t.color} style={{ marginBottom: '4px' }} />
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: t.color }}>{t.count}</div>
             <div style={{ fontSize: '0.72rem', color: '#8a8682' }}>{t.label}</div>
+            <div style={{ fontSize: '0.6rem', color: t.color, marginTop: '4px' }}>{expandedTier === t.value ? 'Click to collapse' : 'Click to see clients'}</div>
           </div>
         ))}
       </div>
+
+      {/* Expanded Tier Client List */}
+      {expandedTier && (() => {
+        const tier = tierCounts.find(t => t.value === expandedTier);
+        if (!tier || tier.clients.length === 0) return <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center', color: '#8a8682', fontSize: '0.85rem' }}>No clients in {tier?.label}</div>;
+        return (
+          <div className="glass-panel" style={{ padding: '1.25rem', borderLeft: `3px solid ${tier.color}` }}>
+            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: tier.color, marginBottom: '10px' }}>
+              {tier.label} — {tier.clients.length} client{tier.clients.length !== 1 ? 's' : ''}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
+              {tier.clients.map(c => (
+                <div key={c.id} style={{ padding: '8px 12px', borderRadius: '8px', background: `${tier.color}08`, border: `1px solid ${tier.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2e2c2a' }}>{c.client_name || c.client_id}</div>
+                    <div style={{ fontSize: '0.68rem', color: '#8a8682' }}>
+                      {c.general_preference || 'flexible'} &middot; {(c.preferred_slots || []).length} slots
+                      {(c.vacation_dates || []).length > 0 && ` · ${(c.vacation_dates || []).length} vacation`}
+                    </div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); startEdit(c); }} style={{ padding: '4px', border: 'none', background: 'none', cursor: 'pointer', color: '#8a8682' }}>
+                    <Edit3 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Scheduling Preference Breakdown */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        {schedulingStats.map(s => (
+          <div key={s.key} className="glass-panel" onClick={() => setExpandedScheduling(expandedScheduling === s.key ? null : s.key)}
+            style={{ padding: '1rem', textAlign: 'center', cursor: 'pointer', transition: 'transform 0.15s', border: expandedScheduling === s.key ? `2px solid ${s.color}` : '2px solid transparent' }}
+            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div style={{ fontSize: '1.2rem', marginBottom: '2px' }}>{s.icon}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: s.color }}>{s.count}</div>
+            <div style={{ fontSize: '0.72rem', color: '#8a8682' }}>{s.label}</div>
+            <div style={{ fontSize: '0.6rem', color: s.color, marginTop: '4px' }}>{expandedScheduling === s.key ? 'Collapse' : 'See clients'}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Expanded Scheduling Client List */}
+      {expandedScheduling && (() => {
+        const stat = schedulingStats.find(s => s.key === expandedScheduling);
+        if (!stat || stat.clients.length === 0) return null;
+        return (
+          <div className="glass-panel" style={{ padding: '1.25rem', borderLeft: `3px solid ${stat.color}` }}>
+            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: stat.color, marginBottom: '10px' }}>
+              {stat.label} — {stat.clients.length} client{stat.clients.length !== 1 ? 's' : ''}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
+              {stat.clients.map(c => {
+                const tierInfo = TIERS.find(t => t.value === c.client_value_tier) || TIERS[1];
+                return (
+                  <div key={c.id} style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)' }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#2e2c2a' }}>{c.client_name || c.client_id}</div>
+                    <div style={{ fontSize: '0.68rem', color: tierInfo.color }}>{tierInfo.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Scheduling Heat Map */}
       <div className="glass-panel" style={{ padding: '1.25rem', overflow: 'auto' }}>

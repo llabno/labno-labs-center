@@ -205,7 +205,7 @@ const AgentQueue = () => {
     <div className="main-content" style={{ padding: '1.5rem' }}>
       <Breadcrumbs />
 
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <h1 data-highlight="agent-needs-input" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <MessageSquareWarning size={22} color="#b06050" /> Agent Confirmation Queue
         <InfoTooltip text="Agents post questions here when they cannot complete a task autonomously. Respond to unblock them, or skip to dismiss." />
       </h1>

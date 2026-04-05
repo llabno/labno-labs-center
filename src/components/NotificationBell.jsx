@@ -88,18 +88,34 @@ export default function NotificationBell() {
     setLoading(false);
   }
 
-  function handleNavigate(path) {
+  function handleNavigate(path, highlight) {
     setOpen(false);
     navigate(path);
+    // After navigation, scroll to and highlight the relevant section
+    if (highlight) {
+      setTimeout(() => {
+        const el = document.querySelector(`[data-highlight="${highlight}"]`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.style.transition = 'box-shadow 0.3s, outline 0.3s';
+          el.style.outline = '2px solid #b06050';
+          el.style.boxShadow = '0 0 20px rgba(176,96,80,0.3)';
+          setTimeout(() => {
+            el.style.outline = 'none';
+            el.style.boxShadow = '';
+          }, 3000);
+        }
+      }, 500); // wait for page to render
+    }
   }
 
   const items = [
-    { label: 'agents need your input', count: notifications.agentNeedsInput, path: '/agent-queue', color: '#d32f2f' },
-    { label: 'new tasks in triage', count: notifications.newTasks, path: '/taskqueue', color: '#b06050' },
-    { label: 'agent tasks completed', count: notifications.agentCompleted, path: '/autonomous', color: '#2d8a4e' },
-    { label: 'unbilled sessions', count: notifications.unbilledSessions, path: '/soap', color: '#ad1457' },
-    { label: 'blocked tasks', count: notifications.overdueTasks, path: '/planner', color: '#c49a40' },
-    { label: 'new ideas', count: notifications.newIdeas, path: '/wishlist', color: '#9c27b0' },
+    { label: 'agents need your input', count: notifications.agentNeedsInput, path: '/agent-queue', color: '#d32f2f', highlight: 'agent-needs-input' },
+    { label: 'new tasks in triage', count: notifications.newTasks, path: '/planner?filter=triage', color: '#b06050', highlight: 'triage-section' },
+    { label: 'agent tasks completed', count: notifications.agentCompleted, path: '/autonomous?filter=completed', color: '#2d8a4e', highlight: 'completed-runs' },
+    { label: 'unbilled sessions', count: notifications.unbilledSessions, path: '/billing?filter=unbilled', color: '#ad1457', highlight: 'unbilled-section' },
+    { label: 'blocked tasks', count: notifications.overdueTasks, path: '/planner?filter=blocked', color: '#c49a40', highlight: 'blocked-section' },
+    { label: 'new ideas', count: notifications.newIdeas, path: '/wishlist?filter=new', color: '#9c27b0', highlight: 'new-ideas' },
   ];
 
   return (
@@ -201,7 +217,7 @@ export default function NotificationBell() {
               {items.filter(i => i.count > 0).map(item => (
                 <div
                   key={item.path}
-                  onClick={() => handleNavigate(item.path)}
+                  onClick={() => handleNavigate(item.path, item.highlight)}
                   style={{
                     padding: '10px 16px',
                     cursor: 'pointer',

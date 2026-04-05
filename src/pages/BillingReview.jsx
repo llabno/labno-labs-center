@@ -209,7 +209,7 @@ const BillingReview = () => {
 
       {/* Unbilled Sessions Alert */}
       {totalUnbilled > 0 && (
-        <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(209,64,64,0.04)', border: '1px solid rgba(209,64,64,0.12)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
+        <div data-highlight="unbilled-section" style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(209,64,64,0.04)', border: '1px solid rgba(209,64,64,0.12)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}>
           <AlertTriangle size={14} color="#d14040" />
           <span style={{ color: '#3e3c3a' }}><strong style={{ color: '#d14040' }}>{totalUnbilled} sessions</strong> not yet assigned to a billing cycle.</span>
           <span style={{ fontSize: '0.72rem', color: '#8a8682' }}>Generate or select a cycle, then assign sessions.</span>
